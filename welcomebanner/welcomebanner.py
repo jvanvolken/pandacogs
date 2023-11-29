@@ -33,12 +33,12 @@ class WelcomeBanner(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         """Demonstrates the welcome message!"""
-        welcome_banner(member)
+        await welcome_banner(member)
 
     @commands.command()
     async def test_welcome(self, ctx):
         """Demonstrates the welcome message!"""
-        welcome_banner(ctx.message.author)
+        await welcome_banner(ctx.message.author)
 
     @commands.command()
     async def set_background(self, ctx):
