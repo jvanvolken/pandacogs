@@ -1,0 +1,8 @@
+{
+  "author": ["James (SadPanda)"],
+  "install_msg": "Thanks for installing! Report any issues on GitHub.",
+  "name": "pandacogs",
+  "short": "A collection of SadPanda's cogs for Redbot.",
+  "description": "A collection of cogs built for the discord bot Redbot, designed for the needs of Pavilion Horde.",
+  "tags": ["welcome, roles"]
+}

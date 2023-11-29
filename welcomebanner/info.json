@@ -1,0 +1,8 @@
+{
+  "author": ["James (SadPanda)"],
+  "install_msg": "Thanks for installing! Report any issues on GitHub.",
+  "name": "WelcomeBanner",
+  "short": "A welcome message cog",
+  "description": "This cog generates a welcome banner when a new member joins the server.",
+  "tags": ["welcome"]
+}
