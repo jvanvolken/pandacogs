@@ -61,7 +61,10 @@ async def welcome_banner(member, channel):
     avatar_filename = Avatars_Dir + f"/avatar_{member.id}.png"
 
     # Download and save the avatar image
-    await member.avatar.save(avatar_filename)
+    if member.avatar is not None:
+        await member.avatar.save(avatar_filename)
+    else:
+        await member.default_avatar.save(avatar_filename)
     
     # Checks if background image path is a valid file, send just member avatar instead.
     if Path(background_image).is_file():
