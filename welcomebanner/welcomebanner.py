@@ -33,12 +33,12 @@ class WelcomeBanner(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         """Demonstrates the welcome message!"""
-        await welcome_banner(member)
+        await welcome_banner(member, member.guild.system_channel)
 
     @commands.command()
     async def test_welcome(self, ctx):
         """Demonstrates the welcome message!"""
-        await welcome_banner(ctx.message.author)
+        await welcome_banner(ctx.message.author, ctx.channel)
 
     @commands.command()
     async def set_background(self, ctx):
@@ -55,10 +55,7 @@ class WelcomeBanner(commands.Cog):
         await channel.send(f"Thanks for the new Welcome Message background, {author.mention}! This will do nicely!")
 
 
-async def welcome_banner(member):
-    # Get important information about the context of the command
-    channel = member.guild.system_channel
-
+async def welcome_banner(member, channel):
     # Setup avatar folder and filename
     Path(Avatars_Dir).mkdir(parents=True, exist_ok=True)
     avatar_filename = Avatars_Dir + f"/avatar_{member.id}.png"
