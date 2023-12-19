@@ -28,7 +28,7 @@ class AutoRolerPro(commands.Cog):
         author = ctx.message.author
 
         # Sends message in the command's origin channel
-        await channel.send(f"This is where I'd list the games if I had any!!")
+        await channel.send(f"This is where I'd list the games... If I had any!!")
 
     @client.event
     async def on_member_update(self, previous, current):
