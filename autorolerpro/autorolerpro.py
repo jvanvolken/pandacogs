@@ -2,6 +2,13 @@
 import discord
 from redbot.core import commands
 
+# Initializes intents
+intents = discord.Intents(messages=True, guilds=True)
+intents.members = True
+
+# Initializes client with intents
+client = discord.Client(intents = intents)
+
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
 
@@ -23,7 +30,7 @@ class AutoRolerPro(commands.Cog):
         # Sends message in the command's origin channel
         await channel.send(f"This is where I'd list the games if I had any!!")
 
-    @discord.client.event
+    @client.event
     async def on_member_update(previous, current):
 
         # Get important information about the context of the command
