@@ -1,0 +1,8 @@
+{
+  "author": ["James (SadPanda)"],
+  "install_msg": "Thanks for installing! Report any issues on GitHub.",
+  "name": "AutoRoler",
+  "short": "Auto assigns roles based on what people are playing.",
+  "description": "A cog that auto assigns roles based on what people are playing. Adds roles automatically to the list when it detects someone playing a new game!",
+  "tags": ["auto", "roles"]
+}

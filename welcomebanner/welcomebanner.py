@@ -7,7 +7,7 @@ import discord
 from redbot.core import commands
 
 
-# Cog Directory in Unreal Engine
+# Cog Directory in AppData
 docker_cog_path = "/data/cogs/Welcome"
 
 # Necessary Directories withing the Cog Directory
