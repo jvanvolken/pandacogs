@@ -31,7 +31,7 @@ class AutoRolerPro(commands.Cog):
         await channel.send(f"This is where I'd list the games if I had any!!")
 
     @client.event
-    async def on_member_update(previous, current):
+    async def on_member_update(self, previous, current):
 
         # Get important information about the context of the command
         channel = current.get_channel(665572348350693406)
