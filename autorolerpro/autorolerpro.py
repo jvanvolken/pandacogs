@@ -23,12 +23,12 @@ class AutoRolerPro(commands.Cog):
         # Sends message in the command's origin channel
         await channel.send(f"This is where I'd list the games if I had any!!")
 
-    @discord.Client.event()
+    @discord.Client.event
     async def on_member_update(previous, current):
 
         # Get important information about the context of the command
         channel = current.get_channel(665572348350693406)
-        member_name = current.display_name #.encode().decode('ascii','ignore')
+        member_name = current.display_name.encode().decode('ascii','ignore')
 
         # role = discord.utils.get(current.guild.roles, name="Gamer")
         games = ["overwatch", "rocket league", "minecraft"]
