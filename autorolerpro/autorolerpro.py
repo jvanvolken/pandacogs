@@ -10,7 +10,7 @@ from redbot.core import commands
 docker_cog_path = "/data/cogs/AutoRoler"
 
 
-class AutoRoler(commands.Cog):
+class AutoRolerPro(commands.Cog):
     """My custom cog"""
 
     def __init__(self, bot):
