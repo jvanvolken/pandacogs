@@ -17,15 +17,15 @@ docker_cog_path = "/data/cogs/AutoRoler"
 
 class MyView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
     @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
-    async def button_callback(self, interaction, button):
+    async def button_one_callback(self, interaction, button):
         await interaction.response.send_message("You're the best!") # Send a message when the button is clicked
 
     @discord.ui.button(label="No me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
-    async def button_callback(self, interaction, button):
+    async def button_two_callback(self, interaction, button):
         await interaction.response.send_message("Thanks bud!") # Send a message when the button is clicked
 
     @discord.ui.button(label="uWu!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
-    async def button_callback(self, interaction, button):
+    async def button_three_callback(self, interaction, button):
         await interaction.response.send_message("Hi daddy!") # Send a message when the button is clicked
 
 class AutoRolerPro(commands.Cog):
