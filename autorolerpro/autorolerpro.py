@@ -12,12 +12,17 @@ client = discord.Client(intents = intents)
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
 
+class MyView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
+    @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message("You clicked the button!") # Send a message when the button is clicked
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
 
     def __init__(self, bot):
         self.bot = bot
+
 
     @commands.command()
     async def list_games(self, ctx):
@@ -28,7 +33,10 @@ class AutoRolerPro(commands.Cog):
         author = ctx.message.author
 
         # Sends message in the command's origin channel
-        await channel.send(f"This is where I'd list the games... If I had any!!")
+        # await channel.send(f"This is where I'd list the games... If I had any!!")
+
+        await channel.respond("This is a button!", view = MyView()) # Send a message with our View class that contains the button
+
 
     @client.event
     async def on_member_update(self, previous, current):
