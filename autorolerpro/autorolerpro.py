@@ -57,15 +57,10 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
-        
-        # Get important information about the context of the command
-        channel = ctx.channel
-        author = ctx.message.author
-
-        # Sends message in the command's origin channel
-        # await channel.send(f"This is where I'd list the games... If I had any!!")
-
-        await ctx.reply("This is a button!", view = GameListView()) # Send a message with our View class that contains the button
+        if len(games) > 0:
+            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView()) # Send a message with our View class that contains the button
+        else:
+            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
     async def add_game(self, ctx, arg):
