@@ -12,8 +12,17 @@ client = discord.Client(intents = intents)
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
 
+# List of games
+
+
 class MyView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
     @discord.ui.button(label="Click me!", style=discord.ButtonStyle.primary, emoji="😎") # Create a button with the label "😎 Click me!" with color Blurple
+    async def button_callback(self, interaction, button):
+        await interaction.response.send_message("You clicked the button!") # Send a message when the button is clicked
+
+    async def button_callback(self, interaction, button):
+        await interaction.response.send_message("You clicked the button!") # Send a message when the button is clicked
+        
     async def button_callback(self, interaction, button):
         await interaction.response.send_message("You clicked the button!") # Send a message when the button is clicked
 
