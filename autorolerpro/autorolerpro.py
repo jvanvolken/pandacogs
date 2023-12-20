@@ -13,7 +13,7 @@ client = discord.Client(intents = intents)
 docker_cog_path = "/data/cogs/AutoRoler"
 
 # List of games
-games = ["Overwatch", "Project Zomboid", "Tabletop Simulator"]
+games = ["Overwatch", "Project Zomboid", "Tabletop Simulator", "Golf With Your Friends", "Rocket League", "PlateUp!", "Lethal Company", "Apex Legends"]
 
 
 
