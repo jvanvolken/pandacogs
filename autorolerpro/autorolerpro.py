@@ -26,7 +26,7 @@ class GameListView(discord.ui.View): # Create a class called MyView that subclas
     
     class GameButton(discord.ui.Button['GameListView']):
         def __init__(self, name):
-            super().__init__()
+            super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
             self.name = name
 
         async def on_button_press(self, interaction, button):
