@@ -29,7 +29,7 @@ class GameListView(discord.ui.View): # Create a class called MyView that subclas
             super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
             self.name = name
 
-        async def on_button_press(self, interaction, button):
+        async def callback(self, interaction, button):
             await interaction.response.send_message(f"You selected {self.name}!")
 
 
