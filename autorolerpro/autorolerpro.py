@@ -58,7 +58,7 @@ class AutoRolerPro(commands.Cog):
         # Sends message in the command's origin channel
         # await channel.send(f"This is where I'd list the games... If I had any!!")
 
-        await ctx.reply("This is a button!", view = MyView()) # Send a message with our View class that contains the button
+        await ctx.reply("This is a button!", view = GameListView()) # Send a message with our View class that contains the button
 
 
     @client.event
