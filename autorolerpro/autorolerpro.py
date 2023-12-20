@@ -15,15 +15,30 @@ docker_cog_path = "/data/cogs/AutoRoler"
 # List of games
 games = ["Overwatch", "Project Zomboid", "Tabletop Simulator"]
 
-class MyView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
-    for game in games:
-        # Create a button with the label "😎 Click me!" with color Blurple
-        async def mycallback(self, interaction, button):
-            # Send a message when the button is clicked
-            await interaction.response.send_message("You're the best!")
 
-        button = discord.ui.button(label = game, style=discord.ButtonStyle.primary, emoji = "😎")
-        button.callback = mycallback
+
+class GameListView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
+    def __init__(self):
+        super().__init__()
+
+        for game in games:
+            self.add_item(self.GameButton(game))
+    
+    class GameButton(discord.ui.Button['GameListView']):
+        def __init__(self, name):
+            self.name = name
+
+        async def on_button_press(self, interaction, button):
+            await interaction.response.send_message(f"You selected {self.name}!")
+
+
+            # # Create a button with the label "😎 Click me!" with color Blurple
+            # async def mycallback(self, interaction, button):
+            #     # Send a message when the button is clicked
+            #     await interaction.response.send_message("You're the best!")
+
+            # button = discord.ui.button(label = game, style=discord.ButtonStyle.primary, emoji = "😎")
+            # button.callback = mycallback
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
