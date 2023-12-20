@@ -17,9 +17,10 @@ games = ["Overwatch", "Project Zomboid", "Tabletop Simulator"]
 
 class MyView(discord.ui.View): # Create a class called MyView that subclasses discord.ui.View
     for game in games:
+        game_def = locals()[game]
         # Create a button with the label "😎 Click me!" with color Blurple
         @discord.ui.button(label = game, style=discord.ButtonStyle.primary, emoji = "😎")
-        async def button_one_callback(self, interaction, button):
+        async def game_def(self, interaction, button):
             # Send a message when the button is clicked
             await interaction.response.send_message("You're the best!")
 
