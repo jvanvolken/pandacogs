@@ -3,6 +3,7 @@ import discord
 import json
 import os
 from redbot.core import commands
+from enum import Enum
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True)
@@ -14,6 +15,11 @@ client = discord.Client(intents = intents)
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
 games_list_file = f"{docker_cog_path}/games.txt"
+
+# Game list functions
+class ListType(Enum):
+    Select = 1
+    Remove = 2
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -27,25 +33,43 @@ else:
     with open(games_list_file, "w") as fp:
         json.dump(games, fp)
 
-# List of games
-# games = ["Overwatch", "Project Zomboid", "Tabletop Simulator", "Golf With Your Friends", "Rocket League", "PlateUp!", "Lethal Company", "Apex Legends"]
+# Adds game to games list and saves to file
+def AddGame(game):
+    games.append(game)
+    with open(games_list_file, "w") as fp:
+        json.dump(games, fp)
+
+# Removes game to games list and saves to file
+def RemoveGame(game):
+    if game in games:
+        games.remove(game)
+        with open(games_list_file, "w") as fp:
+            json.dump(games, fp)
+    else:
+        print(f"Failed to remove game. Could not find {game} in list.")
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, function):
         super().__init__()
+        self.function = function
 
         for game in games:
-            self.add_item(self.GameButton(game))
+            self.add_item(self.GameButton(game, self.function))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, name):
+        def __init__(self, name, function):
             super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
             self.name = name
+            self.function = function
 
         async def callback(self, interaction):
-            await interaction.response.send_message(f"You selected {self.name}!")
+            if function is ListType.Select:
+                await interaction.response.send_message(f"You have selected {self.name}!")
+            elif function is ListType.Remove:
+                RemoveGame(self.Name)
+                await interaction.response.send_message(f"I have removed {self.name} from the list!")
 
 
 class AutoRolerPro(commands.Cog):
@@ -58,17 +82,24 @@ class AutoRolerPro(commands.Cog):
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
         if len(games) > 0:
-            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView()) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Select)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
-    async def add_game(self, ctx, arg):
-        games.append(arg)
-        with open(games_list_file, "w") as fp:
-            json.dump(games, fp)
+    async def add_game(self, ctx, *, arg):
+        """Adds a game to the list of supported games"""
+        AddGame(arg)
 
         await ctx.reply(f"Thanks for the contribution! Added {arg} to the list of games!")
+
+    @commands.command()
+    async def remove_games(self, ctx):
+        """Lists the collected games to select for removal."""
+        if len(games) > 0:
+            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Remove)) # Send a message with our View class that contains the button
+        else:
+            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
     @client.event
     async def on_member_update(self, previous, current):
