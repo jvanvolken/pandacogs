@@ -88,11 +88,13 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
-    async def add_game(self, ctx, *, arg):
-        """Adds a game to the list of supported games"""
-        AddGame(arg)
-
-        await ctx.reply(f"Thanks for the contribution! Added {arg} to the list of games!")
+    async def add_games(self, ctx, *, arg):
+        """Manually adds a game or a set of games to the autoroler."""
+        """Seperate games using commas: !add_games game1, game2, ..., gameN"""
+        for game in arg.split(','):
+            clean_name = game.strip().lower()
+            AddGame(clean_name)
+            await ctx.reply(f"Thanks for the contribution! Added {clean_name} to the list of games!")
 
     @commands.command()
     async def remove_games(self, ctx):
