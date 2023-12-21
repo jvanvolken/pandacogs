@@ -68,7 +68,8 @@ class GameListView(discord.ui.View):
             if self.list_type is ListType.Select:
                 await interaction.response.send_message(f"You have selected {self.name}!")
             elif self.list_type is ListType.Remove:
-                RemoveGame(self.Name)
+                RemoveGame(self.name)
+                await interaction.response.edit_message(content = "Please select the games that you're interested in playing!", view = GameListView(ListType.Remove))
                 await interaction.response.send_message(f"I have removed {self.name} from the list!")
 
 
