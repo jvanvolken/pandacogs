@@ -143,6 +143,7 @@ class AutoRolerPro(commands.Cog):
                     reply += f"  **({results[0]['rating']}) {results[0]['name']}**\n  *{results[0]['description']}*\n"
                 except:
                     reply += str(details)
+                    reply += str(results[0])
 
             await ctx.reply(reply)
         else:
