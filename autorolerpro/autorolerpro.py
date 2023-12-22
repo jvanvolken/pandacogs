@@ -70,7 +70,7 @@ class GameListView(discord.ui.View):
                 await interaction.response.send_message(f"You have selected {self.name}!")
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.name)
-                await interaction.response.edit_message(content = "Please select the games that you're interested in playing!", view = GameListView(ListType.Remove))
+                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove))
                 await interaction.followup.send(f"I have removed {self.name} from the list!")
 
 
@@ -96,9 +96,11 @@ class AutoRolerPro(commands.Cog):
         for game in new_games:
             if game in games:
                 already_exists.append(game)
-                new_games.remove(game)
             else:   
                 AddGame(game)
+        
+        for game in already_exists:
+            new_games.remove(game)
 
         if len(already_exists) > 0:
             if len(new_games) > 0:
