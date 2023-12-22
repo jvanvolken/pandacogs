@@ -136,7 +136,7 @@ class AutoRolerPro(commands.Cog):
         
         reply = "Here are the results!\n"
         for details in db_json.json():
-            reply += f"**{details['name']}**\n"
+            reply += f"  **{details['name']}**\n"
 
         await ctx.reply(reply)
 
