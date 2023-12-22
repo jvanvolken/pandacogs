@@ -90,7 +90,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
-        games = [x.strip().capitalize() for x in arg.split(',').capitalize()]
+        games = [x.strip().capitalize() for x in arg.split(',')]
         for game in games:
             clean_name = game.lower()
             AddGame(clean_name)
