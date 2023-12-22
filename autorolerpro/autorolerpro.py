@@ -138,7 +138,7 @@ class AutoRolerPro(commands.Cog):
         #     f'search "{arg}"',
         #     'fields name, alternative_name; limit 10'
         #   )
-        db_results = post('https://api.igdb.com/v4/games', headers = db_header, data = f"search {arg}; fields name, alternative_name; limit 10;"})
+        db_results = post('https://api.igdb.com/v4/games', headers = db_header, data = f"search {arg}; fields name, alternative_name; limit 10;")
         # x = requests.post("https://api.igdb.com/v4/games/", json = db_header)
 
         # print(x.text)
