@@ -135,9 +135,9 @@ class AutoRolerPro(commands.Cog):
         results = db_json.json()
 
         if len(results) > 0:
-            reply = "Here are the results!\n"
+            reply = "**Here are the results!**\n"
             for details in results:
-                reply += f"  **{details['name']}**\n"
+                reply += f"  *{details['name']}*\n"
 
             await ctx.reply(reply)
         else:
