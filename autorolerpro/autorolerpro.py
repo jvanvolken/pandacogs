@@ -105,9 +105,9 @@ class AutoRolerPro(commands.Cog):
 
         if len(already_exists) > 0:
             if len(new_games) > 0:
-                await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Remove, new_games))
+                await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Remove, [new_games, already_exists]))
             else:
-                await ctx.reply(f"Thanks for the contribution! But I already have these!")
+                await ctx.reply(f"Thanks for the contribution! But I already have these!", view = GameListView(ListType.Remove, already_exists))
         else:
             await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Remove, new_games))
 
