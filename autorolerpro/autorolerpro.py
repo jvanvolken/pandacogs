@@ -51,12 +51,13 @@ def RemoveGame(game):
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
-    def __init__(self, list_type):
+    def __init__(self, list_type, game_list):
         super().__init__()
         self.list_type = list_type
+        self.game_list = game_list
 
-        for game in games:
-            self.add_item(self.GameButton(game, self.list_type))
+        for game in self.game_list:
+            self.add_item(self.GameButton(game, self.list_type, self.game_list))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
@@ -70,7 +71,7 @@ class GameListView(discord.ui.View):
                 await interaction.response.send_message(f"You have selected {self.name}!")
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.name)
-                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove))
+                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove, games))
                 await interaction.followup.send(f"I have removed {self.name} from the list!")
 
 
@@ -84,7 +85,7 @@ class AutoRolerPro(commands.Cog):
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
         if len(games) > 0:
-            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Select)) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Select, games)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
@@ -104,17 +105,17 @@ class AutoRolerPro(commands.Cog):
 
         if len(already_exists) > 0:
             if len(new_games) > 0:
-                await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.")
+                await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Remove, new_games))
             else:
                 await ctx.reply(f"Thanks for the contribution! But I already have these!")
         else:
-            await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!")
+            await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Remove, new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
         if len(games) > 0:
-            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove)) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove, games)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
