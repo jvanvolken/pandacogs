@@ -91,11 +91,19 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
-        games = [string.capwords(game) for game in arg.split(',')]
-        for game in games:
-            AddGame(game)
+        new_games = [string.capwords(game) for game in arg.split(',')]
+        already_exists = []
+        for game in new_games:
+            if game in games:
+                already_exists.append(game)
+                new_games.remove(game)
+            else:   
+                AddGame(game)
 
-        await ctx.reply(f"Thanks for the contribution! Added {', '.join(games)} to the list of games!")
+        if len(already_exists) > 0:
+            await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games! Already had {', '.join(already_exists)}")
+        else:
+            await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!")
 
     @commands.command()
     async def remove_games(self, ctx):
