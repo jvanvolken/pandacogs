@@ -106,7 +106,7 @@ class AutoRolerPro(commands.Cog):
             if len(new_games) > 0:
                 await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.")
             else:
-                await ctx.reply(f"Thanks for the contribution! But I already these!")
+                await ctx.reply(f"Thanks for the contribution! But I already have these!")
         else:
             await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!")
 
