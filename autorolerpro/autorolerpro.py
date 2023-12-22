@@ -138,7 +138,7 @@ class AutoRolerPro(commands.Cog):
             reply = "**Here are the results!**\n"
             for details in results:
                 try:
-                    db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'fields *; where id = {details["id"]}'})
+                    db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'fields *; where id = {details["id"]}; where rating != null;'})
                     results = db_json.json()
                     reply += f"  **({results[0]['rating']}) {results[0]['name']}**\n  *{results[0]['description']}*\n"
                 except:
