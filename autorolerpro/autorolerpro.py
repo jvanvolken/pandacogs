@@ -133,11 +133,12 @@ class AutoRolerPro(commands.Cog):
         """Searches IGDB for a matching game."""
         db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields alternative_name,character,checksum,collection,company,description,game,name,platform,published_at,test_dummy,theme;'})
 
-        await ctx.reply(f"Here are the results!")
         
+        reply = "Here are the results!\n"
         for details in db_json.json():
-            await ctx.send(f"**{details['name']}**\n*{details['description']}*")
+            reply += f"**{details['name']}**\n*{details['description']}*\n\n"
 
+        await ctx.reply(reply)
 
     @client.event
     async def on_member_update(self, previous, current):
