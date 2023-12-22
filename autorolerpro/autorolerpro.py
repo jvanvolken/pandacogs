@@ -131,14 +131,17 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields *; limit 50'})
+        db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields *; limit 50;'})
+        results = db_json.json()
 
-        
-        reply = "Here are the results!\n"
-        for details in db_json.json():
-            reply += f"  **{details['name']}**\n"
+        if len(results) > 0:
+            reply = "Here are the results!\n"
+            for details in results:
+                reply += f"  **{details['name']}**\n"
 
-        await ctx.reply(reply)
+            await ctx.reply(reply)
+        else:
+            await ctx.reply(f"Sorry! No results found for {arg}.")
 
     @client.event
     async def on_member_update(self, previous, current):
