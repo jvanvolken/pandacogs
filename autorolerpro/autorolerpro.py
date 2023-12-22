@@ -4,7 +4,6 @@ import json
 import os
 import string
 from redbot.core import commands
-# from igdb.wrapper import IGDBWrapper
 from requests import post
 
 from enum import Enum
@@ -22,7 +21,6 @@ games_list_file = f"{docker_cog_path}/games.txt"
 
 # Instantiates IGDB wrapper
 # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-# database = IGDBWrapper("fqwgh1wot9cg7nqu8wsfuzw01lsln9", "9csdv9i9a61vpschjcdcsfm4nblpyq")
 db_header = {
     'Client-ID': 'fqwgh1wot9cg7nqu8wsfuzw01lsln9',
     'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
@@ -133,15 +131,8 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, arg):
         """Searches IGDB for a matching game."""
-        # db_results = database.api_request(
-        #     'search',
-        #     f'search "{arg}"',
-        #     'fields name, alternative_name; limit 10'
-        #   )
-        db_results = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search {arg}; fields name, alternative_name;'})
+        db_results = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name, alternative_name;'})
 
-
-        # print(x.text)
         await ctx.reply(f"Here are the results!\n{str(db_results.json())}")\
 
     @client.event
