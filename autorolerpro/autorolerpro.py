@@ -129,7 +129,7 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
     @commands.command()
-    async def search_game(self, ctx, arg):
+    async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
         db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields alternative_name,character,checksum,collection,company,description,game,name,platform,published_at,test_dummy,theme;'})
 
