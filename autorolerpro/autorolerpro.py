@@ -57,7 +57,7 @@ class GameListView(discord.ui.View):
         self.game_list = game_list
 
         for game in self.game_list:
-            self.add_item(self.GameButton(game, self.list_type, self.game_list))
+            self.add_item(self.GameButton(game, self.list_type))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
