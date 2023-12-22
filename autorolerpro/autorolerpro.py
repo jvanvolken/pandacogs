@@ -137,9 +137,9 @@ class AutoRolerPro(commands.Cog):
         if len(results) > 0:
             reply = "**Here are the results!**\n"
             for details in results:
-                if details['name']:
+                try:
                     reply += f"  *{details['name']}*\n"
-                else:
+                except:
                     reply += str(details)
 
             await ctx.reply(reply)
