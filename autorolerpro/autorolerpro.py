@@ -4,6 +4,7 @@ import json
 import os
 import string
 from redbot.core import commands
+from igdb.wrapper import IGDBWrapper
 from enum import Enum
 
 # Initializes intents
@@ -16,6 +17,10 @@ client = discord.Client(intents = intents)
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
 games_list_file = f"{docker_cog_path}/games.txt"
+
+# Instantiates IGDB wrapper
+# curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
+database = IGDBWrapper("fqwgh1wot9cg7nqu8wsfuzw01lsln9", "9csdv9i9a61vpschjcdcsfm4nblpyq")
 
 # Game list functions
 class ListType(Enum):
@@ -118,6 +123,16 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove, games)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+
+    @commands.command()
+    async def search_game(self, ctx, arg):
+        """Searches IGDB for a matching game."""
+        db_results = database.api_request(
+            'search',
+            f'search "{arg}"',
+            'fields name, alternative_name; limit 10'
+          )
+        await ctx.reply(f"Here are the results!\nf{str(db_results)}")\
 
     @client.event
     async def on_member_update(self, previous, current):
