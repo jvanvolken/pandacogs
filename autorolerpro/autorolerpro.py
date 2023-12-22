@@ -140,7 +140,7 @@ class AutoRolerPro(commands.Cog):
                 try:
                     db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'fields *; where id = {details["id"]}'})
                     results = db_json.json()
-                    reply += f"  **({details['rating']}) {details['name']}**\n  *{details['description']}*\n"
+                    reply += f"  **({results[0]['rating']}) {results[0]['name']}**\n  *{results[0]['description']}*\n"
                 except:
                     reply += str(details)
 
