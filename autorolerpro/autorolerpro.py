@@ -112,7 +112,7 @@ class AutoRolerPro(commands.Cog):
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
         if len(games) > 0:
-            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Remove)) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
