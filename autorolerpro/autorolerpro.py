@@ -93,8 +93,7 @@ class AutoRolerPro(commands.Cog):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
         games = [string.capwords(game) for game in arg.split(',')]
         for game in games:
-            clean_name = game.lower()
-            AddGame(clean_name)
+            AddGame(game)
 
         await ctx.reply(f"Thanks for the contribution! Added {', '.join(games)} to the list of games!")
 
