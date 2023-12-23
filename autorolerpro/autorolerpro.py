@@ -125,8 +125,8 @@ class AutoRolerPro(commands.Cog):
 
                 # Add the game if there's a match
                 if len(matches) > 0:
-                    AddGame(game)
-                    new_games.append(game)
+                    AddGame(matches[0])
+                    new_games.append(matches[0])
                 else:
                     failed_to_find.append(game)
         
