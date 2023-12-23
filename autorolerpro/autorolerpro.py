@@ -136,25 +136,25 @@ class AutoRolerPro(commands.Cog):
         db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
         results = db_json.json()
 
-        results = sorted(results, key=itemgetter('rating'), reverse=True)
+        # results = sorted(results, key=itemgetter('rating'), reverse=True)
         game_names = [details['name'] for details in results]
 
         matches = difflib.get_close_matches(arg, game_names, 3)
 
-        await ctx.reply(f"3 closest game matches:\n{', '.join(matches)}")
+        # await ctx.reply(f"3 closest game matches:\n{', '.join(matches)}")
 
+        if len(results) > 0:
+            reply = "## Here are the results!\n"
+            for details in results:
+                try:
+                    if details['name'] in matches:
+                        reply += f"  *({round(details['rating'], 2)}) {details['name']}* - {details['published_at']}\n"
+                except:
+                    reply += str(details)
 
-        # if len(results) > 0:
-        #     reply = "## Here are the results!\n"
-        #     for details in results:
-        #         try:
-        #             reply += f"  *({round(details['rating'], 2)}) {details['name']}*\n"
-        #         except:
-        #             reply += str(details)
-
-        #     await ctx.reply(reply)
-        # else:
-        #     await ctx.reply(f"Sorry! No results found for {arg}.")
+            await ctx.reply(reply)
+        else:
+            await ctx.reply(f"Sorry! No results found for {arg}.")
 
     @client.event
     async def on_member_update(self, previous, current):
