@@ -135,7 +135,7 @@ class AutoRolerPro(commands.Cog):
         db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,description,aggregated_rating; limit 50;'}) #where description != null; where aggregated_rating != null;
         results = db_json.json()
 
-        results = results.sort(key=itemgetter('aggregated_rating'), reverse = True)
+        # results = results.sort(key=itemgetter('aggregated_rating'), reverse = True)
         print(str(results))
 
         if len(results) > 0:
