@@ -150,7 +150,7 @@ class AutoRolerPro(commands.Cog):
             for details in results:
                 try:
                     if details['name'] in matches:
-                        reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')})\n"
+                        reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](<https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')}>)\n"
                 except:
                     reply += str(details)
 
