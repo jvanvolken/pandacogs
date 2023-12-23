@@ -139,10 +139,10 @@ class AutoRolerPro(commands.Cog):
         print(str(results))
 
         if len(results) > 0:
-            reply = "**Here are the results!**\n"
+            reply = "## Here are the results!\n"
             for details in results:
                 try:
-                    reply += f"**({round(float(details['rating']), 2)}) {details['name']}**\n  *{details['summary']}*\n"
+                    reply += f"**({round(float(details['rating']), 2)}) {details['name']}**\n  *{details['summary']}*\n\n"
                 except:
                     reply += str(details)
 
