@@ -138,6 +138,7 @@ class AutoRolerPro(commands.Cog):
             reply = "**Here are the results!**\n"
             for details in results:
                 try:
+                    print(str(details))
                     reply += f"{str(details)}"
                 except:
                     reply += str(details)
