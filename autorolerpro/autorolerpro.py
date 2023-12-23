@@ -147,7 +147,7 @@ class AutoRolerPro(commands.Cog):
             for details in results:
                 try:
                     if details['name'] in matches:
-                        reply += f"  *({round(details['rating'], 2)}) {details['name']}* - {datetime.utcfromtimestamp(details['published_at']).strftime('%Y')}\n"
+                        reply += f"  *({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})\n"
                 except:
                     reply += str(details)
 
