@@ -83,7 +83,7 @@ class GameListView(discord.ui.View):
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
         def __init__(self, ctx, game, list_type):
-            super().__init__(label = game, style=discord.ButtonStyle.primary, emoji = "😎")
+            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = "😎")
             self.ctx = ctx
             self.game = game
             self.list_type = list_type
@@ -145,7 +145,7 @@ class AutoRolerPro(commands.Cog):
                     release_year = datetime.utcfromtimestamp(game['first_release_date']).strftime('%Y')
                     if release_year > latest_year:
                         latest_game = game
-                else:
+                elif game['name'] in matches:
                     latest_game = game
 
             
