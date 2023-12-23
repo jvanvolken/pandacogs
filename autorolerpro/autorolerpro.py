@@ -132,8 +132,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        # db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating; limit 3; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
-        db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,game; limit 3;'}) #where description != null; where aggregated_rating != null;
+        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating; limit 3; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
         results = db_json.json()
 
         #results = results.sort(key=itemgetter('rating'), reverse = True)
@@ -143,8 +142,7 @@ class AutoRolerPro(commands.Cog):
             reply = "## Here are the results!\n"
             for details in results:
                 try:
-                    # reply += f"__**({round(float(details['rating']), 2)}) {details['name']}**__\n*{details['summary']}*\n\n"
-                    reply += f"__**({round(float(details['game']['rating']), 2)}) {details['name']}**__\n*{details['game']['summary']}*\n\n"
+                    reply += f"__**({round(float(details['rating']), 2)}) {details['name']}**__\n*{details['summary']}*\n\n"
                 except:
                     reply += str(details)
 
