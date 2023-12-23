@@ -149,7 +149,7 @@ class AutoRolerPro(commands.Cog):
                     latest_game = game
 
             
-            if latest_game and latest_game in games:
+            if latest_game and latest_game['name'] in games:
                 already_exists.append(latest_game)
             elif latest_game: 
                 AddGame(latest_game)
