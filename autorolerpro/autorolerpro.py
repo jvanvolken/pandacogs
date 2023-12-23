@@ -137,11 +137,11 @@ class AutoRolerPro(commands.Cog):
 
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"You need to actually tell me what you want to add")
-        elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
+        elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"I don't recognize any of these games. Are you sure you know what you're talking about?")
-        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
+        elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ListType.Select, already_exists))
-        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
+        elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
