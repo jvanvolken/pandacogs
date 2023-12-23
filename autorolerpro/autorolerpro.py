@@ -1,4 +1,5 @@
 # Discord Bot Libraries
+import difflib
 import discord
 import json
 import os
@@ -132,12 +133,15 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating; limit 50; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
+        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
         results = db_json.json()
 
         results = sorted(results, key=itemgetter('rating'), reverse=True)
         game_names = [details['name'] for details in results]
-        await ctx.reply(f"Possible games:\n{', '.join(game_names)}")
+
+        matches = difflib.get_close_matches('Hello', game_names, 3)
+
+        await ctx.reply(f"3 closest game matches:\n{', '.join(matches)}")
 
 
         # if len(results) > 0:
