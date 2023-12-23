@@ -136,18 +136,21 @@ class AutoRolerPro(commands.Cog):
         results = db_json.json()
 
         results = sorted(results, key=itemgetter('rating'), reverse=True)
+        game_names = [details['name'] for details in results]
+        await ctx.reply(f"Possible games:\n{', '.join(game_names)}")
 
-        if len(results) > 0:
-            reply = "## Here are the results!\n"
-            for details in results:
-                try:
-                    reply += f"  *({round(details['rating'], 2)}) {details['name']}*\n"
-                except:
-                    reply += str(details)
 
-            await ctx.reply(reply)
-        else:
-            await ctx.reply(f"Sorry! No results found for {arg}.")
+        # if len(results) > 0:
+        #     reply = "## Here are the results!\n"
+        #     for details in results:
+        #         try:
+        #             reply += f"  *({round(details['rating'], 2)}) {details['name']}*\n"
+        #         except:
+        #             reply += str(details)
+
+        #     await ctx.reply(reply)
+        # else:
+        #     await ctx.reply(f"Sorry! No results found for {arg}.")
 
     @client.event
     async def on_member_update(self, previous, current):
