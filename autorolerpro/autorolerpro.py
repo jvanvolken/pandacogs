@@ -139,7 +139,7 @@ class AutoRolerPro(commands.Cog):
         results = sorted(results, key=itemgetter('rating'), reverse=True)
         game_names = [details['name'] for details in results]
 
-        matches = difflib.get_close_matches('Hello', game_names, 3)
+        matches = difflib.get_close_matches(arg, game_names, 3)
 
         await ctx.reply(f"3 closest game matches:\n{', '.join(matches)}")
 
