@@ -104,14 +104,14 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
-        new_games = [string.capwords(game) for game in arg.split(',')]
+        all_games = [string.capwords(game) for game in arg.split(',')]
 
         already_exists = []
         failed_to_find = []
-        for game in new_games.copy():
+        new_games      = []
+        for game in all_games:
             if game in games:
                 already_exists.append(game)
-                new_games.remove(game)
             else:   
                 # Get games with the provided name
                 db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
@@ -126,9 +126,9 @@ class AutoRolerPro(commands.Cog):
                 # Add the game if there's a match
                 if len(matches) > 0:
                     AddGame(game)
+                    new_games.append(game)
                 else:
                     failed_to_find.append(game)
-                    new_games.remove(game)
         
         # for game in already_exists:
         #     new_games.remove(game)
