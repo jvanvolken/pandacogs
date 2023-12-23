@@ -138,16 +138,19 @@ class AutoRolerPro(commands.Cog):
         results = db_json.json()
 
         if len(results) > 0:
-            # results = sorted(results, key=itemgetter('rating'), reverse=True)
+            # Sort the results by rating
+            results = sorted(results, key=itemgetter('rating'), reverse=True)
+
+            # Get the result names and get the top 3 matches
             game_names = [details['name'] for details in results]
             matches = difflib.get_close_matches(arg, game_names, 3)
 
-            # await ctx.reply(f"3 closest game matches:\n{', '.join(matches)}")
+            # Construct the reply
             reply = "## Here are the results!\n"
             for details in results:
                 try:
                     if details['name'] in matches:
-                        reply += f"  *({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})\n"
+                        reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')})\n"
                 except:
                     reply += str(details)
 
