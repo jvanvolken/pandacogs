@@ -63,27 +63,29 @@ def RemoveGame(game):
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
-    def __init__(self, list_type, game_list):
+    def __init__(self, ctx, list_type, game_list):
         super().__init__()
         self.list_type = list_type
         self.game_list = game_list
+        self.ctx = ctx
 
         for game in self.game_list:
-            self.add_item(self.GameButton(game, self.list_type))
+            self.add_item(self.GameButton(game, self.ctx, self.list_type))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, name, list_type):
+        def __init__(self, ctx, name, list_type):
             super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
             self.name = name
             self.list_type = list_type
+            self.ctx = ctx
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
                 await interaction.response.send_message(f"You have selected {self.name}!")
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.name)
-                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove, games))
+                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(self.ctx, ListType.Remove, games))
                 await interaction.followup.send(f"I have removed {self.name} from the list!")
 
 
@@ -97,7 +99,7 @@ class AutoRolerPro(commands.Cog):
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
         if len(games) > 0:
-            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ListType.Select, games)) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ctx, ListType.Select, games)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
@@ -129,49 +131,37 @@ class AutoRolerPro(commands.Cog):
                     new_games.append(matches[0])
                 else:
                     failed_to_find.append(game)
-        
-        # for game in already_exists:
-        #     new_games.remove(game)
-        # for game in failed_to_find:
-        #     new_games.remove(game)
 
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"You need to actually tell me what you want to add")
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"I don't recognize any of these games. Are you sure you know what you're talking about?")
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ListType.Select, already_exists))
+            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, already_exists))
+            await ctx.reply(f"Thanks for the contribution! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! But I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! But I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
 
-        # if len(already_exists) > 0:
-        #     if len(new_games) > 0:
-        #         await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Select, new_games + already_exists))
-        #     else:
-        #         await ctx.reply(f"Thanks for the contribution! But I already have these!", view = GameListView(ListType.Select, already_exists))
-        # else:
-        #     await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
         if len(games) > 0:
-            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ListType.Remove, games)) # Send a message with our View class that contains the button
+            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ctx, ListType.Remove, games)) # Send a message with our View class that contains the button
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
+        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
         if len(results) > 0:
