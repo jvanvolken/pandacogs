@@ -105,23 +105,60 @@ class AutoRolerPro(commands.Cog):
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
         new_games = [string.capwords(game) for game in arg.split(',')]
+
         already_exists = []
-        for game in new_games:
+        failed_to_find = []
+        for game in new_games.copy():
             if game in games:
                 already_exists.append(game)
+                new_games.remove(game)
             else:   
-                AddGame(game)
-        
-        for game in already_exists:
-            new_games.remove(game)
+                # Get games with the provided name
+                db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
+                results = db_json.json()
 
-        if len(already_exists) > 0:
-            if len(new_games) > 0:
-                await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Select, new_games + already_exists))
-            else:
-                await ctx.reply(f"Thanks for the contribution! But I already have these!", view = GameListView(ListType.Select, already_exists))
-        else:
-            await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
+                # Get the result names and get the top 3 matches
+                game_names = [details['name'] for details in results]
+
+                # Get the top match for the provided name
+                matches = difflib.get_close_matches(game, game_names, 1)
+
+                # Add the game if there's a match
+                if len(matches) > 0:
+                    AddGame(game)
+                else:
+                    failed_to_find.append(game)
+                    new_games.remove(game)
+        
+        # for game in already_exists:
+        #     new_games.remove(game)
+        # for game in failed_to_find:
+        #     new_games.remove(game)
+
+        if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
+            await ctx.reply(f"You need to actually tell me what you want to add")
+        elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
+            await ctx.reply(f"I don't recognize any of these games. Are you sure you know what you're talking about?")
+        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
+            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ListType.Select, already_exists))
+        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
+            await ctx.reply(f"Thanks for the contribution! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, already_exists))
+        elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
+        elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! But I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, new_games))
+        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Select, new_games + already_exists))
+        elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
+            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ListType.Select, new_games + already_exists))
+
+        # if len(already_exists) > 0:
+        #     if len(new_games) > 0:
+        #         await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ListType.Select, new_games + already_exists))
+        #     else:
+        #         await ctx.reply(f"Thanks for the contribution! But I already have these!", view = GameListView(ListType.Select, already_exists))
+        # else:
+        #     await ctx.reply(f"Thanks for the contribution! Added {', '.join(new_games)} to the list of games!", view = GameListView(ListType.Select, new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
