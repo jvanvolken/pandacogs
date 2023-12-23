@@ -131,19 +131,14 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        db_json = post('https://api.igdb.com/v4/search', **{'headers' : db_header, 'data' : f'search "{arg}"; fields id,name; limit 50;'})
+        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields *; limit 10;'})
         results = db_json.json()
 
         if len(results) > 0:
             reply = "**Here are the results!**\n"
             for details in results:
                 try:
-                    db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'fields *; where id = {details["id"]}; where rating != null; where description != null;'})
-                    results = db_json.json()
-                    try:
-                        reply += f"  **({results[0]['rating']}) {results[0]['name']}**\n  *{results[0]['description']}*\n"
-                    except:
-                        reply += str(results)
+                    reply += f"{str(details)}"
                 except:
                     reply += str(details)
 
