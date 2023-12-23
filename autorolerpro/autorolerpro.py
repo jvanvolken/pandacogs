@@ -141,7 +141,7 @@ class AutoRolerPro(commands.Cog):
             reply = "## Here are the results!\n"
             for details in results:
                 try:
-                    reply += f"  *({round(details['rating'], 2)}) {details['name']}*\n\n"
+                    reply += f"  *({round(details['rating'], 2)}) {details['name']}*\n"
                 except:
                     reply += str(details)
 
