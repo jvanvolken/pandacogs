@@ -4,6 +4,7 @@ import discord
 import json
 import os
 import string
+from discord.utils import get
 from operator import itemgetter
 from redbot.core import commands
 from requests import post
@@ -20,7 +21,7 @@ client = discord.Client(intents = intents)
 
 # Cog Directory in Appdata
 docker_cog_path = "/data/cogs/AutoRoler"
-games_list_file = f"{docker_cog_path}/games.txt"
+games_list_file = f"{docker_cog_path}/games.json"
 
 # Instantiates IGDB wrapper
 # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
@@ -42,24 +43,31 @@ if os.path.isfile(games_list_file):
     with open(games_list_file, "r") as fp:
         games = json.load(fp)
 else:
-    games = []
+    games = {}
     with open(games_list_file, "w") as fp:
         json.dump(games, fp)
 
 # Adds game to games list and saves to file
 def AddGame(game):
-    games.append(game)
+    games[game['name']] = game
     with open(games_list_file, "w") as fp:
         json.dump(games, fp)
 
 # Removes game to games list and saves to file
 def RemoveGame(game):
     if game in games:
-        games.remove(game)
+        del games[game['name']]
         with open(games_list_file, "w") as fp:
             json.dump(games, fp)
     else:
-        print(f"Failed to remove game. Could not find {game} in list.")
+        print(f"Failed to remove game. Could not find {game['name']} in list.")
+
+# Returns a string list of game names
+def GetNames(game_list):
+    names = []
+    for game in game_list:
+        names.append(game['name'])
+    return (', '.join(names))
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -74,19 +82,27 @@ class GameListView(discord.ui.View):
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, ctx, name, list_type):
-            super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
+        def __init__(self, ctx, game, list_type):
+            super().__init__(label = game, style=discord.ButtonStyle.primary, emoji = "😎")
             self.ctx = ctx
-            self.name = name
+            self.game = game
             self.list_type = list_type
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                await interaction.response.send_message(f"You have selected {self.name}!")
+                await interaction.response.send_message(f"You have selected {self.game['name']}!")
+                if get(self.ctx.guild.roles, name=self.game['name']):
+                    await self.ctx.send(f"The {self.game['name']} role already exists!")
+                # else:                            
+                    # Get games with the provided name
+                    # db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated == false; where game == {results[0]["cover"]}'})
+                    # results = db_json.json()
+                    # await self.ctx.guild.create_role(name=self.game, colour=discord.Colour(0x0062ff))
+
             elif self.list_type is ListType.Remove:
-                RemoveGame(self.name)
+                RemoveGame(self.game)
                 await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(self.ctx, ListType.Remove, games))
-                await interaction.followup.send(f"I have removed {self.name} from the list!")
+                await interaction.followup.send(f"I have removed {self.game['name']} from the list!")
 
 
 class AutoRolerPro(commands.Cog):
@@ -112,25 +128,34 @@ class AutoRolerPro(commands.Cog):
         failed_to_find = []
         new_games      = []
         for game in all_games:
-            if game in games:
-                already_exists.append(game)
-            else:   
-                # Get games with the provided name
-                db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'}) #where description != null; where aggregated_rating != null;
-                results = db_json.json()
+            # Get games with the provided name
+            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+            results = db_json.json()
 
-                # Get the result names and get the top 3 matches
-                game_names = [details['name'] for details in results]
+            # Collect the game names
+            game_names = [details['name'] for details in results]
 
-                # Get the top match for the provided name
-                matches = difflib.get_close_matches(game, game_names, 1)
+            # Get the top match for the provided name
+            matches = difflib.get_close_matches(game, game_names, 1)
 
-                # Add the game if there's a match
-                if len(matches) > 0:
-                    AddGame(matches[0])
-                    new_games.append(matches[0])
+            latest_game = None
+            for game in results:
+                if latest_game and game['name'] in matches:
+                    latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
+                    release_year = datetime.utcfromtimestamp(game['first_release_date']).strftime('%Y')
+                    if release_year > latest_year:
+                        latest_game = game
                 else:
-                    failed_to_find.append(game)
+                    latest_game = game
+
+            
+            if latest_game and latest_game in games:
+                already_exists.append(latest_game)
+            elif latest_game: 
+                AddGame(latest_game)
+                new_games.append(latest_game)
+            else:
+                failed_to_find.append({'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'})
 
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"You need to actually tell me what you want to add")
@@ -139,15 +164,15 @@ class AutoRolerPro(commands.Cog):
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, already_exists))
+            await ctx.reply(f"Thanks for the contribution! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! But I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {', '.join(new_games)} to the list of games! I already have {', '.join(already_exists)}, but I don't recognize {', '.join(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
 
 
     @commands.command()
