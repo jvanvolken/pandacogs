@@ -151,7 +151,7 @@ class AutoRolerPro(commands.Cog):
                 except:
                     reply += str(details)
 
-            await ctx.reply(reply)
+            await ctx.reply(reply[:2000])
         else:
             await ctx.reply(f"Sorry! No results found for {arg}.")
 
