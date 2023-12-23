@@ -65,20 +65,20 @@ def RemoveGame(game):
 class GameListView(discord.ui.View):
     def __init__(self, ctx, list_type, game_list):
         super().__init__()
+        self.ctx = ctx
         self.list_type = list_type
         self.game_list = game_list
-        self.ctx = ctx
 
         for game in self.game_list:
-            self.add_item(self.GameButton(game, self.ctx, self.list_type))
+            self.add_item(self.GameButton(self.ctx, game, self.list_type))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
         def __init__(self, ctx, name, list_type):
             super().__init__(label = name, style=discord.ButtonStyle.primary, emoji = "😎")
+            self.ctx = ctx
             self.name = name
             self.list_type = list_type
-            self.ctx = ctx
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
