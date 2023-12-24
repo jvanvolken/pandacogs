@@ -79,7 +79,8 @@ def GetImages(game_list):
     for game in game_list.values():
         # names.append(f"[{game['name']}]({game['cover_url']})")
         response = requests.get(game['cover_url'])
-        images.append(Image.open(BytesIO(response.content)))
+        img = Image.open(BytesIO(response.content))
+        images.append(discord.File(img))
 
     return images
 
