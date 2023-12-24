@@ -154,6 +154,14 @@ class GameListView(discord.ui.View):
             super().__init__(label = game['name'], style = button_style, emoji = emoji)
 
         async def callback(self, interaction):
+            if self.ctx.message.author != interaction.user:
+                extra_comment = ""
+                if self.list_type is ListType.Select:
+                    extra_comment = "Please use !list_games to interact!"
+                    
+                await interaction.response.send_message(f"You're not {self.ctx.message.author.mention}! Who are you?\n*{extra_comment}*")
+                return
+            
             if self.list_type is ListType.Select:
                 # Looks for the role with the same name as the game
                 if self.role:
@@ -174,7 +182,6 @@ class GameListView(discord.ui.View):
                         await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
-
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
