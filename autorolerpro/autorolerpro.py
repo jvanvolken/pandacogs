@@ -121,8 +121,10 @@ class GameListView(discord.ui.View):
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, ctx, game, list_type):
-            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = "😎")
+        async def __init__(self, ctx, game, list_type):
+            # emoji = await ctx.guild.fetch_emoji(game['name'].lower())
+
+            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = ":)")
             self.ctx = ctx
             self.game = game
             self.list_type = list_type
@@ -146,7 +148,6 @@ class GameListView(discord.ui.View):
                 await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(self.ctx, ListType.Remove, games))
                 await interaction.followup.send(f"I have removed {self.game['name']} from the list!")
 
-
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
 
@@ -158,7 +159,7 @@ class AutoRolerPro(commands.Cog):
         """Lists the collected game roles for the server."""
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
-            await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ctx, ListType.Select, games)) # Send a message with our View class that contains the button
+            await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, games))
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
@@ -282,6 +283,14 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(reply[:2000])
         else:
             await ctx.reply(f"Sorry! No results found for {arg}.")
+
+    @commands.command()
+    async def test_emojis(self, ctx, *, arg):
+        emojis = ctx.guild.emojis
+
+        matches = difflib.get_close_matches(arg, emojis.name, 3)
+        
+        await ctx.reply(f"Here are the 3 closest emojis!{', '.join(matches)}.")
 
 
     @client.event
