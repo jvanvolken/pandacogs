@@ -127,10 +127,16 @@ class GameListView(discord.ui.View):
                     url = f"https:{results[0]['url']}"
                     url = url.replace("t_thumb", "t_cover_big")
                     
-                    await interaction.response.send_message(f"[{self.game['name']}]({url})")
-                    await interaction.followup.send(f"Dominent color: {GetDominantColor(url)}")
+                    # Create the Role and give it the dominant color of the cover art
+                    await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(f"0x{GetDominantColor(url)}"))
 
-                    await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
+                    # Assign role to member
+                    member = interaction.user
+                    role = get(member.server.roles, name=self.game['name'])
+                    await self.ctx.guild.add_roles(member, role)
+
+                    # Inform the user that the role is create and assigned to them
+                    await interaction.response.send_message(f"Could not find a [{self.game['name']}]({url}) role. I've gone ahead and created @{self.game['name']} and added you to it!")
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
