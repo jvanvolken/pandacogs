@@ -96,7 +96,7 @@ def GetDominantColor(image_url, palette_size=16):
     palette_index = color_counts[0][1]
     dominant_color = palette[palette_index*3:palette_index*3+3]
 
-    return dominant_color
+    return ('#%02x%02x%02x' % tuple(dominant_color))
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -129,7 +129,8 @@ class GameListView(discord.ui.View):
                     
                     await interaction.response.send_message(f"[{self.game['name']}]({url})")
                     await interaction.followup.send(f"Dominent color: {GetDominantColor(url)}")
-                    # await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
+
+                    await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
