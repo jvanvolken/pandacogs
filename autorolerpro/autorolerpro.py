@@ -238,16 +238,16 @@ class AutoRolerPro(commands.Cog):
                             view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games!", 
-                            view = GameListView(ctx, ListType.Select, new_games), files = GetImages(new_games))
+                            view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", 
-                            view = GameListView(ctx, ListType.Select, new_games), files = GetImages(new_games))
+                            view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", 
-                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = GetImages(new_games))
+                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
-                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = GetImages(new_games))
+                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = await GetImages(new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
