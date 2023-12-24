@@ -94,7 +94,7 @@ class GameListView(discord.ui.View):
                 if get(self.ctx.guild.roles, name=self.game['name']):
                     await self.ctx.send(f"Added you to the {self.game['name']} role!")
                 else:                            
-                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = "false"; where game = {self.game["cover"]};'})
+                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["cover"]};'})
                     results = db_json.json()
                     print(results)
                     await self.ctx.send(f"{results[0]['url']}")
