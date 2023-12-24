@@ -1,5 +1,6 @@
 # Discord Bot Libraries
 import difflib
+import io
 import discord
 import json
 import os
@@ -80,8 +81,13 @@ async def GetImages(game_list):
 
         filename = f"{game['name']}_cover"
         filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ').rstrip()
-        
-        images.append(discord.File(await discord.Attachment.to_file(img), filename))
+
+        with io.BytesIO() as image_binary:
+            img.save(image_binary, 'PNG')
+            image_binary.seek(0)
+            images.append(discord.File(fp=image_binary, filename=filename))
+
+        # images.append(discord.File(await discord.Attachment.to_file(img), filename))
 
     return images
 
