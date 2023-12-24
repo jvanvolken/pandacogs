@@ -74,6 +74,13 @@ def GetNames(game_list):
         names.append(game['name'])
     return (', '.join(names))
 
+# Returns a string list of game names
+def GetLinks(game_list):
+    names = []
+    for game in game_list.values():
+        names.append(f"[{game['name']}]({game['cover_url']})")
+    return (', '.join(names))
+
 # Returns the dominant color of an image
 def GetDominantColor(image_url, palette_size=16):
     # urllib3.request.urlretrieve(image_url, temp_cover_image) 
@@ -127,24 +134,24 @@ class GameListView(discord.ui.View):
 
                     # Informs the user that the role has been assigned to them
                     await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
-                else:
-                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
-                    results = db_json.json()
+                # else:
+                    # db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
+                    # results = db_json.json()
 
-                    # Gets and formats the cover URL
-                    url = f"https:{results[0]['url']}"
-                    url = url.replace("t_thumb", "t_cover_big")
+                    # # Gets and formats the cover URL
+                    # url = f"https:{results[0]['url']}"
+                    # url = url.replace("t_thumb", "t_cover_big")
                     
-                    # Create the Role and give it the dominant color of the cover art
-                    color = GetDominantColor(url)
-                    role = await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(int(color, 16)), mentionable=True)
+                    # # Create the Role and give it the dominant color of the cover art
+                    # color = GetDominantColor(url)
+                    # role = await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(int(color, 16)), mentionable=True)
 
-                    # Assign role to member
-                    member = interaction.user
-                    await member.add_roles(role)
+                    # # Assign role to member
+                    # member = interaction.user
+                    # await member.add_roles(role)
 
-                    # Inform the user that the role is create and assigned to them
-                    await interaction.response.send_message(f"Could not find a [{self.game['name']}]({url}) role. I've gone ahead and created {role.mention} and added you to it!")
+                    # # Inform the user that the role is create and assigned to them
+                    # await interaction.response.send_message(f"Could not find a [{self.game['name']}]({url}) role. I've gone ahead and created {role.mention} and added you to it!")
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
@@ -199,8 +206,21 @@ class AutoRolerPro(commands.Cog):
             if latest_game and latest_game['name'] in games:
                 already_exists[latest_game['name']] = latest_game
             elif latest_game: 
-                AddGame(latest_game)
                 new_games[latest_game['name']] = latest_game
+                AddGame(latest_game)
+
+                db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+                results = db_json.json()
+
+                # Gets and formats the cover URL
+                url = f"https:{results[0]['url']}"
+                url = url.replace("t_thumb", "t_cover_big")
+
+                latest_game['cover_url'] = url
+                
+                # Create the Role and give it the dominant color of the cover art
+                color = GetDominantColor(url)
+                await ctx.guild.create_role(name=latest_game['name'], colour=discord.Colour(int(color, 16)), mentionable=True)
             else:
                 failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
 
@@ -213,13 +233,13 @@ class AutoRolerPro(commands.Cog):
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! I already have {GetNames(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
 
 
     @commands.command()
