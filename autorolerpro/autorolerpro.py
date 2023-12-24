@@ -121,10 +121,24 @@ class GameListView(discord.ui.View):
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        async def __init__(self, ctx, game, list_type):
-            # emoji = await ctx.guild.fetch_emoji(game['name'].lower())
+        def __init__(self, ctx, game, list_type):
+            # Get all server emojis
+            emojis = ctx.guild.emojis
 
-            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = ":)")
+            # Get the closest matching emoji to game name
+            emoji_names = [emoji.name for emoji in emojis]
+            match = difflib.get_close_matches(game['name'].lower(), emoji_names, 1)
+
+            # Return the actual emoji from name
+            emoji = None
+            if match:
+                for option in emojis:
+                    if option.name == match[0]:
+                        emoji = option
+                        break
+            
+            # Setup buttom
+            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = emoji)
             self.ctx = ctx
             self.game = game
             self.list_type = list_type
@@ -284,21 +298,21 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply(f"Sorry! No results found for {arg}.")
 
-    @commands.command()
-    async def test_emojis(self, ctx, *, arg):
-        emojis = ctx.guild.emojis
+    # @commands.command()
+    # async def test_emojis(self, ctx, *, arg):
+    #     emojis = ctx.guild.emojis
 
-        emoji_names = [emoji.name for emoji in emojis]
-        match = difflib.get_close_matches(arg, emoji_names, 1)
+    #     emoji_names = [emoji.name for emoji in emojis]
+    #     match = difflib.get_close_matches(arg, emoji_names, 1)
 
-        emoji = None
-        if match:
-            for option in emojis:
-                if option.name == match[0]:
-                    emoji = option
-                    break
+    #     emoji = None
+    #     if match:
+    #         for option in emojis:
+    #             if option.name == match[0]:
+    #                 emoji = option
+    #                 break
         
-        await ctx.reply(f"Here is the closest emoji! {emoji}.")
+    #     await ctx.reply(f"Here is the closest emoji! {emoji}.")
 
 
     @client.event
