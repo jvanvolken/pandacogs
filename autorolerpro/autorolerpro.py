@@ -203,7 +203,7 @@ class AutoRolerPro(commands.Cog):
             game_count = 0
             for game in games:
                 idx = math.floor(game_count/25)
-                if message_sets[idx]:
+                if idx < len(message_sets):
                     message_sets[idx][game['name']] = game
                 else:
                     message_sets.append({})
