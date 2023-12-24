@@ -1,16 +1,20 @@
 # Discord Bot Libraries
 import difflib
+from io import BytesIO
 import discord
 import json
 import os
 import string
-from discord.utils import get
+from PIL import Image
 from operator import itemgetter
 from redbot.core import commands
 from requests import post
+from requests import get
 from datetime import datetime
 
 from enum import Enum
+
+import urllib3
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True)
@@ -20,8 +24,9 @@ intents.members = True
 client = discord.Client(intents = intents)
 
 # Cog Directory in Appdata
-docker_cog_path = "/data/cogs/AutoRoler"
-games_list_file = f"{docker_cog_path}/games.json"
+docker_cog_path  = "/data/cogs/AutoRoler"
+games_list_file  = f"{docker_cog_path}/games.json"
+temp_cover_image = f"{docker_cog_path}/temp_cover.png"
 
 # Instantiates IGDB wrapper
 # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
@@ -69,6 +74,30 @@ def GetNames(game_list):
         names.append(game['name'])
     return (', '.join(names))
 
+# Returns the dominant color of an image
+def GetDominantColor(image_url, palette_size=16):
+    # urllib3.request.urlretrieve(image_url, temp_cover_image) 
+  
+    # img = Image.open(temp_cover_image) 
+
+    response = get(image_url)
+    img = Image.open(BytesIO(response.content))
+
+    # Resize image to speed up processing
+    img = img.copy()
+    img.thumbnail((100, 100))
+
+    # Reduce colors (uses k-means internally)
+    paletted = img.convert('P', palette=Image.ADAPTIVE, colors=palette_size)
+
+    # Find the color that occurs most often
+    palette = paletted.getpalette()
+    color_counts = sorted(paletted.getcolors(), reverse=True)
+    palette_index = color_counts[0][1]
+    dominant_color = palette[palette_index*3:palette_index*3+3]
+
+    return dominant_color
+
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, ctx, list_type, game_list):
@@ -90,15 +119,16 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                if get(self.ctx.guild.roles, name=self.game['name']):
+                if discord.get(self.ctx.guild.roles, name=self.game['name']):
                     await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
                 else:                            
                     db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
                     results = db_json.json()
                     url = f"https:{results[0]['url']}"
                     url = url.replace("t_thumb", "t_cover_big")
-
+                    
                     await interaction.response.send_message(f"[{self.game['name']}]({url})")
+                    await interaction.followup.send(f"Dominent color: {GetDominantColor(url)}")
                     # await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
 
             elif self.list_type is ListType.Remove:
