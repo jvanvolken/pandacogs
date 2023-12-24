@@ -10,10 +10,7 @@ from io import BytesIO
 from operator import itemgetter
 from redbot.core import commands
 from datetime import datetime
-
 from enum import Enum
-
-import urllib3
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True)
@@ -80,7 +77,11 @@ async def GetImages(game_list):
         # names.append(f"[{game['name']}]({game['cover_url']})")
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
-        images.append(discord.File(await discord.Attachment.to_file(img)))
+
+        filename = f"{game['name']}_cover"
+        filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ').rstrip()
+        
+        images.append(discord.File(await discord.Attachment.to_file(img), filename))
 
     return images
 
@@ -94,7 +95,7 @@ def GetDominantColor(image_url, palette_size=16):
     img.thumbnail((100, 100))
 
     # Reduce colors (uses k-means internally)
-    paletted = img.convert('P', palette=Image.ADAPTIVE, colors=palette_size)
+    paletted = img.convert('P', palette=Image.Palette.ADAPTIVE, colors=palette_size)
 
     # Find the color that occurs most often
     palette = paletted.getpalette()
