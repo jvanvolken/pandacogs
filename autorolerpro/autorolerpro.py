@@ -65,7 +65,7 @@ def RemoveGame(game):
 # Returns a string list of game names
 def GetNames(game_list):
     names = []
-    for game in game_list:
+    for game in game_list.values():
         names.append(game['name'])
     return (', '.join(names))
 
