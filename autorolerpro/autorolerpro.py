@@ -241,6 +241,7 @@ class AutoRolerPro(commands.Cog):
                 color = GetDominantColor(url)
                 
                 role = discord.utils.get(ctx.guild.roles, name = latest_game['name'])
+                await ctx.reply(str(role))
                 if role:
                     await role.edit(colour = discord.Colour(int(color, 16)))
                 else:
