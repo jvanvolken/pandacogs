@@ -55,7 +55,7 @@ def AddGame(game):
 
 # Removes game to games list and saves to file
 def RemoveGame(game):
-    if game in games:
+    if game['name'] in games:
         del games[game['name']]
         with open(games_list_file, "w") as fp:
             json.dump(games, fp)
