@@ -119,7 +119,7 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                if discord.get(self.ctx.guild.roles, name=self.game['name']):
+                if discord.utils.get(self.ctx.guild.roles, name=self.game['name']):
                     await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
                 else:                            
                     db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
