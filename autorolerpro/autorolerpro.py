@@ -294,11 +294,11 @@ class AutoRolerPro(commands.Cog):
         emoji = None
         if match:
             for option in emojis:
-                if option.name == match:
+                if option.name == match[0]:
                     emoji = option
                     break
         
-        await ctx.reply(f"Here are the 3 closest emojis! {emoji}.")
+        await ctx.reply(f"Here is the closest emoji! {emoji}.")
 
 
     @client.event
