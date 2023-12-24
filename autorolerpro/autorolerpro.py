@@ -8,7 +8,7 @@ import string
 import requests
 from PIL import Image
 from io import BytesIO
-from operator import itemgetter
+# from operator import itemgetter
 from redbot.core import commands
 from datetime import datetime
 from enum import Enum
@@ -198,15 +198,21 @@ class AutoRolerPro(commands.Cog):
         """Lists the collected game roles for the server."""
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
-            await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, games))
+            game_count = 0
+            while game_count < len(games):
+                if game_count == 0:
+                    await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, games[game_count:game_count+25]))
+                else:
+                    await ctx.reply(view = GameListView(ctx, ListType.Select, games[game_count:game_count+25]))
+                game_count += 25
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
     async def add_games(self, ctx, *, arg):
-        """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
+        """Manually adds a game or a set of games (max 25) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_25"""
         # Splits the provided arg into a list of games
-        all_games = [string.capwords(game) for game in arg.split(',')]
+        all_games = [string.capwords(game) for game in arg.split(',')][:25]
 
         already_exists = {}
         failed_to_find = {}
@@ -295,34 +301,6 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
-    @commands.command()
-    async def search_game(self, ctx, *, arg):
-        """Searches IGDB for a matching game."""
-        # Returns a list of games that fit the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
-        results = db_json.json()
-
-        if len(results) > 0:
-            # Sort the results by rating
-            results = sorted(results, key=itemgetter('rating'), reverse=True)
-
-            # Get the result names and get the top 3 matches
-            game_names = [details['name'] for details in results]
-            matches = difflib.get_close_matches(arg, game_names, 3)
-
-            # Construct the reply
-            reply = "## Here are the results!\n"
-            for details in results:
-                try:
-                    if details['name'] in matches:
-                        reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](<https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')}>)\n"
-                except:
-                    reply += str(details)
-
-            await ctx.reply(reply[:2000])
-        else:
-            await ctx.reply(f"Sorry! No results found for {arg}.")
-
     @client.event
     async def on_member_update(self, previous, current):
         # Get important information about the context of the command
@@ -334,3 +312,31 @@ class AutoRolerPro(commands.Cog):
             await channel.send(f"{member_name} started playing {current.activity.name}!")
         elif previous.activity and previous.activity.name.lower() in GetNames(games) and not current.activity:
             await channel.send(f"{member_name} stopped playing {current.activity.name}!")
+
+    # @commands.command()
+    # async def search_game(self, ctx, *, arg):
+    #     """Searches IGDB for a matching game."""
+    #     # Returns a list of games that fit the provided name
+    #     db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+    #     results = db_json.json()
+
+    #     if len(results) > 0:
+    #         # Sort the results by rating
+    #         results = sorted(results, key=itemgetter('rating'), reverse=True)
+
+    #         # Get the result names and get the top 3 matches
+    #         game_names = [details['name'] for details in results]
+    #         matches = difflib.get_close_matches(arg, game_names, 3)
+
+    #         # Construct the reply
+    #         reply = "## Here are the results!\n"
+    #         for details in results:
+    #             try:
+    #                 if details['name'] in matches:
+    #                     reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](<https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')}>)\n"
+    #             except:
+    #                 reply += str(details)
+
+    #         await ctx.reply(reply[:2000])
+    #     else:
+    #         await ctx.reply(f"Sorry! No results found for {arg}.")
