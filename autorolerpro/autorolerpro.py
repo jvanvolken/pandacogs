@@ -94,7 +94,7 @@ class GameListView(discord.ui.View):
                 if get(self.ctx.guild.roles, name=self.game['name']):
                     await self.ctx.send(f"Added you to the {self.game['name']} role!")
                 else:                            
-                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["version_parent"]};'})
+                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
                     results = db_json.json()
                     print(results)
                     await self.ctx.send(f"{results[0]['url']}")
@@ -130,7 +130,7 @@ class AutoRolerPro(commands.Cog):
         new_games      = {}
         for game in all_games:
             # Get games with the provided name
-            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date,version_parent; limit 500; where summary != null; where rating != null;'})
+            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
             results = db_json.json()
 
             # Collect the game names
