@@ -138,25 +138,9 @@ class GameListView(discord.ui.View):
                     await member.add_roles(role)
 
                     # Informs the user that the role has been assigned to them
-                    await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
-                # else:
-                    # db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
-                    # results = db_json.json()
-
-                    # # Gets and formats the cover URL
-                    # url = f"https:{results[0]['url']}"
-                    # url = url.replace("t_thumb", "t_cover_big")
-                    
-                    # # Create the Role and give it the dominant color of the cover art
-                    # color = GetDominantColor(url)
-                    # role = await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(int(color, 16)), mentionable=True)
-
-                    # # Assign role to member
-                    # member = interaction.user
-                    # await member.add_roles(role)
-
-                    # # Inform the user that the role is create and assigned to them
-                    # await interaction.response.send_message(f"Could not find a [{self.game['name']}]({url}) role. I've gone ahead and created {role.mention} and added you to it!")
+                    await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
+                else:
+                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
