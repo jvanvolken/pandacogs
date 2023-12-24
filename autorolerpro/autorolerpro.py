@@ -96,7 +96,7 @@ def GetDominantColor(image_url, palette_size=16):
     palette_index = color_counts[0][1]
     dominant_color = palette[palette_index*3:palette_index*3+3]
 
-    return ('#%02X%02X%02X' % tuple(dominant_color))
+    return ('%02X%02X%02X' % tuple(dominant_color))
 
  # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -128,7 +128,8 @@ class GameListView(discord.ui.View):
                     url = url.replace("t_thumb", "t_cover_big")
                     
                     # Create the Role and give it the dominant color of the cover art
-                    await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(f"0x{GetDominantColor(url)}"))
+                    color = GetDominantColor(url)
+                    await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(hex(int(color, 16))))
 
                     # Assign role to member
                     member = interaction.user
