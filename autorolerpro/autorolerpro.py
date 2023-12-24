@@ -117,11 +117,11 @@ class GameListView(discord.ui.View):
         self.game_list = game_list
 
         for game in self.game_list.values():
-            self.add_item(self.GameButton(self.ctx, game, self.list_type))
+            self.add_item(self.GameButton(self.ctx, game, self.list_type, self.game_list))
     
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, ctx, game, list_type):
+        def __init__(self, ctx, game, list_type, game_list):
             # Get all server emojis
             emojis = ctx.guild.emojis
 
@@ -141,6 +141,7 @@ class GameListView(discord.ui.View):
             self.ctx = ctx
             self.game = game
             self.list_type = list_type
+            self.game_list = game_list
             self.role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
 
             # Check if message author has the role and change button color accordingly
@@ -172,7 +173,7 @@ class GameListView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
 
-                await interaction.followup.edit_message(view = GameListView(self.ctx, ListType.Remove, games))
+                await self.ctx.edit_message(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
