@@ -186,14 +186,14 @@ class AutoRolerPro(commands.Cog):
             matches = difflib.get_close_matches(game, game_names, 1)
 
             latest_game = None
-            for game in results:
-                if latest_game and game['name'] in matches:
+            for game_details in results:
+                if latest_game and game_details['name'] in matches:
                     latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
-                    release_year = datetime.utcfromtimestamp(game['first_release_date']).strftime('%Y')
+                    release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
                     if release_year > latest_year:
-                        latest_game = game
-                elif game['name'] in matches:
-                    latest_game = game
+                        latest_game = game_details
+                elif game_details['name'] in matches:
+                    latest_game = game_details
 
             
             if latest_game and latest_game['name'] in games:
