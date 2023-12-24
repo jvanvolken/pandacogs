@@ -75,7 +75,6 @@ def GetNames(game_list):
 async def GetImages(game_list):
     images = []
     for game in game_list.values():
-        # names.append(f"[{game['name']}]({game['cover_url']})")
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
@@ -96,7 +95,6 @@ def GetDominantColor(image_url, palette_size=16):
     img = Image.open(BytesIO(response.content))
 
     # Resize image to speed up processing
-    # img = img.copy()
     img.thumbnail((100, 100))
 
     # Reduce colors (uses k-means internally)
@@ -131,6 +129,7 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
+                # Looks for the role with the same name as the game
                 role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
                 if role:
                     # Assign role to member
@@ -157,6 +156,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
+        # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             await ctx.reply("Please select the games that you're interested in playing!", view = GameListView(ctx, ListType.Select, games)) # Send a message with our View class that contains the button
         else:
@@ -200,13 +200,15 @@ class AutoRolerPro(commands.Cog):
                 new_games[latest_game['name']] = latest_game
                 AddGame(latest_game)
 
+                # Request the cover image urls
                 db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
                 results = db_json.json()
 
-                # Gets and formats the cover URL
+                # Formats the cover URL
                 url = f"https:{results[0]['url']}"
                 url = url.replace("t_thumb", "t_cover_big")
 
+                # Stores the formatted URL in the latest game dictionary
                 latest_game['cover_url'] = url
                 
                 # Create the Role and give it the dominant color of the cover art
@@ -242,6 +244,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
+        # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ctx, ListType.Remove, games)) # Send a message with our View class that contains the button
         else:
@@ -250,6 +253,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
+        # Returns a list of games that fit the provided name
         db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
