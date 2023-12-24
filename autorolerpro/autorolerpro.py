@@ -83,7 +83,6 @@ class GameListView(discord.ui.View):
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
         def __init__(self, ctx, game, list_type):
-            print(game)
             super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = "😎")
             self.ctx = ctx
             self.game = game
@@ -91,14 +90,15 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                await interaction.response.send_message(f"You have selected {self.game['name']}!")
+                # await interaction.response.send_message(f"You have selected {self.game['name']}!")
                 if get(self.ctx.guild.roles, name=self.game['name']):
-                    await self.ctx.send(f"The {self.game['name']} role already exists!")
-                # else:                            
-                    # Get games with the provided name
-                    # db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated == false; where game == {results[0]["cover"]}'})
-                    # results = db_json.json()
-                    # await self.ctx.guild.create_role(name=self.game, colour=discord.Colour(0x0062ff))
+                    await self.ctx.send(f"Added you to the {self.game['name']} role!")
+                else:                            
+                    db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated == false; where game == {self.game["cover"]}'})
+                    results = db_json.json()
+                    print(results)
+                    await self.ctx.send(f"{results[0]['url']}")
+                    # await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
