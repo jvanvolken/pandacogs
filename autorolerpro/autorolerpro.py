@@ -287,13 +287,13 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def test_emojis(self, ctx, *, arg):
         emojis = ctx.guild.emojis
-        await ctx.reply(str(emojis[0].name)[:2000])
+        # await ctx.reply(str(emojis[0].name)[:2000])
 
-        # emoji_names = [emoji['name'] for emoji in emojis]
+        emoji_names = [emoji.name for emoji in emojis]
 
-        # matches = difflib.get_close_matches(arg, emoji_names, 3)
+        matches = difflib.get_close_matches(arg, emoji_names, 3)
         
-        # await ctx.reply(f"Here are the 3 closest emojis!{', '.join(matches)}.")
+        await ctx.reply(f"Here are the 3 closest emojis!{', '.join(matches)}.")
 
 
     @client.event
