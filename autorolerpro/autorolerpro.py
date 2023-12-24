@@ -159,7 +159,7 @@ class GameListView(discord.ui.View):
                 if self.list_type is ListType.Select:
                     extra_comment = "Please use !list_games to interact!"
                     
-                await interaction.response.send_message(f"You're not {self.ctx.message.author.mention}! Who are you?\n*{extra_comment}*")
+                await interaction.response.send_message(f"You're not {self.ctx.message.author.mention}! Who are you?\n*{extra_comment}*", ephemeral = True)
                 return
             
             if self.list_type is ListType.Select:
@@ -171,7 +171,7 @@ class GameListView(discord.ui.View):
                         await member.remove_roles(self.role)
                         await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
-                        await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!")
+                        await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!", ephemeral = True)
                     else:
                         # Assign role to member
                         member = interaction.user
@@ -179,14 +179,14 @@ class GameListView(discord.ui.View):
                         await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
                         # Informs the user that the role has been assigned to them
-                        await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
+                        await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!", ephemeral = True)
                 else:
-                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
+                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}", ephemeral = True)
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
-                await interaction.response.edit_message(content = "Please select the game(s) you'd like to remove...", view = GameListView(self.ctx, ListType.Remove, games))
-                await interaction.followup.send(f"I have removed {self.game['name']} from the list!")
+                await interaction.message.edit(view = GameListView(self.ctx, ListType.Remove, games))
+                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True)
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
