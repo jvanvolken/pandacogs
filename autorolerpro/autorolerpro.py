@@ -1,15 +1,14 @@
 # Discord Bot Libraries
 import difflib
-from io import BytesIO
 import discord
 import json
 import os
 import string
+import requests
 from PIL import Image
+from io import BytesIO
 from operator import itemgetter
 from redbot.core import commands
-from requests import post
-from requests import get
 from datetime import datetime
 
 from enum import Enum
@@ -75,23 +74,22 @@ def GetNames(game_list):
     return (', '.join(names))
 
 # Returns a string list of game names
-def GetLinks(game_list):
-    names = []
+def GetImages(game_list):
+    images = []
     for game in game_list.values():
-        names.append(f"[{game['name']}]({game['cover_url']})")
-    return (', '.join(names))
+        # names.append(f"[{game['name']}]({game['cover_url']})")
+        response = requests.get(game['cover_url'])
+        images.append(Image.open(BytesIO(response.content)))
+
+    return images
 
 # Returns the dominant color of an image
 def GetDominantColor(image_url, palette_size=16):
-    # urllib3.request.urlretrieve(image_url, temp_cover_image) 
-  
-    # img = Image.open(temp_cover_image) 
-
-    response = get(image_url)
+    response = requests.get(image_url)
     img = Image.open(BytesIO(response.content))
 
     # Resize image to speed up processing
-    img = img.copy()
+    # img = img.copy()
     img.thumbnail((100, 100))
 
     # Reduce colors (uses k-means internally)
@@ -176,6 +174,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
+        # Splits the provided arg into a list of games
         all_games = [string.capwords(game) for game in arg.split(',')]
 
         already_exists = {}
@@ -183,7 +182,7 @@ class AutoRolerPro(commands.Cog):
         new_games      = {}
         for game in all_games:
             # Get games with the provided name
-            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
             results = db_json.json()
 
             # Collect the game names
@@ -192,6 +191,7 @@ class AutoRolerPro(commands.Cog):
             # Get the top match for the provided name
             matches = difflib.get_close_matches(game, game_names, 1)
 
+            # Compares the list of games to the matches, from there sort by release year
             latest_game = None
             for game_details in results:
                 if latest_game and game_details['name'] in matches:
@@ -202,14 +202,14 @@ class AutoRolerPro(commands.Cog):
                 elif game_details['name'] in matches:
                     latest_game = game_details
 
-            
+            # Sort the games by alreadying existing, new games, and failed to find
             if latest_game and latest_game['name'] in games:
                 already_exists[latest_game['name']] = latest_game
             elif latest_game: 
                 new_games[latest_game['name']] = latest_game
                 AddGame(latest_game)
 
-                db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+                db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
                 results = db_json.json()
 
                 # Gets and formats the cover URL
@@ -224,23 +224,29 @@ class AutoRolerPro(commands.Cog):
             else:
                 failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
 
+        # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"You need to actually tell me what you want to add")
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"I don't recognize any of these games. Are you sure you know what you're talking about?")
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", view = GameListView(ctx, ListType.Select, already_exists))
+            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", 
+                            view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, already_exists))
+            await ctx.reply(f"Thanks for the contribution! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
+                            view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games!", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games!", 
+                            view = GameListView(ctx, ListType.Select, new_games), files = GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", 
+                            view = GameListView(ctx, ListType.Select, new_games), files = GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! I already have {GetNames(already_exists)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", 
+                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetLinks(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", view = GameListView(ctx, ListType.Select, new_games + already_exists))
-
+            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
+                            view = GameListView(ctx, ListType.Select, new_games + already_exists), files = GetImages(new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
@@ -253,7 +259,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def search_game(self, ctx, *, arg):
         """Searches IGDB for a matching game."""
-        db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
         if len(results) > 0:
