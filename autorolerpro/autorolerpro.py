@@ -287,8 +287,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def test_emojis(self, ctx, *, arg):
         emojis = ctx.guild.emojis
-        print(emojis)
-        await ctx.reply(str(emojis)[:2000])
+        await ctx.reply(str(emojis[0])[:2000])
 
         # emoji_names = [emoji['name'] for emoji in emojis]
 
