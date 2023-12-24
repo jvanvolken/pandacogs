@@ -90,16 +90,15 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                # await interaction.response.send_message(f"You have selected {self.game['name']}!")
                 if get(self.ctx.guild.roles, name=self.game['name']):
-                    await self.ctx.send(f"Added you to the {self.game['name']} role!")
+                    await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
                 else:                            
                     db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
                     results = db_json.json()
                     url = f"https:{results[0]['url']}"
                     url = url.replace("t_thumb", "t_cover_big")
 
-                    await self.ctx.send(f"[{self.game['name']}]({url})")
+                    await interaction.response.send_message(f"[{self.game['name']}]({url})")
                     # await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
 
             elif self.list_type is ListType.Remove:
