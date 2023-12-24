@@ -79,15 +79,14 @@ async def GetImages(game_list):
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
-        filename = f"{game['name']}_cover.png"
-        filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ' or c == "_").rstrip()
+        # Construct safe filename from game name
+        filename = "".join(c for c in game['name'] if c.isalpha() or c.isdigit() or c == ' ').rstrip()
 
+        # Convert PIL image to a useable binary image
         with io.BytesIO() as image_binary:
             img.save(image_binary, 'PNG')
             image_binary.seek(0)
-            images.append(discord.File(fp=image_binary, filename=filename))
-
-        # images.append(discord.File(await discord.Attachment.to_file(img), filename))
+            images.append(discord.File(fp=image_binary, filename=f"{filename}_cover.png"))
 
     return images
 
