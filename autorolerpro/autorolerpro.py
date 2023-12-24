@@ -119,11 +119,19 @@ class GameListView(discord.ui.View):
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
-                if discord.utils.get(self.ctx.guild.roles, name=self.game['name']):
+                role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
+                if role:
+                    # Assign role to member
+                    member = interaction.user
+                    await member.add_roles(role)
+
+                    # Informs the user that the role has been assigned to them
                     await interaction.response.send_message(f"Added you to the {self.game['name']} role!")
-                else:                            
+                else:
                     db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
                     results = db_json.json()
+
+                    # Gets and formats the cover URL
                     url = f"https:{results[0]['url']}"
                     url = url.replace("t_thumb", "t_cover_big")
                     
@@ -133,7 +141,7 @@ class GameListView(discord.ui.View):
 
                     # Assign role to member
                     member = interaction.user
-                    await self.ctx.guild.add_roles(member, role)
+                    await member.add_roles(role)
 
                     # Inform the user that the role is create and assigned to them
                     await interaction.response.send_message(f"Could not find a [{self.game['name']}]({url}) role. I've gone ahead and created {role.mention} and added you to it!")
