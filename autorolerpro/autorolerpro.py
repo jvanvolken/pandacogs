@@ -74,13 +74,13 @@ def GetNames(game_list):
     return (', '.join(names))
 
 # Returns a string list of game names
-def GetImages(game_list):
+async def GetImages(game_list):
     images = []
     for game in game_list.values():
         # names.append(f"[{game['name']}]({game['cover_url']})")
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
-        images.append(discord.File(discord.Attachment.to_file(img)))
+        images.append(discord.File(await discord.Attachment.to_file(img)))
 
     return images
 
