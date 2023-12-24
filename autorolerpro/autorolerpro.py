@@ -83,6 +83,7 @@ class GameListView(discord.ui.View):
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
         def __init__(self, ctx, game, list_type):
+            print(game)
             super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = "😎")
             self.ctx = ctx
             self.game = game
