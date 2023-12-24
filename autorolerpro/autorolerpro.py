@@ -161,19 +161,20 @@ class GameListView(discord.ui.View):
                         # Assign role to member
                         member = interaction.user
                         await member.remove_roles(self.role)
+                        await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
                         await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!")
                     else:
                         # Assign role to member
                         member = interaction.user
                         await member.add_roles(self.role)
+                        await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
                         # Informs the user that the role has been assigned to them
                         await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
 
-                await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
