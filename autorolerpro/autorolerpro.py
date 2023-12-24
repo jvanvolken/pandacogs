@@ -1,6 +1,7 @@
 # Discord Bot Libraries
 import difflib
 import io
+import math
 import discord
 import json
 import os
@@ -198,13 +199,20 @@ class AutoRolerPro(commands.Cog):
         """Lists the collected game roles for the server."""
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
+
+            message_sets = []
             game_count = 0
-            while game_count < len(games):
+            for game in games:
+                message_sets[math.floor(game_count/25)][game['name']] = game
+                game_count += 1
+
+            set_count = 0
+            while set_count < len(message_sets):
                 if game_count == 0:
-                    await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, games[game_count:game_count+25]))
+                    await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, message_sets[set_count]))
                 else:
-                    await ctx.reply(view = GameListView(ctx, ListType.Select, games[game_count:game_count+25]))
-                game_count += 25
+                    await ctx.reply(view = GameListView(ctx, ListType.Select, message_sets[set_count]))
+                game_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
