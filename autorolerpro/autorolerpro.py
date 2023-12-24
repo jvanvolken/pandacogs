@@ -173,7 +173,7 @@ class GameListView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
 
-                await self.ctx.edit_message(view = GameListView(self.ctx, ListType.Select, self.game_list))
+                await self.ctx.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
