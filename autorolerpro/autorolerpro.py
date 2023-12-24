@@ -130,7 +130,7 @@ class AutoRolerPro(commands.Cog):
         new_games      = {}
         for game in all_games:
             # Get games with the provided name
-            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+            db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date,cover; limit 500; where summary != null; where rating != null;'})
             results = db_json.json()
 
             # Collect the game names
