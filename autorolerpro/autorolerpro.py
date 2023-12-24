@@ -80,7 +80,7 @@ async def GetImages(game_list):
         img = Image.open(BytesIO(response.content))
 
         filename = f"{game['name']}_cover.png"
-        filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ').rstrip()
+        filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ' or c == "_").rstrip()
 
         with io.BytesIO() as image_binary:
             img.save(image_binary, 'PNG')
