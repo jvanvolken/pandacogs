@@ -69,7 +69,7 @@ def GetNames(game_list):
     names = []
     for game in game_list.values():
         names.append(game['name'])
-    return (', '.join(names))
+    return f"`{'`, `'.join(names)}`"
 
 # Returns a string list of game names
 async def GetImages(game_list):
