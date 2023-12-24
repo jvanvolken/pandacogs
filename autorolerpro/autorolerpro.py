@@ -97,7 +97,7 @@ class GameListView(discord.ui.View):
                     db_json = post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {self.game["id"]};'})
                     results = db_json.json()
                     url = f"https:{results[0]['url']}"
-                    url.replace("t_thumb", "t_cover_big")
+                    url = url.replace("t_thumb", "t_cover_big")
 
                     await self.ctx.send(f"[{self.game['name']}]({url})")
                     # await self.ctx.guild.create_role(name=self.game['name'], colour=discord.Colour(0x0062ff))
