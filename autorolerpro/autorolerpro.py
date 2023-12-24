@@ -137,23 +137,34 @@ class GameListView(discord.ui.View):
                         emoji = option
                         break
             
-            # Setup buttom
-            super().__init__(label = game['name'], style=discord.ButtonStyle.primary, emoji = emoji)
+            # Set object variables
             self.ctx = ctx
             self.game = game
             self.list_type = list_type
+            self.role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
+
+            # Check if message author has the role and change button color accordingly
+            if self.role in self.ctx.message.author.roles:
+                button_style = discord.ButtonStyle.primary
+            else:
+                button_style = discord.ButtonStyle.success
+
+            # Setup buttom
+            super().__init__(label = game['name'], style = button_style, emoji = emoji)
 
         async def callback(self, interaction):
             if self.list_type is ListType.Select:
                 # Looks for the role with the same name as the game
-                role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
-                if role:
-                    # Assign role to member
-                    member = interaction.user
-                    await member.add_roles(role)
+                if self.role:
+                    if self.role in self.ctx.message.author.roles:
+                        await interaction.response.send_message(f"You already have the `{self.game['name']}` role!")
+                    else:
+                        # Assign role to member
+                        member = interaction.user
+                        await member.add_roles(self.role)
 
-                    # Informs the user that the role has been assigned to them
-                    await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
+                        # Informs the user that the role has been assigned to them
+                        await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!")
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}")
 
