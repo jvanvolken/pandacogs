@@ -264,26 +264,26 @@ class AutoRolerPro(commands.Cog):
 
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"You need to actually tell me what you want to add")
+            await ctx.reply(f"{ctx.message.author.mention}, you need to actually tell me what you want to add")
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"I don't recognize any of these games. Are you sure you know what you're talking about?")
+            await ctx.reply(f"I don't recognize any of these games, {ctx.message.author.mention}. Are you sure you know what you're talking about?")
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"I already have all of these recorded! How about you do a little research before asking questions.", 
+            await ctx.reply(f"I already have all of these recorded! {ctx.message.author.mention}, how about you do a little more research before asking questions.", 
                             view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
+            await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
                             view = GameListView(ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games!", 
+            await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!", 
                             view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", 
+            await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.", 
                             view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", 
+            await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.", 
                             view = GameListView(ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"Thanks for the contribution! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
+            await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
                             view = GameListView(ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
 
     @commands.command()
@@ -329,11 +329,8 @@ class AutoRolerPro(commands.Cog):
         channel = current.get_channel(665572348350693406)
         member_name = current.display_name.encode().decode('ascii','ignore')
 
-        # role = discord.utils.get(current.guild.roles, name="Gamer")
-        games = ["overwatch", "rocket league", "minecraft"]
-
         # When somebody starts or stops playing a game
-        if current.activity and current.activity.name.lower() in games:
+        if current.activity and current.activity.name.lower() in GetNames(games):
             await channel.send(f"{member_name} started playing {current.activity.name}!")
-        elif previous.activity and previous.activity.name.lower() in games and not current.activity:
+        elif previous.activity and previous.activity.name.lower() in GetNames(games) and not current.activity:
             await channel.send(f"{member_name} stopped playing {current.activity.name}!")
