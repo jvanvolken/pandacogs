@@ -77,7 +77,7 @@ class GameListView(discord.ui.View):
         self.list_type = list_type
         self.game_list = game_list
 
-        for game in self.game_list:
+        for game in self.game_list.values():
             self.add_item(self.GameButton(self.ctx, game, self.list_type))
     
     # Create a class called GameButton that subclasses discord.ui.Button
@@ -125,9 +125,9 @@ class AutoRolerPro(commands.Cog):
         """Manually adds a game or a set of games to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_n"""
         all_games = [string.capwords(game) for game in arg.split(',')]
 
-        already_exists = []
-        failed_to_find = []
-        new_games      = []
+        already_exists = {}
+        failed_to_find = {}
+        new_games      = {}
         for game in all_games:
             # Get games with the provided name
             db_json = post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
@@ -151,12 +151,12 @@ class AutoRolerPro(commands.Cog):
 
             
             if latest_game and latest_game['name'] in games:
-                already_exists.append(latest_game)
+                already_exists[latest_game['name']] = latest_game
             elif latest_game: 
                 AddGame(latest_game)
-                new_games.append(latest_game)
+                new_games[latest_game['name']] = latest_game
             else:
-                failed_to_find.append({'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'})
+                failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
 
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"You need to actually tell me what you want to add")
