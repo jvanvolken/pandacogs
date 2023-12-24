@@ -200,20 +200,24 @@ class AutoRolerPro(commands.Cog):
                 new_games[latest_game['name']] = latest_game
                 AddGame(latest_game)
 
-                if not discord.utils.get(ctx.guild.roles, name = latest_game['name']):
-                    # Request the cover image urls
-                    db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
-                    results = db_json.json()
+                # Request the cover image urls
+                db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+                results = db_json.json()
 
-                    # Formats the cover URL
-                    url = f"https:{results[0]['url']}"
-                    url = url.replace("t_thumb", "t_cover_big")
+                # Formats the cover URL
+                url = f"https:{results[0]['url']}"
+                url = url.replace("t_thumb", "t_cover_big")
 
-                    # Stores the formatted URL in the latest game dictionary
-                    latest_game['cover_url'] = url
-                    
-                    # Create the Role and give it the dominant color of the cover art
-                    color = GetDominantColor(url)
+                # Stores the formatted URL in the latest game dictionary
+                latest_game['cover_url'] = url
+                
+                # Create the Role and give it the dominant color of the cover art
+                color = GetDominantColor(url)
+                
+                role = discord.utils.get(ctx.guild.roles, name = latest_game['name'])
+                if role:
+                    await role.edit(colour = discord.Colour(int(color, 16)))
+                else:
                     await ctx.guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
             else:
                 failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
