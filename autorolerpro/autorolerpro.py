@@ -79,7 +79,7 @@ async def GetImages(game_list):
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
-        filename = f"{game['name']}_cover"
+        filename = f"{game['name']}_cover.png"
         filename = "".join(c for c in filename if c.isalpha() or c.isdigit() or c == ' ').rstrip()
 
         with io.BytesIO() as image_binary:
