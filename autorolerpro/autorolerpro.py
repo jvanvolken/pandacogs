@@ -145,9 +145,9 @@ class GameListView(discord.ui.View):
 
             # Check if message author has the role and change button color accordingly
             if self.role in self.ctx.message.author.roles:
-                button_style = discord.ButtonStyle.primary
-            else:
                 button_style = discord.ButtonStyle.success
+            else:
+                button_style = discord.ButtonStyle.primary
 
             # Setup buttom
             super().__init__(label = game['name'], style = button_style, emoji = emoji)
@@ -157,7 +157,11 @@ class GameListView(discord.ui.View):
                 # Looks for the role with the same name as the game
                 if self.role:
                     if self.role in self.ctx.message.author.roles:
-                        await interaction.response.send_message(f"You already have the `{self.game['name']}` role!")
+                        # Assign role to member
+                        member = interaction.user
+                        await member.remove_roles(self.role)
+
+                        await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!")
                     else:
                         # Assign role to member
                         member = interaction.user
@@ -241,7 +245,6 @@ class AutoRolerPro(commands.Cog):
                 color = GetDominantColor(url)
                 
                 role = discord.utils.get(ctx.guild.roles, name = latest_game['name'])
-                await ctx.reply(str(role))
                 if role:
                     await role.edit(colour = discord.Colour(int(color, 16)))
                 else:
