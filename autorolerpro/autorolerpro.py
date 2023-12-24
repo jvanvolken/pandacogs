@@ -148,7 +148,7 @@ class GameListView(discord.ui.View):
             if self.role in self.ctx.message.author.roles:
                 button_style = discord.ButtonStyle.success
             else:
-                button_style = discord.ButtonStyle.primary
+                button_style = discord.ButtonStyle.secondary
 
             # Setup buttom
             super().__init__(label = game['name'], style = button_style, emoji = emoji)
@@ -182,7 +182,6 @@ class GameListView(discord.ui.View):
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -315,23 +314,6 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(reply[:2000])
         else:
             await ctx.reply(f"Sorry! No results found for {arg}.")
-
-    # @commands.command()
-    # async def test_emojis(self, ctx, *, arg):
-    #     emojis = ctx.guild.emojis
-
-    #     emoji_names = [emoji.name for emoji in emojis]
-    #     match = difflib.get_close_matches(arg, emoji_names, 1)
-
-    #     emoji = None
-    #     if match:
-    #         for option in emojis:
-    #             if option.name == match[0]:
-    #                 emoji = option
-    #                 break
-        
-    #     await ctx.reply(f"Here is the closest emoji! {emoji}.")
-
 
     @client.event
     async def on_member_update(self, previous, current):
