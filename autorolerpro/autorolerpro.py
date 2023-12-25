@@ -210,9 +210,8 @@ class AutoRolerPro(commands.Cog):
 
     @client.event
     async def on_presence_update(self, previous, current):
-        raise Exception("Landed in the function")
         # Get important information about the context of the command
-        channel = current.get_channel(665572348350693406)
+        channel = current.guild.get_channel(665572348350693406)
         member_name = current.display_name.encode().decode('ascii','ignore')
         
         await channel.send(f"{member_name} started playing {current.activity.name}!")
