@@ -224,6 +224,9 @@ class AutoRolerPro(commands.Cog):
                 await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
             elif current.activity:
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+                dm_channel = await current.create_dm()
+                await dm_channel.send(f"Hey! I'm from the Pavilion Horde server and I noticed you were playing {current.activity.name} but don't have the role assigned! Would you like me to add you to it?")
+
 
             # elif previous.activity and previous.activity.name.lower() in (name.lower() for name in names) and previous.activity != current.activity:
             #     await channel.send(f"{member_name} stopped playing {current.activity.name}!")
