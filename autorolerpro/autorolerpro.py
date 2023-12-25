@@ -215,15 +215,18 @@ class AutoRolerPro(commands.Cog):
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
 
-            names = []
-            for game in games.values():
-                names.append(game['name'])
+            # names = []
+            # for game in games.values():
+            #     names.append(game['name'])
 
-            # When somebody starts or stops playing a game
-            if current.activity and current.activity.name.lower() in (name.lower() for name in names):
-                await channel.send(f"{member_name} started playing {current.activity.name}!")
-            elif previous.activity and previous.activity.name.lower() in (name.lower() for name in names) and previous.activity != current.activity:
-                await channel.send(f"{member_name} stopped playing {current.activity.name}!")
+            # When somebody starts playing a game and if they are part of the role
+            if current.activity and current.activity.name.lower() in (name.lower() for name in current.roles):
+                await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
+            elif current.activity:
+                await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+
+            # elif previous.activity and previous.activity.name.lower() in (name.lower() for name in names) and previous.activity != current.activity:
+            #     await channel.send(f"{member_name} stopped playing {current.activity.name}!")
             
     @commands.command()
     async def list_games(self, ctx):
