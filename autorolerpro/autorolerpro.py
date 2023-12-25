@@ -122,7 +122,7 @@ def GetDominantColor(image_url, palette_size=16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
- # Create a class called GameListView that subclasses discord.ui.View
+# Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, ctx, list_type, game_list):
         super().__init__()
@@ -210,7 +210,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
-        if not current.bot:
+        if not current.bot and current.display_name == "SadPanda":
             # Get important information about the context of the command
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
