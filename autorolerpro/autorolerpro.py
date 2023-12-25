@@ -311,16 +311,15 @@ class AutoRolerPro(commands.Cog):
                     if len(new_games) > 0:
                         await channel.send(f"I've added the `{current.activity.name}` role because {member_name} starting playing it!", files = await GetImages(new_games))
                         
-                else:
-                    # When somebody starts playing a game and if they are part of the role
-                    if current.activity.name.lower() in (role.name.lower() for role in current.roles):
-                        await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
-                    elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
-                        await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
-                        dm_channel = await current.create_dm()
-                        view = DirectMessageView()
-                        view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
-                        view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
+                # When somebody starts playing a game and if they are part of the role
+                if current.activity.name.lower() in (role.name.lower() for role in current.roles):
+                    await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
+                elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
+                    await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+                    dm_channel = await current.create_dm()
+                    view = DirectMessageView()
+                    view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                    view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
             
     @commands.command()
     async def list_games(self, ctx):
