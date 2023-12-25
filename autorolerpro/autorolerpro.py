@@ -182,8 +182,10 @@ async def AddGames(server, game_list):
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, original_message):
         super().__init__(timeout=10)
+
+        self.original_message = original_message
 
         self.add_item(self.YesButton(self.original_message))
         self.add_item(self.NoButton(self.original_message))
@@ -339,11 +341,13 @@ class AutoRolerPro(commands.Cog):
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
                 dm_channel = await current.create_dm()
 
+                # Setup original message
+                original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                
                 # Populate view and send direct message
-                view = DirectMessageView()
+                view = DirectMessageView(original_message)
                 view.role = discord.utils.get(current.guild.roles, name = current.activity.name)
-                view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
-                view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
+                view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
         
     @commands.command()
     async def list_games(self, ctx):
