@@ -19,20 +19,6 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 # Initializes client with intents
 client = discord.Client(intents = intents)
 
-@client.event
-async def on_presence_update(self, previous, current):
-    # Get important information about the context of the command
-    channel = current.get_channel(665572348350693406)
-    member_name = current.display_name.encode().decode('ascii','ignore')
-    
-    await channel.send(f"{member_name} started playing {current.activity.name}!")
-
-    # When somebody starts or stops playing a game
-    if current.activity and current.activity.name.lower() in GetNames(games):
-        await channel.send(f"{member_name} started playing {current.activity.name}!")
-    elif previous.activity and previous.activity.name.lower() in GetNames(games) and not current.activity:
-        await channel.send(f"{member_name} stopped playing {current.activity.name}!")
-
 # Cog Directory in Appdata
 docker_cog_path  = "/data/cogs/AutoRoler"
 games_list_file  = f"{docker_cog_path}/games.json"
@@ -222,6 +208,21 @@ class AutoRolerPro(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # @client.event
+    @commands.Cog.listener(name='on_presence_update')
+    async def on_presence_update(self, previous, current):
+        # Get important information about the context of the command
+        channel = current.get_channel(665572348350693406)
+        member_name = current.display_name.encode().decode('ascii','ignore')
+        
+        await channel.send(f"{member_name} started playing {current.activity.name}!")
+
+        # When somebody starts or stops playing a game
+        if current.activity and current.activity.name.lower() in GetNames(games):
+            await channel.send(f"{member_name} started playing {current.activity.name}!")
+        elif previous.activity and previous.activity.name.lower() in GetNames(games) and not current.activity:
+            await channel.send(f"{member_name} stopped playing {current.activity.name}!")
+            
     @commands.command()
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
