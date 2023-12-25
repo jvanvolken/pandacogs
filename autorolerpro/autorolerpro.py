@@ -90,6 +90,21 @@ async def GetImages(game_list):
 
     return images
 
+# Return a list of game sets containing a max of 25 games per set
+def GetGameSets(game_list):
+    message_sets = []
+    game_count = 0
+    for game in game_list.values():
+        idx = math.floor(game_count/25)
+        if idx < len(message_sets):
+            message_sets[idx][game['name']] = game
+        else:
+            message_sets.append({})
+            message_sets[idx][game['name']] = game
+        game_count += 1
+
+    return message_sets
+
 # Returns the dominant color of an image
 def GetDominantColor(image_url, palette_size=16):
     response = requests.get(image_url)
@@ -199,16 +214,7 @@ class AutoRolerPro(commands.Cog):
         """Lists the collected game roles for the server."""
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
-            message_sets = []
-            game_count = 0
-            for game in games.values():
-                idx = math.floor(game_count/25)
-                if idx < len(message_sets):
-                    message_sets[idx][game['name']] = game
-                else:
-                    message_sets.append({})
-                    message_sets[idx][game['name']] = game
-                game_count += 1
+            message_sets = GetGameSets(games)
 
             set_count = 0
             while set_count < len(message_sets):
@@ -309,7 +315,15 @@ class AutoRolerPro(commands.Cog):
         """Lists the collected games to select for removal."""
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
-            await ctx.reply("Please select the game(s) you'd like to remove...", view = GameListView(ctx, ListType.Remove, games)) # Send a message with our View class that contains the button
+            message_sets = GetGameSets(games)
+
+            set_count = 0
+            while set_count < len(message_sets):
+                if set_count == 0:
+                    await ctx.reply(f"Here you go, {ctx.message.author.mention}. Please select the game(s) you'd like to remove...", view = GameListView(ctx, ListType.Remove, message_sets[set_count])) 
+                else:
+                    await ctx.reply(view = GameListView(ctx, ListType.Remove, message_sets[set_count]))
+                set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
