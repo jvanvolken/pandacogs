@@ -182,20 +182,22 @@ async def AddGames(server, game_list):
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    def __init__(self, original_message):
-        super().__init__(timeout=10)
+    def __init__(self, original_message, role):
+        super().__init__(timeout = 60)
 
         self.original_message = original_message
+        self.role = role
 
-        self.add_item(self.YesButton(self.original_message))
-        self.add_item(self.NoButton(self.original_message))
-        self.add_item(self.OptOutButton(self.original_message))
+        self.add_item(self.YesButton(self.original_message, self.role))
+        self.add_item(self.NoButton(self.original_message, self.role))
+        self.add_item(self.OptOutButton(self.original_message, self.role))
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
-        def __init__(self, original_message):
+        def __init__(self, original_message, role):
             super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
             self.original_message = original_message
+            self.role = role
 
         async def callback(self, interaction):
             # Looks for the role with the same name as the game
@@ -209,21 +211,22 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Added you to the `{self.role.name}` role!")
             else:
                 await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
-
                              
     class NoButton(discord.ui.Button):
-        def __init__(self, original_message):
+        def __init__(self, original_message, role):
             super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
             self.original_message = original_message
+            self.role = role
 
         async def callback(self, interaction):
             await interaction.response.send_message(f"Aww... alright")
                              
     class OptOutButton(discord.ui.Button):
-        def __init__(self, original_message):
+        def __init__(self, original_message, role):
             super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
             self.original_message = original_message
-            
+            self.role = role
+
         async def callback(self, interaction):
             await interaction.response.send_message(f"I don't think I will!")
 
@@ -347,10 +350,10 @@ class AutoRolerPro(commands.Cog):
 
                 # Setup original message
                 original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                role = discord.utils.get(current.guild.roles, name = current.activity.name)
                 
                 # Populate view and send direct message
-                view = DirectMessageView(original_message)
-                view.role = discord.utils.get(current.guild.roles, name = current.activity.name)
+                view = DirectMessageView(original_message, role)
                 view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
         
     @commands.command()
