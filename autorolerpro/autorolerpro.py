@@ -14,7 +14,7 @@ from datetime import datetime
 from enum import Enum
 
 # Initializes intents
-intents = discord.Intents(messages=True, guilds=True, members = True)
+intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
 
 # Initializes client with intents
 client = discord.Client(intents = intents)
