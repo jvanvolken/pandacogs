@@ -125,7 +125,7 @@ def GetDominantColor(image_url, palette_size=16):
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=10)
 
         self.add_item(self.YesButton())
         self.add_item(self.NoButton())
@@ -150,6 +150,10 @@ class DirectMessageView(discord.ui.View):
         async def callback(self, interaction):
             await interaction.response.send_message(f"I don't think I will!")
 
+    async def on_timeout(self):
+        self.message.edit(view=None)
+    #     self.message
+        #view = None
 
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -254,8 +258,8 @@ class AutoRolerPro(commands.Cog):
             elif current.activity:
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
                 dm_channel = await current.create_dm()
-                await dm_channel.send(f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned! Would you like me to add you to it so you'll be notified when someone is looking for a friend?", 
-                                      view = DirectMessageView())
+                view = DirectMessageView()
+                view.message = await dm_channel.send(f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned! Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
             
     @commands.command()
     async def list_games(self, ctx):
