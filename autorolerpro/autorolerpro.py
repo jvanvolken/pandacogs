@@ -212,14 +212,18 @@ class DirectMessageView(discord.ui.View):
 
                              
     class NoButton(discord.ui.Button):
-        def __init__(self):
+        def __init__(self, original_message):
             super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
+            self.original_message = original_message
+
         async def callback(self, interaction):
             await interaction.response.send_message(f"Aww... alright")
                              
     class OptOutButton(discord.ui.Button):
-        def __init__(self):
+        def __init__(self, original_message):
             super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
+            self.original_message = original_message
+            
         async def callback(self, interaction):
             await interaction.response.send_message(f"I don't think I will!")
 
