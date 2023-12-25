@@ -24,6 +24,9 @@ docker_cog_path  = "/data/cogs/AutoRoler"
 games_list_file  = f"{docker_cog_path}/games.json"
 temp_cover_image = f"{docker_cog_path}/temp_cover.png"
 
+# Channel Links
+general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
+
 # Blacklist for member activities
 activity_blacklist = ["Spotify"]
 
@@ -202,15 +205,14 @@ class DirectMessageView(discord.ui.View):
             self.member = member
 
         async def callback(self, interaction):
-            # Looks for the role with the same name as the game
-            if self.role:
+            try:
                 # Assign role to member
                 await self.member.add_roles(self.role)
-                await interaction.message.edit(content = f"{self.original_message}")
 
-                # Informs the user that the role has been assigned to them
-                await interaction.response.send_message(f"Added you to the `{self.role.name}` role!")
-            else:
+                # Responds to the request
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
+                await interaction.response.send_message(f"Awesome! I've added you to the `{self.role.name}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
+            except:
                 await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
                              
     class NoButton(discord.ui.Button):
@@ -221,7 +223,11 @@ class DirectMessageView(discord.ui.View):
             self.member = member
 
         async def callback(self, interaction):
-            await interaction.response.send_message(f"Aww... alright")
+            try:
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
+            except:
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
                              
     class OptOutButton(discord.ui.Button):
         def __init__(self, original_message, role, member):
@@ -231,7 +237,11 @@ class DirectMessageView(discord.ui.View):
             self.member = member
 
         async def callback(self, interaction):
-            await interaction.response.send_message(f"I don't think I will!")
+            try:
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
+                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
+            except:
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
 
     async def on_timeout(self):
         await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view = None)
@@ -352,7 +362,7 @@ class AutoRolerPro(commands.Cog):
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                original_message = f"Hey, {member_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
                 role = discord.utils.get(current.guild.roles, name = current.activity.name)
                 
                 # Populate view and send direct message
