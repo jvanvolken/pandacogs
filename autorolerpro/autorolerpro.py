@@ -48,12 +48,6 @@ else:
     with open(games_list_file, "w") as fp:
         json.dump(games, fp)
 
-# Adds game to games list and saves to file
-def AddGame(game):
-    games[game['name']] = game
-    with open(games_list_file, "w") as fp:
-        json.dump(games, fp)
-
 # Removes game to games list and saves to file
 def RemoveGame(game):
     if game['name'] in games:
@@ -121,6 +115,67 @@ def GetDominantColor(image_url, palette_size=16):
     dominant_color = palette[palette_index*3:palette_index*3+3]
 
     return ('%02X%02X%02X' % tuple(dominant_color))
+
+async def AddGames(server, game_list):
+    new_games      = {}
+    already_exists = {}
+    failed_to_find = {}
+    for game in game_list:
+        # Get games with the provided name
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+        results = db_json.json()
+
+        # Collect the game names
+        game_names = [details['name'] for details in results]
+
+        # Get the top match for the provided name
+        matches = difflib.get_close_matches(game, game_names, 1)
+
+        # Compares the list of games to the matches, from there sort by release year
+        latest_game = None
+        for game_details in results:
+            if latest_game and game_details['name'] in matches:
+                latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
+                release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
+                if release_year > latest_year:
+                    latest_game = game_details
+            elif game_details['name'] in matches:
+                latest_game = game_details
+
+        # Sort the games by alreadying existing, new games, and failed to find
+        if latest_game and latest_game['name'] in games:
+            already_exists[latest_game['name']] = latest_game
+        elif latest_game: 
+            new_games[latest_game['name']] = latest_game
+
+            # Add game to database
+            games[latest_game['name']] = latest_game
+            with open(games_list_file, "w") as fp:
+                json.dump(games, fp)
+
+            # Request the cover image urls
+            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+            results = db_json.json()
+
+            # Formats the cover URL
+            url = f"https:{results[0]['url']}"
+            url = url.replace("t_thumb", "t_cover_big")
+
+            # Stores the formatted URL in the latest game dictionary
+            latest_game['cover_url'] = url
+            
+            # Create the Role and give it the dominant color of the cover art
+            color = GetDominantColor(url)
+            
+            role = discord.utils.get(server.roles, name = latest_game['name'])
+            if role:
+                await role.edit(colour = discord.Colour(int(color, 16)))
+            else:
+                await server.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+        else:
+            failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
+        
+    return new_games, already_exists, failed_to_find
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
@@ -246,19 +301,25 @@ class AutoRolerPro(commands.Cog):
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
 
-            # names = []
-            # for game in games.values():
-            #     names.append(game['name'])
+            if current.activity:
+                names = []
+                for game in games.values():
+                    names.append(game['name'])
 
-            # When somebody starts playing a game and if they are part of the role
-            if current.activity and current.activity.name.lower() in (role.name.lower() for role in current.roles):
-                await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
-            elif current.activity:
-                await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
-                dm_channel = await current.create_dm()
-                view = DirectMessageView()
-                view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
-                view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
+                if not current.activity.name in names:
+                    new_games, already_exists, failed_to_find = AddGames(current.guild, current.activity.name)
+                    if len(new_games) > 0:
+                        await channel.send(f"I've added the {current.activity.name} role because {member_name} starting playing it!")
+                else:
+                    # When somebody starts playing a game and if they are part of the role
+                    if current.activity.name.lower() in (role.name.lower() for role in current.roles):
+                        await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
+                    elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
+                        await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+                        dm_channel = await current.create_dm()
+                        view = DirectMessageView()
+                        view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                        view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
             
     @commands.command()
     async def list_games(self, ctx):
@@ -283,59 +344,7 @@ class AutoRolerPro(commands.Cog):
         # Splits the provided arg into a list of games
         all_games = [string.capwords(game) for game in arg.split(',')][:10]
 
-        already_exists = {}
-        failed_to_find = {}
-        new_games      = {}
-        for game in all_games:
-            # Get games with the provided name
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
-            results = db_json.json()
-
-            # Collect the game names
-            game_names = [details['name'] for details in results]
-
-            # Get the top match for the provided name
-            matches = difflib.get_close_matches(game, game_names, 1)
-
-            # Compares the list of games to the matches, from there sort by release year
-            latest_game = None
-            for game_details in results:
-                if latest_game and game_details['name'] in matches:
-                    latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
-                    release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
-                    if release_year > latest_year:
-                        latest_game = game_details
-                elif game_details['name'] in matches:
-                    latest_game = game_details
-
-            # Sort the games by alreadying existing, new games, and failed to find
-            if latest_game and latest_game['name'] in games:
-                already_exists[latest_game['name']] = latest_game
-            elif latest_game: 
-                new_games[latest_game['name']] = latest_game
-                AddGame(latest_game)
-
-                # Request the cover image urls
-                db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
-                results = db_json.json()
-
-                # Formats the cover URL
-                url = f"https:{results[0]['url']}"
-                url = url.replace("t_thumb", "t_cover_big")
-
-                # Stores the formatted URL in the latest game dictionary
-                latest_game['cover_url'] = url
-                
-                # Create the Role and give it the dominant color of the cover art
-                color = GetDominantColor(url)
-                
-                role = discord.utils.get(ctx.guild.roles, name = latest_game['name'])
-                if role:
-                    await role.edit(colour = discord.Colour(int(color, 16)))
-                else:
-                    await ctx.guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
-            else:
-                failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
+        new_games, already_exists, failed_to_find = AddGames(ctx.guild, all_games)
 
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
