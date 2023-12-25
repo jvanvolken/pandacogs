@@ -307,7 +307,7 @@ class AutoRolerPro(commands.Cog):
                     names.append(game['name'])
 
                 if not current.activity.name in names:
-                    new_games, already_exists, failed_to_find = AddGames(current.guild, current.activity.name)
+                    new_games, already_exists, failed_to_find = await AddGames(current.guild, current.activity.name)
                     if len(new_games) > 0:
                         await channel.send(f"I've added the {current.activity.name} role because {member_name} starting playing it!")
                 else:
@@ -344,7 +344,7 @@ class AutoRolerPro(commands.Cog):
         # Splits the provided arg into a list of games
         all_games = [string.capwords(game) for game in arg.split(',')][:10]
 
-        new_games, already_exists, failed_to_find = AddGames(ctx.guild, all_games)
+        new_games, already_exists, failed_to_find = await AddGames(ctx.guild, all_games)
 
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
