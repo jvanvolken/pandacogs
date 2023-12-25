@@ -208,7 +208,8 @@ class AutoRolerPro(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @client.event
+    # @client.event
+    @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
         # Get important information about the context of the command
         channel = current.guild.get_channel(665572348350693406)
