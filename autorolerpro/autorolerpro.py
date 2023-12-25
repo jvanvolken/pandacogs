@@ -124,16 +124,12 @@ def GetDominantColor(image_url, palette_size=16):
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    async def __init__(self):
+    def __init__(self):
         super().__init__(timeout=10)
 
         self.add_item(self.YesButton())
         self.add_item(self.NoButton())
         self.add_item(self.OptOutButton())
-
-        self.original_content = self.message.content
-
-        await self.message.edit(content = f"{self.original_content} Would you like me to add you to it so you'll be notified when someone is looking for a friend?")
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
@@ -155,7 +151,7 @@ class DirectMessageView(discord.ui.View):
             await interaction.response.send_message(f"I don't think I will!")
 
     async def on_timeout(self):
-        await self.message.edit(content = f"{self.original_content}\n*This request has timed out, but you can still add yourself to the role by sending the !list_games command from the server!*", view=None)
+        await self.message.edit(f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view=None)
     #     self.message
         #view = None
 
@@ -263,7 +259,8 @@ class AutoRolerPro(commands.Cog):
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
                 dm_channel = await current.create_dm()
                 view = DirectMessageView()
-                view.message = await dm_channel.send(f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!", view = view)
+                view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
             
     @commands.command()
     async def list_games(self, ctx):
