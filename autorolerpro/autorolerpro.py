@@ -228,9 +228,9 @@ class AutoRolerPro(commands.Cog):
         
     @commands.command()
     async def add_games(self, ctx, *, arg):
-        """Manually adds a game or a set of games (max 25) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_25"""
+        """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
         # Splits the provided arg into a list of games
-        all_games = [string.capwords(game) for game in arg.split(',')][:25]
+        all_games = [string.capwords(game) for game in arg.split(',')][:10]
 
         already_exists = {}
         failed_to_find = {}
