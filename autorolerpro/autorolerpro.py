@@ -201,6 +201,7 @@ class GameListView(discord.ui.View):
 
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
+                del self.game_list[self.game['name']]
                 await interaction.message.edit(view = GameListView(self.ctx, ListType.Remove, self.game_list))
                 await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True)
 
