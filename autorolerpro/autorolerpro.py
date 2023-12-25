@@ -9,14 +9,12 @@ import string
 import requests
 from PIL import Image
 from io import BytesIO
-# from operator import itemgetter
 from redbot.core import commands
 from datetime import datetime
 from enum import Enum
 
 # Initializes intents
-intents = discord.Intents(messages=True, guilds=True)
-intents.members = True
+intents = discord.Intents(messages=True, guilds=True, members = True)
 
 # Initializes client with intents
 client = discord.Client(intents = intents)
@@ -329,7 +327,7 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
     @client.event
-    async def on_member_update(self, previous, current):
+    async def on_presence_update(self, previous, current):
         # Get important information about the context of the command
         channel = current.get_channel(665572348350693406)
         member_name = current.display_name.encode().decode('ascii','ignore')
