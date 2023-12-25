@@ -122,6 +122,35 @@ def GetDominantColor(image_url, palette_size=16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
+# Create a class called DirectMessageView that subclasses discord.ui.View
+class DirectMessageView(discord.ui.View):
+    def __init__(self, ctx):
+        super().__init__()
+
+        self.add_item(self.YesButton(ctx))
+        self.add_item(self.NoButton(ctx))
+        self.add_item(self.OptOutButton(ctx))
+
+    # Create a class called GameButton that subclasses discord.ui.Button
+    class YesButton(discord.ui.Button):
+        def __init__(self):
+            super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
+        async def callback(self, interaction):
+            await interaction.response.send_message(f"SWEET!")
+                             
+    class NoButton(discord.ui.Button):
+        def __init__(self):
+            super().__init__(label = "NO", style = discord.ButtonStyle.success, emoji = "😕")
+        async def callback(self, interaction):
+            await interaction.response.send_message(f"Aww... alright")
+                             
+    class OptOutButton(discord.ui.Button):
+        def __init__(self):
+            super().__init__(label = "OPT OUT", style = discord.ButtonStyle.success, emoji = "😭")
+        async def callback(self, interaction):
+            await interaction.response.send_message(f"I don't think I will!")
+
+
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, ctx, list_type, game_list):
@@ -225,7 +254,7 @@ class AutoRolerPro(commands.Cog):
             elif current.activity:
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
                 dm_channel = await current.create_dm()
-                await dm_channel.send(f"Hey! I'm from the Pavilion Horde server and I noticed you were playing {current.activity.name} but don't have the role assigned! Would you like me to add you to it?")
+                await dm_channel.send(f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned! Would you like me to add you to it so you'll be notified when someone is looking for a friend?")
 
 
             # elif previous.activity and previous.activity.name.lower() in (name.lower() for name in names) and previous.activity != current.activity:
