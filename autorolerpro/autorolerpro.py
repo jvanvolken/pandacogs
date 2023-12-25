@@ -313,7 +313,7 @@ class AutoRolerPro(commands.Cog):
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
-        if current.bot or current.display_name == "SadPanda":
+        if current.bot or current.display_name != "SadPanda":
             return
         
         if current.activity and current.activity.name not in activity_blacklist:
