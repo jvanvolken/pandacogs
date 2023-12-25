@@ -220,7 +220,7 @@ class AutoRolerPro(commands.Cog):
             #     names.append(game['name'])
 
             # When somebody starts playing a game and if they are part of the role
-            if current.activity and current.activity.name.lower() in (name.lower() for name in current.roles):
+            if current.activity and current.activity.name.lower() in (role.name.lower() for role in current.roles):
                 await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
             elif current.activity:
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
