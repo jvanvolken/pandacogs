@@ -140,13 +140,13 @@ class DirectMessageView(discord.ui.View):
                              
     class NoButton(discord.ui.Button):
         def __init__(self):
-            super().__init__(label = "NO", style = discord.ButtonStyle.success, emoji = "😕")
+            super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
         async def callback(self, interaction):
             await interaction.response.send_message(f"Aww... alright")
                              
     class OptOutButton(discord.ui.Button):
         def __init__(self):
-            super().__init__(label = "OPT OUT", style = discord.ButtonStyle.success, emoji = "😭")
+            super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
         async def callback(self, interaction):
             await interaction.response.send_message(f"I don't think I will!")
 
@@ -256,10 +256,6 @@ class AutoRolerPro(commands.Cog):
                 dm_channel = await current.create_dm()
                 await dm_channel.send(f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned! Would you like me to add you to it so you'll be notified when someone is looking for a friend?", 
                                       view = DirectMessageView())
-
-
-            # elif previous.activity and previous.activity.name.lower() in (name.lower() for name in names) and previous.activity != current.activity:
-            #     await channel.send(f"{member_name} stopped playing {current.activity.name}!")
             
     @commands.command()
     async def list_games(self, ctx):
