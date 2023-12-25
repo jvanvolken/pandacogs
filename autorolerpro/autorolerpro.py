@@ -24,6 +24,9 @@ docker_cog_path  = "/data/cogs/AutoRoler"
 games_list_file  = f"{docker_cog_path}/games.json"
 temp_cover_image = f"{docker_cog_path}/temp_cover.png"
 
+# Blacklist for member activities
+activity_blacklist = ["Spotify"]
+
 # Instantiates IGDB wrapper
 # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
 db_header = {
@@ -182,16 +185,29 @@ class DirectMessageView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=10)
 
-        self.add_item(self.YesButton())
-        self.add_item(self.NoButton())
-        self.add_item(self.OptOutButton())
+        self.add_item(self.YesButton(self.original_message))
+        self.add_item(self.NoButton(self.original_message))
+        self.add_item(self.OptOutButton(self.original_message))
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
-        def __init__(self):
+        def __init__(self, original_message):
             super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
+            self.original_message = original_message
+
         async def callback(self, interaction):
-            await interaction.response.send_message(f"SWEET!")
+            # Looks for the role with the same name as the game
+            if self.role:
+                # Assign role to member
+                member = interaction.user
+                await member.add_roles(self.role)
+                await interaction.message.edit(content = f"{self.original_message}")
+
+                # Informs the user that the role has been assigned to them
+                await interaction.response.send_message(f"Added you to the `{self.role.name}` role!")
+            else:
+                await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
+
                              
     class NoButton(discord.ui.Button):
         def __init__(self):
@@ -294,40 +310,50 @@ class AutoRolerPro(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
-        if not current.bot and current.display_name == "SadPanda":
+        if current.bot or current.display_name == "SadPanda":
+            return
+        
+        if current.activity and current.activity.name not in activity_blacklist:
             # Get important information about the context of the command
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
 
-            if current.activity:
-                names = []
-                for game in games.values():
-                    names.append(game['name'])
+            # Get list of game names
+            names = []
+            for game in games.values():
+                names.append(game['name'])
 
-                if not current.activity.name in names:
-                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
-                    if len(new_games) > 0:
-                        await channel.send(f"{member_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
-                        
-                # When somebody starts playing a game and if they are part of the role
-                if current.activity.name.lower() in (role.name.lower() for role in current.roles):
-                    await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
-                elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
-                    await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
-                    dm_channel = await current.create_dm()
-                    view = DirectMessageView()
-                    view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
-                    view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
-            
+            # If there isn't a game recorded for the current activity already, add it
+            if current.activity.name not in names:
+                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                if len(new_games) > 0:
+                    await channel.send(f"{member_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                    
+            # When somebody starts playing a game and if they are part of the role
+            if current.activity.name.lower() in (role.name.lower() for role in current.roles):
+                await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
+            elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
+                await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+                dm_channel = await current.create_dm()
+
+                # Populate view and send direct message
+                view = DirectMessageView()
+                view.role = discord.utils.get(current.guild.roles, name = current.activity.name)
+                view.original_message = f"Hey, {member_name}! I'm from the Pavilion Horde server and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                view.message = await dm_channel.send(f"{view.original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
+        
     @commands.command()
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
+            # Convert a long list of games into sets of 25 or less
             message_sets = GetGameSets(games)
 
+            # Loop through sets and send a message per
             set_count = 0
             while set_count < len(message_sets):
                 if set_count == 0:
@@ -344,6 +370,7 @@ class AutoRolerPro(commands.Cog):
         # Splits the provided arg into a list of games
         all_games = [string.capwords(game) for game in arg.split(',')][:10]
 
+        # Attempt to add the games provided, returning new, existing, and/or failed to add games
         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, all_games)
 
         # Respond in one of the 8 unique ways based on the types of games trying to be added
