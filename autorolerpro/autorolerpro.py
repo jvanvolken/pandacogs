@@ -208,7 +208,7 @@ class AutoRolerPro(commands.Cog):
                 else:
                     message_sets.append({})
                     message_sets[idx][game['name']] = game
-                game_count += 1
+                game_count += 25
 
             set_count = 0
             while set_count < len(message_sets):
