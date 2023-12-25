@@ -182,29 +182,30 @@ async def AddGames(server, game_list):
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    def __init__(self, original_message, role):
+    def __init__(self, original_message, role, member):
         super().__init__(timeout = 60)
 
         self.original_message = original_message
         self.role = role
+        self.member = member
 
-        self.add_item(self.YesButton(self.original_message, self.role))
-        self.add_item(self.NoButton(self.original_message, self.role))
-        self.add_item(self.OptOutButton(self.original_message, self.role))
+        self.add_item(self.YesButton(self.original_message, self.role, self.member))
+        self.add_item(self.NoButton(self.original_message, self.role, self.member))
+        self.add_item(self.OptOutButton(self.original_message, self.role, self.member))
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
-        def __init__(self, original_message, role):
+        def __init__(self, original_message, role, member):
             super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
             self.original_message = original_message
             self.role = role
+            self.member = member
 
         async def callback(self, interaction):
             # Looks for the role with the same name as the game
             if self.role:
                 # Assign role to member
-                member = interaction.user
-                await member.add_roles(self.role)
+                await self.member.add_roles(self.role)
                 await interaction.message.edit(content = f"{self.original_message}")
 
                 # Informs the user that the role has been assigned to them
@@ -213,19 +214,21 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
                              
     class NoButton(discord.ui.Button):
-        def __init__(self, original_message, role):
+        def __init__(self, original_message, role, member):
             super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
             self.original_message = original_message
             self.role = role
+            self.member = member
 
         async def callback(self, interaction):
             await interaction.response.send_message(f"Aww... alright")
                              
     class OptOutButton(discord.ui.Button):
-        def __init__(self, original_message, role):
+        def __init__(self, original_message, role, member):
             super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
             self.original_message = original_message
             self.role = role
+            self.member = member
 
         async def callback(self, interaction):
             await interaction.response.send_message(f"I don't think I will!")
@@ -353,7 +356,7 @@ class AutoRolerPro(commands.Cog):
                 role = discord.utils.get(current.guild.roles, name = current.activity.name)
                 
                 # Populate view and send direct message
-                view = DirectMessageView(original_message, role)
+                view = DirectMessageView(original_message, role, current)
                 view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
         
     @commands.command()
