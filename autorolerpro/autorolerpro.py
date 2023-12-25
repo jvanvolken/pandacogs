@@ -151,9 +151,7 @@ class DirectMessageView(discord.ui.View):
             await interaction.response.send_message(f"I don't think I will!")
 
     async def on_timeout(self):
-        await self.message.edit(f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view=None)
-    #     self.message
-        #view = None
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view = None)
 
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
