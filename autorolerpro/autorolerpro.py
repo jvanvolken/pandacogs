@@ -339,11 +339,11 @@ class AutoRolerPro(commands.Cog):
             return
         
         if current.activity and current.activity.name not in activity_blacklist:
-            await channel.send(f"{current.activity.name}")
-
             # Get important information about the context of the command
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
+
+            await channel.send(f"{current.activity.name}")
 
             # Get list of game names
             names = []
