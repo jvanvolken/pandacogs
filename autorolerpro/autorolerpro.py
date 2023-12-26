@@ -339,6 +339,8 @@ class AutoRolerPro(commands.Cog):
             return
         
         if current.activity and current.activity.name not in activity_blacklist:
+            await channel.send(f"{current.activity.name}")
+
             # Get important information about the context of the command
             channel = current.guild.get_channel(665572348350693406)
             member_name = current.display_name.encode().decode('ascii','ignore')
@@ -353,11 +355,15 @@ class AutoRolerPro(commands.Cog):
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
                     await channel.send(f"{member_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
-                    
+            
+            # Collects a tuple of lowercase role names 
+            member_roles = (role.name.lower() for role in current.roles)
+
             # When somebody starts playing a game and if they are part of the role
-            if current.activity.name.lower() in (role.name.lower() for role in current.roles):
+            if current.activity.name.lower() in member_roles:
                 await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
-            elif not previous.activity or (previous.activity and previous.activity.name != current.activity.name):
+
+            elif not previous.activity or previous.activity.name != current.activity.name:
                 await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
                 dm_channel = await current.create_dm()
 
