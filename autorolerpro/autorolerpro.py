@@ -20,9 +20,9 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 client = discord.Client(intents = intents)
 
 # Cog Directory in Appdata
-docker_cog_path  = "/data/cogs/AutoRoler"
-games_list_file  = f"{docker_cog_path}/games.json"
-temp_cover_image = f"{docker_cog_path}/temp_cover.png"
+docker_cog_path = "/data/cogs/AutoRoler"
+games_file   = f"{docker_cog_path}/games.json"
+members_file = f"{docker_cog_path}/members.json"
 
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
@@ -45,20 +45,29 @@ class ListType(Enum):
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
 
-# Initialize the games list
-if os.path.isfile(games_list_file):
-    with open(games_list_file, "r") as fp:
+# Initializes the games list
+if os.path.isfile(games_file):
+    with open(games_file, "r") as fp:
         games = json.load(fp)
 else:
     games = {}
-    with open(games_list_file, "w") as fp:
+    with open(games_file, "w") as fp:
         json.dump(games, fp)
 
-# Removes game to games list and saves to file
+# Initializes the members list
+if os.path.isfile(members_file):
+    with open(members_file, "r") as fp:
+        members = json.load(fp)
+else:
+    members = {}
+    with open(members_file, "w") as fp:
+        json.dump(members, fp)
+
+# Removes game from games list and saves to file
 def RemoveGame(game):
     if game['name'] in games:
         del games[game['name']]
-        with open(games_list_file, "w") as fp:
+        with open(games_file, "w") as fp:
             json.dump(games, fp)
     else:
         print(f"Failed to remove game. Could not find {game['name']} in list.")
@@ -122,6 +131,26 @@ def GetDominantColor(image_url, palette_size=16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
+# Updates (or adds) a member to the members list and saves file
+def UpdateMember(member):
+    # Collects the desired information about the member
+    member_details = {}
+    for detail in ['name', 'display_name', 'display_avatar', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
+        if detail in member:
+            member_details[detail] = member['games']
+        elif detail == 'games':
+            member_details[detail] = {}
+        elif detail == 'opt_out':
+            member_details[detail] = False
+    
+    # Adds the member details to the members list
+    members[member_details['name']] = member_details
+
+    # Saves the members dictionary to the json file
+    with open(members_file, "w") as fp:
+        json.dump(members, fp)
+
+# Adds a list of games to the games list after verifying they are real games
 async def AddGames(server, game_list):
     new_games      = {}
     already_exists = {}
@@ -154,9 +183,9 @@ async def AddGames(server, game_list):
         elif latest_game: 
             new_games[latest_game['name']] = latest_game
 
-            # Add game to database
+            # Add game to game list and saves file
             games[latest_game['name']] = latest_game
-            with open(games_list_file, "w") as fp:
+            with open(games_file, "w") as fp:
                 json.dump(games, fp)
 
             # Request the cover image urls
@@ -208,6 +237,11 @@ class DirectMessageView(discord.ui.View):
             try:
                 # Assign role to member
                 await self.member.add_roles(self.role)
+                
+                # Records answer for this game and the current datetime for last played
+                member = self.member
+                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.datetime.now()}
+                UpdateMember(member)
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
@@ -224,6 +258,11 @@ class DirectMessageView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
+                # Records answer for this game and the current datetime for last played
+                member = self.member
+                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : False, 'last_played' : None}
+                UpdateMember(member)
+                
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
             except:
@@ -238,6 +277,11 @@ class DirectMessageView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
+                # Records answer for this game and the current datetime for last played
+                member = self.member
+                member['opt_out'] = True
+                UpdateMember(member)
+
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
             except:
@@ -335,16 +379,30 @@ class AutoRolerPro(commands.Cog):
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
-        if current.bot or current.display_name != "SadPanda":
+        # Get important information about the context of the event
+        channel = current.guild.get_channel(665572348350693406)
+        member_display_name = current.display_name.encode().decode('ascii','ignore')
+        member_name = current.name
+
+        # Exits if the member is a bot or isn't whitelisted
+        if current.bot or member_name not in ["sad.panda.", "agvv20"]:
             return
         
+        # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
+        if member_name not in members:
+            UpdateMember(current)
+
+        member = members[member_name]
+        # Exit if the member has opted out of the autoroler
+        if member['opt_out']:
+            return
+        
+        # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
+        if previous.activity and previous.activity.name == current.activity.name:
+            return
+        
+        # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
-            # Get important information about the context of the command
-            channel = current.guild.get_channel(665572348350693406)
-            member_name = current.display_name.encode().decode('ascii','ignore')
-
-            await channel.send(f"{current.activity.name}")
-
             # Get list of game names
             names = []
             for game in games.values():
@@ -354,22 +412,27 @@ class AutoRolerPro(commands.Cog):
             if current.activity.name not in names:
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
-                    await channel.send(f"{member_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                    await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             
+            # Get the role associated with the current activity name (game name)
+            role = discord.utils.get(current.guild.roles, name = current.activity.name)
+
             # Collects a tuple of lowercase role names 
-            member_roles = (role.name.lower() for role in current.roles)
+            # member_roles = (role.name.lower() for role in current.roles)
 
             # When somebody starts playing a game and if they are part of the role
-            if current.activity.name.lower() in member_roles:
-                await channel.send(f"{member_name} started playing {current.activity.name} and has the role!")
+            if role in current.roles: #current.activity.name.lower()
+                if member['games'][role.name]['tracked']:
+                    await channel.send(f"{member_display_name} started playing {current.activity.name} and has the role!")
+            else:
+                # Informs the test channel that the member is playing a game without it's role assigned
+                await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role!")
 
-            elif not previous.activity or previous.activity.name != current.activity.name:
-                await channel.send(f"{member_name} started playing {current.activity.name} and does not have the role!")
+                # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, {member_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
-                role = discord.utils.get(current.guild.roles, name = current.activity.name)
+                original_message = f"Hey, {member_display_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
                 
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current)
