@@ -424,12 +424,12 @@ class AutoRolerPro(commands.Cog):
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
             # Get list of game names
-            names = []
+            game_names = []
             for game in games.values():
-                names.append(game['name'])
+                game_names.append(game['name'])
 
             # If there isn't a game recorded for the current activity already, add it
-            if current.activity.name not in names:
+            if current.activity.name not in game_names:
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
                     await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
@@ -437,13 +437,13 @@ class AutoRolerPro(commands.Cog):
             # Get the role associated with the current activity name (game name)
             role = discord.utils.get(current.guild.roles, name = current.activity.name)
 
-            # Collects a tuple of lowercase role names 
-            # member_roles = (role.name.lower() for role in current.roles) #current.activity.name.lower()
-
+            # Exit if the member doesn't want to be bothered about this game
+            if role.name in member['games'] and member['games'][role.name]['tracked']:
+                return 
+            
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                if member['games'][role.name]['tracked']:
-                    await channel.send(f"{member_display_name} started playing {current.activity.name} and has the role!")
+                await channel.send(f"{member_display_name} started playing {current.activity.name} and has the role!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
                 await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role or is not being tracked!")
