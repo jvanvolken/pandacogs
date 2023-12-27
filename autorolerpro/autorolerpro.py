@@ -240,7 +240,7 @@ class DirectMessageView(discord.ui.View):
                 
                 # Records answer for this game and the current datetime for last played
                 member = self.member
-                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.datetime.now()}
+                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}
                 UpdateMember(member)
 
                 # Responds to the request
