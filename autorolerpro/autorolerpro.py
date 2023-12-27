@@ -247,7 +247,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.role.name}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
             except Exception as error:
-                await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.role.name}` role to you. Please check the logs for further details.")
                 raise Exception(error)
                              
     class NoButton(discord.ui.Button):
@@ -267,7 +267,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
+                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
                              
     class OptOutButton(discord.ui.Button):
@@ -287,7 +287,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
+                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
 
     async def on_timeout(self):
