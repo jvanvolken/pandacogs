@@ -45,12 +45,6 @@ class ListType(Enum):
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
 
-if os.path.isfile(f"{docker_cog_path}/settings.json"):
-    os.remove(f"{docker_cog_path}/settings.json")
-
-if os.path.isfile(f"{docker_cog_path}/games.txt"):
-    os.remove(f"{docker_cog_path}/games.txt")
-
 # Initializes the games list
 if os.path.isfile(games_file):
     with open(games_file, "r") as fp:
@@ -159,7 +153,7 @@ def AddMember(member):
 def UpdateMember(member_name, member_details):
     # Update specific details of member
     for detail in member_details:
-        members[member_details[member_name]][detail] = member_details[detail]
+        members[member_name][detail] = member_details[detail]
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
