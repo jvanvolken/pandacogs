@@ -150,10 +150,9 @@ def AddMember(member):
         json.dump(members, fp, indent = 2, default = str)
 
 # Updates a member to the members list and saves file
-def UpdateMember(member_name, member_details):
-    # Update specific details of member
-    for detail in member_details:
-        members[member_name][detail] = member_details[detail]
+def UpdateMember(member_name, new_details):
+    # Updates specific member with new details
+    members[member_name].update(new_details)
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
@@ -267,6 +266,10 @@ class DirectMessageView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
+                # Remove role from member if exists
+                if self.role in self.member.roles:
+                    await self.member.remove_roles(self.role)
+
                 # Records answer for this game and the current datetime for last played
                 update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : False, 'last_played' : None}}}
                 UpdateMember(self.member.name, update)
