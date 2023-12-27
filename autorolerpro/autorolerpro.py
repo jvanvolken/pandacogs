@@ -148,7 +148,7 @@ def UpdateMember(member):
 
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
-        json.dump(members, fp)
+        json.dump(members, fp, indent=4, default=str)
 
 # Adds a list of games to the games list after verifying they are real games
 async def AddGames(server, game_list):
