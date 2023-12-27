@@ -135,7 +135,7 @@ def GetDominantColor(image_url, palette_size=16):
 def UpdateMember(member):
     # Collects the desired information about the member
     member_details = {}
-    for detail in ['name', 'display_name', 'display_avatar', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
+    for detail in ['name', 'display_name', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
         if hasattr(member, detail):
             member_details[detail] = getattr(member, detail)
         elif detail == 'games':
