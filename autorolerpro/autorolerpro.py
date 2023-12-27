@@ -137,7 +137,7 @@ def UpdateMember(member):
     member_details = {}
     for detail in ['name', 'display_name', 'display_avatar', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
         if hasattr(member, detail):
-            member_details[detail] = member[detail]
+            member_details[detail] = getattr(member, detail)
         elif detail == 'games':
             member_details[detail] = {}
         elif detail == 'opt_out':
