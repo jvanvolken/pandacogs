@@ -160,7 +160,10 @@ def MergeDictionaries(d1, d2):
 # Updates a member to the members list and saves file
 def UpdateMember(member_name, new_details):
     # Updates specific member with new details
-    MergeDictionaries(members[member_name], new_details)
+    if isinstance(new_details, dict):
+        MergeDictionaries(members[member_name], new_details)
+    else:
+        members[member_name].update(new_details)
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
