@@ -52,7 +52,7 @@ if os.path.isfile(games_file):
 else:
     games = {}
     with open(games_file, "w") as fp:
-        json.dump(games, fp)
+        json.dump(games, fp, indent = 2, default = str)
 
 # Initializes the members list
 if os.path.isfile(members_file):
@@ -61,14 +61,14 @@ if os.path.isfile(members_file):
 else:
     members = {}
     with open(members_file, "w") as fp:
-        json.dump(members, fp)
+        json.dump(members, fp, indent = 2, default = str)
 
 # Removes game from games list and saves to file
 def RemoveGame(game):
     if game['name'] in games:
         del games[game['name']]
         with open(games_file, "w") as fp:
-            json.dump(games, fp)
+            json.dump(games, fp, indent = 2, default = str)
     else:
         print(f"Failed to remove game. Could not find {game['name']} in list.")
 
@@ -148,7 +148,7 @@ def UpdateMember(member):
 
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
-        json.dump(members, fp, indent=4, default=str)
+        json.dump(members, fp, indent = 2, default = str)
 
 # Adds a list of games to the games list after verifying they are real games
 async def AddGames(server, game_list):
@@ -186,7 +186,7 @@ async def AddGames(server, game_list):
             # Add game to game list and saves file
             games[latest_game['name']] = latest_game
             with open(games_file, "w") as fp:
-                json.dump(games, fp)
+                json.dump(games, fp, indent = 2, default = str)
 
             # Request the cover image urls
             db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
@@ -418,15 +418,15 @@ class AutoRolerPro(commands.Cog):
             role = discord.utils.get(current.guild.roles, name = current.activity.name)
 
             # Collects a tuple of lowercase role names 
-            # member_roles = (role.name.lower() for role in current.roles)
+            # member_roles = (role.name.lower() for role in current.roles) #current.activity.name.lower()
 
             # When somebody starts playing a game and if they are part of the role
-            if role in current.roles: #current.activity.name.lower()
+            if role in current.roles and role.name in member['games']: 
                 if member['games'][role.name]['tracked']:
                     await channel.send(f"{member_display_name} started playing {current.activity.name} and has the role!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
-                await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role!")
+                await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role or is not being tracked!")
 
                 # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
