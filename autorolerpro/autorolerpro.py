@@ -463,14 +463,14 @@ class AutoRolerPro(commands.Cog):
     async def opt_in(self, ctx):
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
-        UpdateMember(ctx.guild.get_member(ctx.id), update)
+        UpdateMember(ctx.guild.get_member(ctx.message.author.id), update)
         await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the !opt_out command anywhere in the server!")
 
     @commands.command()
     async def opt_out(self, ctx):
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
-        UpdateMember(ctx.guild.get_member(ctx.id), update)
+        UpdateMember(ctx.guild.get_member(ctx.message.author.id), update)
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the !opt_in command anywhere in the server!")
 
     @commands.command()
