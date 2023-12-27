@@ -246,8 +246,9 @@ class DirectMessageView(discord.ui.View):
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.role.name}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
-            except:
+            except Exception as error:
                 await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.role.name}`")
+                raise Exception(error)
                              
     class NoButton(discord.ui.Button):
         def __init__(self, original_message, role, member):
@@ -265,8 +266,9 @@ class DirectMessageView(discord.ui.View):
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
-            except:
+            except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
+                raise Exception(error)
                              
     class OptOutButton(discord.ui.Button):
         def __init__(self, original_message, role, member):
@@ -284,8 +286,9 @@ class DirectMessageView(discord.ui.View):
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
-            except:
+            except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the role to you. ")
+                raise Exception(error)
 
     async def on_timeout(self):
         await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view = None)
