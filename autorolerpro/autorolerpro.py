@@ -438,7 +438,7 @@ class AutoRolerPro(commands.Cog):
             role = discord.utils.get(current.guild.roles, name = current.activity.name)
 
             # Exit if the member doesn't want to be bothered about this game
-            if role.name in member['games'] and member['games'][role.name]['tracked']:
+            if role.name in member['games'] and not member['games'][role.name]['tracked']:
                 return 
             
             # When somebody starts playing a game and if they are part of the role
