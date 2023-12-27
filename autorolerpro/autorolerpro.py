@@ -149,10 +149,18 @@ def AddMember(member):
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
 
+    # Update first dict with second recursively
+def MergeDictionaries(d1, d2):
+    for k, v in d1.items():
+        if k in d2:
+            d2[k] = MergeDictionaries(v, d2[k])
+    d1.update(d2)
+    return d1
+
 # Updates a member to the members list and saves file
 def UpdateMember(member_name, new_details):
     # Updates specific member with new details
-    members[member_name].update(new_details)
+    MergeDictionaries(members[member_name], new_details)
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
