@@ -151,19 +151,17 @@ def AddMember(member):
 
     # Update first dict with second recursively
 def MergeDictionaries(d1, d2):
-    for k, v in d1.items():
-        if k in d2:
-            d2[k] = MergeDictionaries(v, d2[k])
+    if isinstance(d1, dict):
+        for k, v in d1.items():
+            if k in d2:
+                d2[k] = MergeDictionaries(v, d2[k])
     d1.update(d2)
     return d1
 
 # Updates a member to the members list and saves file
 def UpdateMember(member_name, new_details):
     # Updates specific member with new details
-    if isinstance(new_details, dict):
-        MergeDictionaries(members[member_name], new_details)
-    else:
-        members[member_name].update(new_details)
+    MergeDictionaries(members[member_name], new_details)
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
