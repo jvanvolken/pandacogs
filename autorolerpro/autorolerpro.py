@@ -284,7 +284,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member.name, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
-                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the !list_games command in the [server]({general_channel_link})!")
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
@@ -303,7 +303,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member.name, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
-                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the !opt_in command anywhere in the [server]({general_channel_link})!")
+                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
@@ -465,14 +465,14 @@ class AutoRolerPro(commands.Cog):
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
         UpdateMember(ctx.message.author.name, update)
-        await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the !opt_out command anywhere in the server!")
+        await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!")
 
     @commands.command()
     async def opt_out(self, ctx,):
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
         UpdateMember(ctx.message.author.name, update)
-        await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the !opt_in command anywhere in the server!")
+        await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
 
     @commands.command()
     async def list_games(self, ctx):
