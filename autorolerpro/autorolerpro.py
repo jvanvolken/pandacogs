@@ -460,17 +460,17 @@ class AutoRolerPro(commands.Cog):
                 view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
     
     @commands.command()
-    async def opt_in(self, ctx, member):
+    async def opt_in(self, ctx):
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
-        UpdateMember(member, update)
+        UpdateMember(ctx.guild.get_member(ctx.id), update)
         await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the !opt_out command anywhere in the server!")
 
     @commands.command()
-    async def opt_out(self, ctx, member):
+    async def opt_out(self, ctx):
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
-        UpdateMember(member, update)
+        UpdateMember(ctx.guild.get_member(ctx.id), update)
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the !opt_in command anywhere in the server!")
 
     @commands.command()
