@@ -155,7 +155,7 @@ def MergeDictionaries(d1, d2):
         for k, v in d1.items():
             if k in d2:
                 d2[k] = MergeDictionaries(v, d2[k])
-    d1.update(d2)
+        d1.update(d2)
     return d1
 
 # Updates a member to the members list and saves file
