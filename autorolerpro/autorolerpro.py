@@ -443,7 +443,7 @@ class AutoRolerPro(commands.Cog):
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                await channel.send(f"{member_display_name} started playing {current.activity.name} and has the role!")
+                await channel.send(f"{member_display_name} started playing {current.activity.name}!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
                 await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role or is not being tracked!")
