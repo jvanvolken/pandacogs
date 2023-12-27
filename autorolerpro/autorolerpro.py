@@ -136,7 +136,7 @@ def UpdateMember(member):
     # Collects the desired information about the member
     member_details = {}
     for detail in ['name', 'display_name', 'display_avatar', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
-        if detail in member:
+        if hasattr(member, detail):
             member_details[detail] = member['games']
         elif detail == 'games':
             member_details[detail] = {}
