@@ -283,7 +283,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member.name, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
-                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the !list_games command in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
@@ -297,18 +297,19 @@ class DirectMessageView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
-                # Records answer for this game and the current datetime for last played
+                # Updates the out_out flag for the member
                 update = {'opt_out' : True}
                 UpdateMember(self.member.name, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
-                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
+                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the !opt_in command anywhere in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 raise Exception(error)
 
     async def on_timeout(self):
-        await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the server!*", view = None)
+        #TODO Make this edit dynamic based on what the user selected (or didn't)
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
 
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -457,7 +458,19 @@ class AutoRolerPro(commands.Cog):
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current)
                 view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
-        
+    
+    @commands.command()
+    async def opt_in(self, ctx):
+        # Updates the out_out flag for the member
+        update = {'opt_out' : False}
+        UpdateMember(ctx.message.author, update)
+
+    @commands.command()
+    async def opt_out(self, ctx):
+        # Updates the out_out flag for the member
+        update = {'opt_out' : True}
+        UpdateMember(ctx.message.author, update)
+
     @commands.command()
     async def list_games(self, ctx):
         """Lists the collected game roles for the server."""
@@ -526,31 +539,3 @@ class AutoRolerPro(commands.Cog):
                 set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
-
-    # @commands.command()
-    # async def search_game(self, ctx, *, arg):
-    #     """Searches IGDB for a matching game."""
-    #     # Returns a list of games that fit the provided name
-    #     db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{arg}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
-    #     results = db_json.json()
-
-    #     if len(results) > 0:
-    #         # Sort the results by rating
-    #         results = sorted(results, key=itemgetter('rating'), reverse=True)
-
-    #         # Get the result names and get the top 3 matches
-    #         game_names = [details['name'] for details in results]
-    #         matches = difflib.get_close_matches(arg, game_names, 3)
-
-    #         # Construct the reply
-    #         reply = "## Here are the results!\n"
-    #         for details in results:
-    #             try:
-    #                 if details['name'] in matches:
-    #                     reply += f"  [*({round(details['rating'], 2)}) {details['name']}* ({datetime.utcfromtimestamp(details['first_release_date']).strftime('%Y')})](<https://www.igdb.com/games/{details['name'].lower().replace(' ', '-')}>)\n"
-    #             except:
-    #                 reply += str(details)
-
-    #         await ctx.reply(reply[:2000])
-    #     else:
-    #         await ctx.reply(f"Sorry! No results found for {arg}.")
