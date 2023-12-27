@@ -45,6 +45,12 @@ class ListType(Enum):
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
 
+if os.path.isfile(f"{docker_cog_path}/settings.json"):
+    os.remove(f"{docker_cog_path}/settings.json")
+
+if os.path.isfile(f"{docker_cog_path}/games.txt"):
+    os.remove(f"{docker_cog_path}/games.txt")
+
 # Initializes the games list
 if os.path.isfile(games_file):
     with open(games_file, "r") as fp:
@@ -131,21 +137,30 @@ def GetDominantColor(image_url, palette_size=16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
-# Updates (or adds) a member to the members list and saves file
-def UpdateMember(member):
+# Adds a member to the members list and saves file
+def AddMember(member):
     # Collects the desired information about the member
     member_details = {}
-    for detail in ['name', 'display_name', 'created_at', 'joined_at', 'roles', 'games', 'opt_out']:
+    for detail in ['name', 'display_name', 'created_at', 'joined_at', 'roles']:
         if hasattr(member, detail):
             member_details[detail] = getattr(member, detail)
-        elif detail == 'games':
-            member_details[detail] = {}
-        elif detail == 'opt_out':
-            member_details[detail] = False
+
+    member_details['games'] = {}
+    member_details['opt_out'] = False
     
     # Adds the member details to the members list
     members[member_details['name']] = member_details
 
+    # Saves the members dictionary to the json file
+    with open(members_file, "w") as fp:
+        json.dump(members, fp, indent = 2, default = str)
+
+# Updates a member to the members list and saves file
+def UpdateMember(member_name, member_details):
+    # Update specific details of member
+    for detail in member_details:
+        members[member_details[member_name]][detail] = member_details[detail]
+        
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
@@ -239,9 +254,8 @@ class DirectMessageView(discord.ui.View):
                 await self.member.add_roles(self.role)
                 
                 # Records answer for this game and the current datetime for last played
-                member = self.member
-                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}
-                UpdateMember(member)
+                update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}}}
+                UpdateMember(self.member.name, update)
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
@@ -260,9 +274,8 @@ class DirectMessageView(discord.ui.View):
         async def callback(self, interaction):
             try:
                 # Records answer for this game and the current datetime for last played
-                member = self.member
-                member['games'][self.role.name] = {'name' : self.role.name, 'tracked' : False, 'last_played' : None}
-                UpdateMember(member)
+                update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : False, 'last_played' : None}}}
+                UpdateMember(self.member.name, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again!")
@@ -280,9 +293,8 @@ class DirectMessageView(discord.ui.View):
         async def callback(self, interaction):
             try:
                 # Records answer for this game and the current datetime for last played
-                member = self.member
-                member['opt_out'] = True
-                UpdateMember(member)
+                update = {'opt_out' : True}
+                UpdateMember(self.member.name, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment!")
@@ -393,7 +405,7 @@ class AutoRolerPro(commands.Cog):
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
         if member_name not in members:
-            UpdateMember(current)
+            AddMember(current)
 
         member = members[member_name]
         # Exit if the member has opted out of the autoroler
