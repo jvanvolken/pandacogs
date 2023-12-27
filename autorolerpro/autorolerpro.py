@@ -408,6 +408,10 @@ class AutoRolerPro(commands.Cog):
         member_display_name = current.display_name.encode().decode('ascii','ignore')
         member_name = current.name
 
+        # Exit if there's not current activity
+        if current.activity is None:
+            return
+
         # Exits if the member is a bot or isn't whitelisted
         if current.bot or member_name not in ["sad.panda.", "agvv20"]:
             return
