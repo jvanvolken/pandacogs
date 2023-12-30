@@ -27,6 +27,9 @@ members_file = f"{docker_cog_path}/members.json"
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
 
+# Bot Channel
+bot_channel = 634197647787556864 # 665572348350693406
+
 # Blacklist for member activities
 activity_blacklist = ["Spotify"]
 
@@ -404,7 +407,7 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
         # Get important information about the context of the event
-        channel = current.guild.get_channel(665572348350693406)
+        channel = current.guild.get_channel(bot_channel)
         member_display_name = current.display_name.encode().decode('ascii','ignore')
         member_name = current.name
 
