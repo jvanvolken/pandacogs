@@ -331,10 +331,10 @@ class GameListView(discord.ui.View):
             self.add_item(self.GameButton(self.original_message, self.ctx, game, self.list_type, self.game_list))
     
     async def on_timeout(self):
-        if not self.original_message:
-            await self.message.delete()
-        else:
-            await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
+        #if not self.original_message:
+            #await self.message.delete()
+        #else:
+        await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
