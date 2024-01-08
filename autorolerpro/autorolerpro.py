@@ -416,7 +416,7 @@ class AutoRolerPro(commands.Cog):
             return
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or member_name not in ["sad.panda.", "agvv20"]:
+        if current.bot or member_name not in ["sad.panda.", "agvv20", "ashlore."]:
             return
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
