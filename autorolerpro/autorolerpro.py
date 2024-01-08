@@ -511,7 +511,7 @@ class AutoRolerPro(commands.Cog):
             set_count = 0
             while set_count < len(message_sets):
                 if set_count == 0:
-                    original_message = "Here's your game list, {ctx.message.author.mention}!"
+                    original_message = f"Here's your game list, {ctx.message.author.mention}!"
                     view = GameListView(original_message, ctx, ListType.Select, message_sets[set_count])
                     view.message = await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = view)
                 else:
