@@ -320,10 +320,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, original_message, ctx, list_type, game_list):
-        if not original_message:
-            super().__init__(delete_after = 60)
-        else:
-            super().__init__(timeout = 60)
+        super().__init__(timeout = 60)
 
         self.ctx = ctx
         self.list_type = list_type
@@ -334,7 +331,10 @@ class GameListView(discord.ui.View):
             self.add_item(self.GameButton(self.original_message, self.ctx, game, self.list_type, self.game_list))
     
     async def on_timeout(self):
-        await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
+        if not self.original_message:
+            self.message.delete()
+        else:
+            await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
 
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
