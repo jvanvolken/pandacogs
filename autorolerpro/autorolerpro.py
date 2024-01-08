@@ -237,7 +237,7 @@ async def AddGames(server, game_list):
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
     def __init__(self, original_message, role, member):
-        super().__init__(timeout = 60)
+        super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours
 
         self.original_message = original_message
         self.role = role
