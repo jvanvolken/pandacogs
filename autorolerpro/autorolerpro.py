@@ -461,7 +461,7 @@ class AutoRolerPro(commands.Cog):
                 if len(new_games) > 0:
                     await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
                 else:
-                    await channel.send(f"{member_display_name} starting playing `{current.activity.name}`... but I can't find it in the database. :(\n*I guess I'll go way then...*")
+                    await channel.send(f"{member_display_name} starting playing `{current.activity.name}`... but I can't find it in the database. :(\n*I guess I'll go away then...*")
                     return
             
             # Get the role associated with the current activity name (game name)
