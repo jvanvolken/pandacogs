@@ -320,7 +320,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, original_message, ctx, list_type, game_list):
-        if not self.original_message:
+        if not original_message:
             super().__init__(delete_after = 60)
         else:
             super().__init__(timeout = 60)
