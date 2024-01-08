@@ -332,7 +332,7 @@ class GameListView(discord.ui.View):
     
     async def on_timeout(self):
         if not self.original_message:
-            self.message.delete()
+            await self.message.delete()
         else:
             await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
 
