@@ -315,22 +315,30 @@ class DirectMessageView(discord.ui.View):
 
     async def on_timeout(self):
         #TODO Make this edit dynamic based on what the user selected (or didn't)
-        await self.message.edit(content = f"{self.original_message}\n*This request has timed out but you can still add youself to the roll by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
 
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
-    def __init__(self, ctx, list_type, game_list):
-        super().__init__()
+    def __init__(self, original_message, ctx, list_type, game_list):
+        if not self.original_message:
+            super().__init__(delete_after = 60)
+        else:
+            super().__init__(timeout = 60)
+
         self.ctx = ctx
         self.list_type = list_type
         self.game_list = game_list
+        self.original_message = original_message
 
         for game in self.game_list.values():
-            self.add_item(self.GameButton(self.ctx, game, self.list_type, self.game_list))
+            self.add_item(self.GameButton(self.original_message, self.ctx, game, self.list_type, self.game_list))
     
+    async def on_timeout(self):
+        await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
+
     # Create a class called GameButton that subclasses discord.ui.Button
     class GameButton(discord.ui.Button):
-        def __init__(self, ctx, game, list_type, game_list):
+        def __init__(self, original_message, ctx, game, list_type, game_list):
             # Get all server emojis
             emojis = ctx.guild.emojis
 
@@ -351,6 +359,7 @@ class GameListView(discord.ui.View):
             self.game = game
             self.list_type = list_type
             self.game_list = game_list
+            self.original_message = original_message
             self.role = discord.utils.get(self.ctx.guild.roles, name=self.game['name'])
 
             # Check if message author has the role and change button color accordingly
@@ -378,14 +387,14 @@ class GameListView(discord.ui.View):
                         # Assign role to member
                         member = interaction.user
                         await member.remove_roles(self.role)
-                        await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
+                        await interaction.message.edit(view = GameListView(self.original_message, self.ctx, ListType.Select, self.game_list))
 
                         await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!", ephemeral = True)
                     else:
                         # Assign role to member
                         member = interaction.user
                         await member.add_roles(self.role)
-                        await interaction.message.edit(view = GameListView(self.ctx, ListType.Select, self.game_list))
+                        await interaction.message.edit(view = GameListView(self.original_message, self.ctx, ListType.Select, self.game_list))
 
                         # Informs the user that the role has been assigned to them
                         await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!", ephemeral = True)
@@ -395,7 +404,7 @@ class GameListView(discord.ui.View):
             elif self.list_type is ListType.Remove:
                 RemoveGame(self.game)
                 del self.game_list[self.game['name']]
-                await interaction.message.edit(view = GameListView(self.ctx, ListType.Remove, self.game_list))
+                await interaction.message.edit(view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list))
                 await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True)
 
 class AutoRolerPro(commands.Cog):
@@ -495,9 +504,10 @@ class AutoRolerPro(commands.Cog):
             set_count = 0
             while set_count < len(message_sets):
                 if set_count == 0:
-                    await ctx.reply(f"Here's your game list, {ctx.message.author.mention}!\n*Please select the games that you're interested in playing:*", view = GameListView(ctx, ListType.Select, message_sets[set_count]))
+                    original_message = "Here's your game list, {ctx.message.author.mention}!"
+                    await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = GameListView(original_message, ctx, ListType.Select, message_sets[set_count]))
                 else:
-                    await ctx.reply(view = GameListView(ctx, ListType.Select, message_sets[set_count]))
+                    await ctx.reply(view = GameListView("", ctx, ListType.Select, message_sets[set_count]))
                 set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -518,22 +528,22 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(f"I don't recognize any of these games, {ctx.message.author.mention}. Are you sure you know what you're talking about?")
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             await ctx.reply(f"I already have all of these recorded! {ctx.message.author.mention}, how about you do a little more research before asking questions.", 
-                            view = GameListView(ctx, ListType.Select, already_exists))
+                            view = GameListView("", ctx, ListType.Select, already_exists))
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
-                            view = GameListView(ctx, ListType.Select, already_exists))
+                            view = GameListView("", ctx, ListType.Select, already_exists))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*", 
-                            view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
+                            view = GameListView("", ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*", 
-                            view = GameListView(ctx, ListType.Select, new_games), files = await GetImages(new_games))
+                            view = GameListView("", ctx, ListType.Select, new_games), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*", 
-                            view = GameListView(ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
+                            view = GameListView("", ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*", 
-                            view = GameListView(ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
+                            view = GameListView("", ctx, ListType.Select, new_games | already_exists), files = await GetImages(new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
