@@ -460,6 +460,9 @@ class AutoRolerPro(commands.Cog):
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
                     await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                else:
+                    await channel.send(f"{member_display_name} starting playing `{current.activity.name}`... but I can't find it in the database. :(\n*I guess I'll go way then*")
+                    return
             
             # Get the role associated with the current activity name (game name)
             role = discord.utils.get(current.guild.roles, name = current.activity.name)
