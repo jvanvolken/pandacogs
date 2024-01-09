@@ -457,7 +457,7 @@ class AutoRolerPro(commands.Cog):
 
             # If there isn't a game recorded for the current activity already, add it
             if current.activity.name not in game_names:
-                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name.lower()])
                 if len(new_games) > 0:
                     await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             
@@ -537,7 +537,7 @@ class AutoRolerPro(commands.Cog):
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"{ctx.message.author.mention}, you need to actually tell me what you want to add")
-            
+
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"I don't recognize any of these games, {ctx.message.author.mention}. Are you sure you know what you're talking about?")
 
