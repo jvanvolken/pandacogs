@@ -179,11 +179,11 @@ async def AddGames(server, game_list):
     failed_to_find = {}
     for game in game_list:
         # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{string.capwords(game)}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
         # Collect the game names
-        game_names = [string.capwords(details['name']) for details in results]
+        game_names = [details['name'] for details in results]
 
         # Get the top match for the provided name
         matches = difflib.get_close_matches(game, game_names, 1)
