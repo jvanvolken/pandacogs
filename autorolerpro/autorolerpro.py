@@ -453,22 +453,24 @@ class AutoRolerPro(commands.Cog):
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
             # Get list of game names
-            game_names = []
-            for game in games.values():
-                game_names.append(game['name'])
+            # game_names = []
+            # for game in games.values():
+            #     game_names.append(game['name'])
 
             # If there isn't a game recorded for the current activity already, add it
-            if current.activity.name not in game_names:
-                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
-                if len(new_games) > 0:
-                    await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+            # if current.activity.name not in game_names:
+            new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+            if len(new_games) > 0:
+                game = new_games[0]
+                await channel.send(f"Somebody started playing a new game, `{game['name']}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+            elif len(already_exists) > 0:
+                game = already_exists[0]
+            else:
+                await channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!*")
+                return
             
             # Get the role associated with the current activity name (game name)
-            role = discord.utils.get(current.guild.roles, name = current.activity.name)
-
-            if not role:
-                await channel.send(f"{member_display_name} starting playing `{current.activity.name}`... but I can't find it in the database. :(\n*I guess I'll go away then...*")
-                return
+            role = discord.utils.get(current.guild.roles, name = game['name'])
             
             # Exit if the member doesn't want to be bothered about this game
             if role.name in member['games'] and not member['games'][role.name]['tracked']:
@@ -476,16 +478,16 @@ class AutoRolerPro(commands.Cog):
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                await channel.send(f"{member_display_name} started playing {current.activity.name}!")
+                await channel.send(f"{member_display_name} started playing `{game['name']}`!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
-                await channel.send(f"{member_display_name} started playing {current.activity.name} and does not have the role or is not being tracked!")
+                await channel.send(f"{member_display_name} started playing `{game['name']}` and does not have the role or is not being tracked!")
 
                 # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, {member_display_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{current.activity.name}` but don't have the role assigned!"
+                original_message = f"Hey, {member_display_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{game['name']}` but don't have the role assigned!"
                 
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current)
