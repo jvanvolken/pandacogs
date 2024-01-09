@@ -174,9 +174,6 @@ def UpdateMember(member_name, new_details):
 
 # Adds a list of games to the games list after verifying they are real games
 async def AddGames(server, game_list):
-    channel = server.get_channel(bot_channel)
-    await channel.send(f"{game_list}")
-
     new_games      = {}
     already_exists = {}
     failed_to_find = {}
@@ -186,7 +183,7 @@ async def AddGames(server, game_list):
         results = db_json.json()
 
         # Collect the game names
-        game_names = [details['name'] for details in results]
+        game_names = [string.capwords(details['name']) for details in results]
 
         # Get the top match for the provided name
         matches = difflib.get_close_matches(game, game_names, 1)
@@ -460,7 +457,7 @@ class AutoRolerPro(commands.Cog):
 
             # If there isn't a game recorded for the current activity already, add it
             if current.activity.name not in game_names:
-                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name.lower()])
+                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
                     await channel.send(f"{member_display_name} starting playing a new game, `{current.activity.name}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             
