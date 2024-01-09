@@ -565,7 +565,7 @@ class AutoRolerPro(commands.Cog):
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             
-            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*\n{new_games[0]['alternative_names']}"
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*\n{new_games}"
             view = GameListView(original_message, ctx, ListType.Select, new_games)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
