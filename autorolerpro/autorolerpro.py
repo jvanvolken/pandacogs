@@ -66,15 +66,6 @@ else:
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
 
-# Removes game from games list and saves to file
-def RemoveGame(game):
-    if game['name'] in games:
-        del games[game['name']]
-        with open(games_file, "w") as fp:
-            json.dump(games, fp, indent = 2, default = str)
-    else:
-        print(f"Failed to remove game. Could not find {game['name']} in list.")
-
 # Returns a string list of game names
 def GetNames(game_list):
     names = []
@@ -171,6 +162,21 @@ def UpdateMember(member_name, new_details):
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
+
+# Removes game from games list and saves to file
+async def RemoveGames(server, game):
+    if game['name'] in games:
+        role = discord.utils.get(server.roles, name = game['name'])
+        if role:
+            await role.delete()
+        else:
+            print(f"Failed to remove game. Could not find this role: `{game['name']}`!")
+
+        del games[game['name']]
+        with open(games_file, "w") as fp:
+            json.dump(games, fp, indent = 2, default = str)
+    else:
+        print(f"Failed to remove game. Could not find {game['name']} in list.")
 
 # Adds a list of games to the games list after verifying they are real games
 async def AddGames(server, game_list):
@@ -322,7 +328,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, original_message, ctx, list_type, game_list):
-        super().__init__(timeout = 60 * 60) # Times out after 1 hour
+        super().__init__(timeout = 60 * 3) # Times out after 3 minutes
 
         self.ctx = ctx
         self.list_type = list_type
@@ -402,7 +408,7 @@ class GameListView(discord.ui.View):
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}", ephemeral = True)
 
             elif self.list_type is ListType.Remove:
-                RemoveGame(self.game)
+                await RemoveGame(self.ctx.guild, self.game)
                 del self.game_list[self.game['name']]
 
                 view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list)
