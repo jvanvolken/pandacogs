@@ -472,7 +472,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = already_exists[0]
             else:
-                await channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!*")
+                await channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!")
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -600,3 +600,7 @@ class AutoRolerPro(commands.Cog):
                 set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+
+    @commands.command()
+    async def game_alias(self, ctx, *, arg):
+            await ctx.reply(f"{arg}")
