@@ -189,7 +189,7 @@ async def AddGames(server, game_list):
         game = string.capwords(game)
 
         # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date,alternative_names; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
         # Collect the game names
@@ -564,7 +564,8 @@ class AutoRolerPro(commands.Cog):
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
+            
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*\n{new_games[0]['alternative_names']}"
             view = GameListView(original_message, ctx, ListType.Select, new_games)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
