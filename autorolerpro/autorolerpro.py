@@ -30,7 +30,8 @@ members_file = f"{docker_cog_path}/members.json"
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
 
 # Bot Channel
-bot_channel = 634197647787556864 # 665572348350693406
+bot_channel_id = 634197647787556864
+admin_channel_id = 1013251079418421248
 
 # Blacklist for member activities
 activity_blacklist = ["Spotify"]
@@ -325,7 +326,7 @@ class DirectMessageView(discord.ui.View):
 
     async def on_timeout(self):
         #TODO Make this edit dynamic based on what the user selected (or didn't)
-        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
 
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
@@ -433,7 +434,9 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous, current):
         # Get important information about the context of the event
-        channel = current.guild.get_channel(bot_channel)
+        bot_channel = current.guild.get_channel(bot_channel_id)
+        admin_channel = current.guild.get_channel(admin_channel_id)
+
         member_display_name = current.display_name.encode().decode('ascii','ignore')
         member_name = current.name
 
@@ -460,21 +463,16 @@ class AutoRolerPro(commands.Cog):
         
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
-            # Get list of game names
-            # game_names = []
-            # for game in games.values():
-            #     game_names.append(game['name'])
-
             # If there isn't a game recorded for the current activity already, add it
-            # if current.activity.name not in game_names:
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
                 game = new_games[0]
-                await channel.send(f"Somebody started playing a new game, `{game['name']}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                await bot_channel.send(f"Somebody started playing a new game, `{game['name']}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
                 game = already_exists[0]
             else:
-                await channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!")
+                # TODO: Make this an interactive message where an admin can set the activity name as an alias to an existing game role
+                await admin_channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!")
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -486,10 +484,10 @@ class AutoRolerPro(commands.Cog):
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                await channel.send(f"{member_display_name} started playing `{game['name']}`!")
+                await bot_channel.send(f"{member_display_name} started playing `{game['name']}`!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
-                await channel.send(f"{member_display_name} started playing `{game['name']}` and does not have the role or is not being tracked!")
+                await bot_channel.send(f"{member_display_name} started playing `{game['name']}` and does not have the role or is not being tracked!")
 
                 # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
@@ -608,4 +606,5 @@ class AutoRolerPro(commands.Cog):
         role = re.findall(r'\<.*?\>', arg)[0]
         alias = arg.replace(role, '').strip()
 
+        # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
         await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
