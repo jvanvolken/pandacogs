@@ -373,7 +373,7 @@ class GameListView(discord.ui.View):
                 if self.list_type is ListType.Select:
                     extra_comment = "Please use !list_games to interact!"
                     
-                await interaction.response.send_message(f"You're not {self.ctx.message.author.mention}! Who are you?\n*{extra_comment}*", ephemeral = True)
+                await interaction.response.send_message(f"You're not {self.ctx.message.author.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
                 return
             
             if self.list_type is ListType.Select:
@@ -387,7 +387,7 @@ class GameListView(discord.ui.View):
                         view = GameListView(self.original_message, self.ctx, ListType.Select, self.game_list)
                         view.message = await interaction.message.edit(view = view)
 
-                        await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!", ephemeral = True)
+                        await interaction.response.send_message(f"I have removed you from the `{self.game['name']}` role!", ephemeral = True, delete_after = 10)
                     else:
                         # Assign role to member
                         member = interaction.user
@@ -397,7 +397,7 @@ class GameListView(discord.ui.View):
                         view.message = await interaction.message.edit(view = view)
 
                         # Informs the user that the role has been assigned to them
-                        await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!", ephemeral = True)
+                        await interaction.response.send_message(f"Added you to the `{self.game['name']}` role!", ephemeral = True, delete_after = 10)
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}", ephemeral = True)
 
@@ -408,7 +408,7 @@ class GameListView(discord.ui.View):
                 view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list)
                 view.message = await interaction.message.edit(view = view)
 
-                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True, timeout = 10)
+                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True, delete_after = 10)
 
     async def on_timeout(self):
         if not self.original_message:
