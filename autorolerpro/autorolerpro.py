@@ -164,7 +164,7 @@ def UpdateMember(member_name, new_details):
         json.dump(members, fp, indent = 2, default = str)
 
 # Removes game from games list and saves to file
-async def RemoveGames(server, game):
+async def RemoveGame(server, game):
     if game['name'] in games:
         role = discord.utils.get(server.roles, name = game['name'])
         if role:
