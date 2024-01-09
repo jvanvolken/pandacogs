@@ -1,12 +1,14 @@
 # Discord Bot Libraries
-import difflib
-import io
-import math
-import discord
-import json
-import os
-import string
 import requests
+import discord
+import difflib
+import string
+import math
+import json
+import io
+import os
+import re
+
 from PIL import Image
 from io import BytesIO
 from redbot.core import commands
@@ -603,4 +605,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def game_alias(self, ctx, *, arg):
-            await ctx.reply(f"{arg}")
+        role = re.findall(r'\<.*?\>', arg)[0]
+        alias = arg.replace(role, '').strip()
+
+        await ctx.reply(f"You would like me to give the {role} role an alias of {alias}, is this correct?")
