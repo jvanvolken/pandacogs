@@ -322,7 +322,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called GameListView that subclasses discord.ui.View
 class GameListView(discord.ui.View):
     def __init__(self, original_message, ctx, list_type, game_list):
-        super().__init__(timeout = 10)
+        super().__init__(timeout = 60 * 60) # Times out after 1 hour
 
         self.ctx = ctx
         self.list_type = list_type
@@ -408,13 +408,13 @@ class GameListView(discord.ui.View):
                 view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list)
                 view.message = await interaction.message.edit(view = view)
 
-                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True)
+                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True, timeout = 10)
 
     async def on_timeout(self):
         if not self.original_message:
             await self.message.delete()
         else:
-            await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please use `!list_games` again!*", view = None)
+            await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please resend the original command!*", view = None)
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
