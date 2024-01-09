@@ -463,14 +463,14 @@ class AutoRolerPro(commands.Cog):
             
             # Get the role associated with the current activity name (game name)
             role = discord.utils.get(current.guild.roles, name = current.activity.name)
-            
+
             if not role:
                 await channel.send(f"{member_display_name} starting playing `{current.activity.name}`... but I can't find it in the database. :(\n*I guess I'll go away then...*")
                 return
             
             # Exit if the member doesn't want to be bothered about this game
             if role.name in member['games'] and not member['games'][role.name]['tracked']:
-                return 
+                return
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
@@ -537,41 +537,39 @@ class AutoRolerPro(commands.Cog):
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             await ctx.reply(f"{ctx.message.author.mention}, you need to actually tell me what you want to add")
+            
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             await ctx.reply(f"I don't recognize any of these games, {ctx.message.author.mention}. Are you sure you know what you're talking about?")
+
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            view = GameListView("", ctx, ListType.Select, already_exists)
-            view.message = await ctx.reply(f"I already have all of these recorded! {ctx.message.author.mention}, how about you do a little more research before asking questions.", 
-                                           view = view)
+            original_message = f"I already have all of these recorded! {ctx.message.author.mention}, how about you do a little more research before asking questions."
+            view = GameListView(original_message, ctx, ListType.Select, already_exists)
+            view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            view = GameListView("", ctx, ListType.Select, already_exists)
-            view.message = await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.", 
-                                           view = view)
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
+            view = GameListView(original_message, ctx, ListType.Select, already_exists)
+            view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            view = GameListView("", ctx, ListType.Select, new_games)
-            view.message = await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*", 
-                                           view = view, 
-                                           files = await GetImages(new_games))
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
+            view = GameListView(original_message, ctx, ListType.Select, new_games)
+            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            view = GameListView("", ctx, ListType.Select, new_games)
-            view.message = await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*", 
-                                           view = view, 
-                                           files = await GetImages(new_games))
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            view = GameListView(original_message, ctx, ListType.Select, new_games)
+            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            view = GameListView("", ctx, ListType.Select, new_games | already_exists)
-            view.message = await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*", 
-                                           view = view, 
-                                           files = await GetImages(new_games))
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
+            view = GameListView(original_message, ctx, ListType.Select, new_games | already_exists)
+            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            view = GameListView("", ctx, ListType.Select, new_games | already_exists)
-            view.message = await ctx.reply(f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*", 
-                                           view = view, 
-                                           files = await GetImages(new_games))
+            original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            view = GameListView(original_message, ctx, ListType.Select, new_games | already_exists)
+            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
     async def remove_games(self, ctx):
