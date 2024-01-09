@@ -179,9 +179,6 @@ async def AddGames(server, game_list):
     failed_to_find = {}
     for game in game_list:
         game = string.capwords(game)
-        
-        channel = server.get_channel(bot_channel)
-        await channel.send(f"{game}")
 
         # Get games with the provided name
         db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
