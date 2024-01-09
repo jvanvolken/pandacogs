@@ -585,9 +585,11 @@ class AutoRolerPro(commands.Cog):
             set_count = 0
             while set_count < len(message_sets):
                 if set_count == 0:
-                    await ctx.reply(f"Here you go, {ctx.message.author.mention}. Please select the game(s) you'd like to remove...", view = GameListView(ctx, ListType.Remove, message_sets[set_count])) 
+                    original_message = f"Here you go, {ctx.message.author.mention}. Please select the game(s) you'd like to remove..."
+                    view = GameListView(original_message, ctx, ListType.Remove, message_sets[set_count])
+                    view.message = await ctx.reply(original_message, view = view) 
                 else:
-                    view = GameListView(ctx, ListType.Remove, message_sets[set_count])
+                    view = GameListView("", ctx, ListType.Remove, message_sets[set_count])
                     view.message = await ctx.reply(view = view)
                 set_count += 1
         else:
