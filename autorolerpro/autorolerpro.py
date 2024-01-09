@@ -455,6 +455,8 @@ class AutoRolerPro(commands.Cog):
             for game in games.values():
                 game_names.append(game['name'])
 
+            await channel.send(f"{current.activity}|{current.activity.name}|{current.activity.name.lower()}")
+            
             # If there isn't a game recorded for the current activity already, add it
             if current.activity.name not in game_names:
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name.lower()])
