@@ -608,4 +608,4 @@ class AutoRolerPro(commands.Cog):
         role = re.findall(r'\<.*?\>', arg)[0]
         alias = arg.replace(role, '').strip()
 
-        await ctx.reply(f"You would like me to give the {role} role an alias of {alias}, is this correct?")
+        await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
