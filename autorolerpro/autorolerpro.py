@@ -633,4 +633,4 @@ class AutoRolerPro(commands.Cog):
             return message.content == "Hello"
 
         msg = await self.bot.wait_for('message', check = check)
-        await channel.send(f"Thanks, {msg.author}! You replied with {msg}")
+        await channel.send(f"Thanks, {msg.author}! You replied with {msg.content}")
