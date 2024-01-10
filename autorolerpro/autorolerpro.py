@@ -472,10 +472,10 @@ class AutoRolerPro(commands.Cog):
             # If there isn't a game recorded for the current activity already, add it
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
-                game = new_games.values()[0]
+                game = list(new_games.values())[0]
                 await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
-                game = already_exists.values()[0]
+                game = list(already_exists.values())[0]
             else:
                 # TODO: Make this an interactive message where an admin can set the activity name as an alias to an existing game role
                 await admin_channel.send(f"{member_display_name} started playing `{current.activity.name}`, but I can't find it in the database!")
