@@ -620,10 +620,11 @@ class AutoRolerPro(commands.Cog):
     async def test_alias(self, ctx):
         channel = ctx.message.channel
 
-        original_msg = await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
-        def check(m):
-            return m.content == 'hello' and m.channel == channel
+        def check(message):
+            return message.content == "Hello"
 
-        msg = await original_msg.wait_for('message', check = check)
-        await channel.send(f"Thanks, {msg.author}! You replied with {msg}")
+        msg = await client.wait_for('message', check = check)
+
+        await channel.send(f"Thanks, {msg.author}! You replied with {msg.content}")
