@@ -618,7 +618,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def test_alias(self, ctx):
-        channel = ctx.message
+        channel = ctx.message.channel
 
         await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
