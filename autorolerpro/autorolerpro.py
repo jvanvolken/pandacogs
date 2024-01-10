@@ -634,7 +634,7 @@ class AutoRolerPro(commands.Cog):
         alias = "MTGArena"
 
         # Send the original message
-        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database! Please reply the full name associated with this game!")
 
         game = None
         while not game:
