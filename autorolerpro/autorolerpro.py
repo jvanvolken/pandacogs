@@ -224,7 +224,7 @@ async def AddGames(server, game_list):
                     with open(games_file, "w") as fp:
                         json.dump(games, fp, indent = 2, default = str)
 
-            already_exists[latest_game['name']] = latest_game
+            already_exists[latest_game['name']] = games[latest_game['name']]
         elif latest_game: 
             # Request the cover image urls
             db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
