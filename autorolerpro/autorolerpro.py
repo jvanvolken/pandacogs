@@ -636,6 +636,7 @@ class AutoRolerPro(commands.Cog):
         # Send the original message
         original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
+        game = None
         while not game:
             # Returns true of the message is a reply to the original message
             def check(message):
@@ -651,7 +652,6 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             elif len(failed_to_find) > 0:
-                game = None
                 msg.reply(f"Couldn't find that game, try again by replying to the original message!")
             
         await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
