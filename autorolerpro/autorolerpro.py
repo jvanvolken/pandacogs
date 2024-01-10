@@ -214,13 +214,6 @@ async def AddGames(server, game_list):
         if latest_game and latest_game['name'] in games:
             already_exists[latest_game['name']] = latest_game
         elif latest_game: 
-            new_games[latest_game['name']] = latest_game
-
-            # Add game to game list and saves file
-            games[latest_game['name']] = latest_game
-            with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str)
-
             # Request the cover image urls
             db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : db_header, 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
             results = db_json.json()
@@ -239,7 +232,18 @@ async def AddGames(server, game_list):
             if role:
                 await role.edit(colour = discord.Colour(int(color, 16)))
             else:
-                await server.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+                role = await server.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+
+            # Stores the role for future use
+            latest_game['role'] = role
+
+            # Adds the latest_game to the new_games list to return
+            new_games[latest_game['name']] = latest_game
+
+            # Add game to game list and saves file
+            games[latest_game['name']] = latest_game
+            with open(games_file, "w") as fp:
+                json.dump(games, fp, indent = 2, default = str)
         else:
             failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
         
@@ -467,12 +471,12 @@ class AutoRolerPro(commands.Cog):
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
                 game = new_games[0]
-                await bot_channel.send(f"Somebody started playing a new game, `{game['name']}`! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                await bot_channel.send(f"Hey, guys! Looks like some people have started playing a new game, @{game['name']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
                 game = already_exists[0]
             else:
                 # TODO: Make this an interactive message where an admin can set the activity name as an alias to an existing game role
-                await admin_channel.send(f"Sombody started playing `{current.activity.name}`, but I can't find it in the database!")
+                await admin_channel.send(f"{member_display_name} started playing `{current.activity.name}`, but I can't find it in the database!")
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -565,6 +569,8 @@ class AutoRolerPro(commands.Cog):
             original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
             view = GameListView(original_message, ctx, ListType.Select, new_games)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
+            for game in new_games:
+                await ctx.reply(f"{game['role']}")
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
@@ -608,3 +614,8 @@ class AutoRolerPro(commands.Cog):
 
         # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
         await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
+
+
+    @commands.command()
+    async def test_alias(self, ctx):
+        await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database!")
