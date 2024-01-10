@@ -630,7 +630,7 @@ class AutoRolerPro(commands.Cog):
         original_message = await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
         def check(message):
-            return message.reference.message_id == original_message.message_id
+            return message.reference and message.reference.message_id == original_message.message_id
 
         msg = await self.bot.wait_for('message', check = check)
         await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". Is this the game you're refering to?")
