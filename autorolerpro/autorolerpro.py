@@ -629,8 +629,8 @@ class AutoRolerPro(commands.Cog):
 
         await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
-        def check(message):
-            return message.content == "Hello"
+        # def check(message):
+        #     return message.content == "Hello"
 
-        msg = await self.bot.wait_for('message', check = check)
-        await channel.send(f"Thanks, {msg.author}! You replied with {msg.content}")
+        msg = await self.bot.wait_for('message') #, check = check)
+        await msg.reply(f"Thanks, {msg.author.mention}! You replied with {msg.content}. Is this the game you're refering to?")
