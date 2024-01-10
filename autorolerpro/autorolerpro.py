@@ -644,11 +644,11 @@ class AutoRolerPro(commands.Cog):
         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, [msg.content])
         if len(new_games) > 0:
             game = list(new_games.values())[0]
-            await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". new game\n{game}")
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
-            await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". existing game\n{game}")#, files = await GetImages(already_exists))
         # elif len(failed_to_find) > 0:
+            
+        await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". existing game\n{game['role']}", files = await GetImages({game['name'] : game}))
 
         
     # @commands.Cog.listener()
