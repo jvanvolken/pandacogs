@@ -569,8 +569,7 @@ class AutoRolerPro(commands.Cog):
             original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
             view = GameListView(original_message, ctx, ListType.Select, new_games)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
-            for game in new_games:
-                await ctx.reply(f"{game['role']}")
+            await ctx.reply(f"{new_games[0]['role']}")
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {ctx.message.author.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
