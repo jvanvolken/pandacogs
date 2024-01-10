@@ -620,7 +620,7 @@ class AutoRolerPro(commands.Cog):
         if message.type == discord.MessageType.reply:
             reference = await message.channel.fetch_message(message.reference.message_id)
 
-            if reference.author.id == client.user.id: # Checking if the message was sent by the bot
+            if reference.author.id == self.bot.user.id: # Checking if the message was sent by the bot
                 await message.reply("You replied to me!")
 
     @commands.command()
