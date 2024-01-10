@@ -32,6 +32,7 @@ general_channel_link = "https://discord.com/channels/633799810700410880/63379981
 # Bot Channel
 bot_channel_id = 634197647787556864
 admin_channel_id = 1013251079418421248
+test_channel_id = 665572348350693406
 
 # Blacklist for member activities
 activity_blacklist = ["Spotify"]
@@ -440,6 +441,7 @@ class AutoRolerPro(commands.Cog):
         # Get important information about the context of the event
         bot_channel = current.guild.get_channel(bot_channel_id)
         admin_channel = current.guild.get_channel(admin_channel_id)
+        test_channel = current.guild.get_channel(test_channel_id)
 
         member_display_name = current.display_name.encode().decode('ascii','ignore')
         member_name = current.name
@@ -470,7 +472,7 @@ class AutoRolerPro(commands.Cog):
             # If there isn't a game recorded for the current activity already, add it
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
-                await admin_channel.send(f"{new_games}")
+                await test_channel.send(f"{new_games}")
                 game = new_games[0]
                 await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
