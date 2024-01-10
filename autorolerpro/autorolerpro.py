@@ -473,7 +473,7 @@ class AutoRolerPro(commands.Cog):
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
                 game = list(new_games.values())[0]
-                await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}!\nI've gone ahead and added it to the server's list of games!.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             else:
@@ -490,10 +490,10 @@ class AutoRolerPro(commands.Cog):
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                await bot_channel.send(f"{member_display_name} started playing `{game['name']}`!")
+                await admin_channel.send(f"{member_display_name} started playing `{game['name']}`!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
-                await bot_channel.send(f"{member_display_name} started playing `{game['name']}` and does not have the role or is not being tracked!")
+                await admin_channel.send(f"{member_display_name} started playing `{game['name']}` and does not have the role or is not being tracked!")
 
                 # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
