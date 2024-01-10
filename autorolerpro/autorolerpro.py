@@ -8,6 +8,7 @@ import json
 import io
 import os
 import re
+import asyncio
 
 from PIL import Image
 from io import BytesIO
@@ -622,9 +623,11 @@ class AutoRolerPro(commands.Cog):
 
         await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
+        
+
         def check(message):
             return message.content == "Hello"
 
-        msg = await client.wait_for('message', check = check)
+        msg = await client.wait_for('message', check = asyncio.create_task(check))
 
         await channel.send(f"Thanks, {msg.author}! You replied with {msg.content}")
