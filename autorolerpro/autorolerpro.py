@@ -630,8 +630,11 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def test_alias(self, ctx):
+        
+        alias = "MTGArena"
+
         # Send the original message
-        original_message = await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
         # Returns true of the message is a reply to the original message
         def check(message):
@@ -648,7 +651,7 @@ class AutoRolerPro(commands.Cog):
             game = list(already_exists.values())[0]
         # elif len(failed_to_find) > 0:
             
-        await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". existing game\n{game['role']}", files = await GetImages({game['name'] : game}))
+        await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
 
         
     # @commands.Cog.listener()
