@@ -627,11 +627,10 @@ class AutoRolerPro(commands.Cog):
     async def test_alias(self, ctx):
         # channel = ctx.message.channel
 
-        await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        original_message = await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
-        async def check(message):
-            reference = await message.channel.fetch_message(message.reference.message_id)
-            return reference.author.id == self.bot.user.id
+        def check(message):
+            return message.reference.message_id == original_message.message_id
 
         msg = await self.bot.wait_for('message', check = check)
         await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". Is this the game you're refering to?")
