@@ -190,7 +190,7 @@ async def AddGames(server, game_list):
         game = string.capwords(game)
 
         # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date,alternative_names; limit 500; where summary != null; where rating != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
 
         # Collect the game names
@@ -471,7 +471,7 @@ class AutoRolerPro(commands.Cog):
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
                 game = new_games[0]
-                await bot_channel.send(f"Hey, guys! Looks like some people have started playing a new game, @{game['name']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
+                await bot_channel.send(f"Hey, guys! Looks like some people have started playing a new game, {game['role']}! I've gone ahead and added it to the list.", files = await GetImages(new_games))
             elif len(already_exists) > 0:
                 game = already_exists[0]
             else:
