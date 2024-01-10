@@ -652,7 +652,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             elif len(failed_to_find) > 0:
-                msg.reply(f"Couldn't find that game, try again by replying to the original message!")
+                await msg.reply(f"I could not find `{msg.content}` in the database! Please try again by replying to the original message!")
             
         await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
 
