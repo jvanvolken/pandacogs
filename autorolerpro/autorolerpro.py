@@ -8,7 +8,6 @@ import json
 import io
 import os
 import re
-import asyncio
 
 from PIL import Image
 from io import BytesIO
@@ -621,13 +620,14 @@ class AutoRolerPro(commands.Cog):
     async def test_alias(self, ctx):
         channel = ctx.message.channel
 
-        await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        sent_message = await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
+        res = await client.wait_for("message",
+            check=lambda x: x.channel.id == ctx.channel.id and ctx.author.id == x.author.id and x.content.lower() == "yes" or x.content.lower() == "no",
+            timeout=None,
+        )
         
-
-        def check(message):
-            return message.content == "Hello"
-
-        msg = await client.wait_for('message', check = asyncio.create_task(check))
-
-        await channel.send(f"Thanks, {msg.author}! You replied with {msg.content}")
+        if res.content.lower() == "yes":
+            await sent_message.edit(content=f"{ctx.author} said yes!")
+        else:
+            await sent_message.edit(content=f"{ctx.author} said no!")
