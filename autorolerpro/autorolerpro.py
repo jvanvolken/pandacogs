@@ -615,19 +615,14 @@ class AutoRolerPro(commands.Cog):
         # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
         await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.type == discord.MessageType.reply:
+            reference = await message.channel.fetch_message(message.reference.message_id)
+
+            if reference.author.id == client.user.id: # Checking if the message was sent by the bot
+                await message.reply("You replied to me!")
 
     @commands.command()
     async def test_alias(self, ctx):
-        channel = ctx.message.channel
-
-        sent_message = await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
-
-        res = await client.wait_for("message",
-            check=lambda x: x.channel.id == ctx.channel.id and ctx.author.id == x.author.id and x.content.lower() == "yes" or x.content.lower() == "no",
-            timeout=None,
-        )
-        
-        if res.content.lower() == "yes":
-            await sent_message.edit(content=f"{ctx.author} said yes!")
-        else:
-            await sent_message.edit(content=f"{ctx.author} said no!")
+        await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
