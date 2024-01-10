@@ -473,7 +473,7 @@ class AutoRolerPro(commands.Cog):
             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
             if len(new_games) > 0:
                 game = list(new_games.values())[0]
-                await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}!\n*I've gone ahead and added it to the server's list of games!*", files = await GetImages(new_games))
+                await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! - I've gone ahead and added it to the server's list of games!\n\n*{game['summary']}*", files = await GetImages(new_games))
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             else:
