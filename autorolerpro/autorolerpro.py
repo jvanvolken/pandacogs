@@ -213,7 +213,7 @@ async def AddGames(server, game_list):
 
         # Sort the games by alreadying existing, new games, and failed to find
         if latest_game and latest_game['name'] in games:
-            if not games[latest_game['name']]['role']:
+            if "role" not in games[latest_game['name']]:
                 # Looks for an existing role for the game
                 role = discord.utils.get(server.roles, name = latest_game['name'])
                 if role:
