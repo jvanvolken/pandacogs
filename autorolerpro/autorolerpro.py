@@ -213,6 +213,17 @@ async def AddGames(server, game_list):
 
         # Sort the games by alreadying existing, new games, and failed to find
         if latest_game and latest_game['name'] in games:
+            if not games[latest_game['name']]['role']:
+                # Looks for an existing role for the game
+                role = discord.utils.get(server.roles, name = latest_game['name'])
+                if role:
+                    # Stores the role for future use
+                    games[latest_game['name']]['role'] = role.mention
+
+                    # Update game in game list and saves file
+                    with open(games_file, "w") as fp:
+                        json.dump(games, fp, indent = 2, default = str)
+
             already_exists[latest_game['name']] = latest_game
         elif latest_game: 
             # Request the cover image urls
@@ -229,6 +240,7 @@ async def AddGames(server, game_list):
             # Create the Role and give it the dominant color of the cover art
             color = GetDominantColor(url)
             
+            # Looks for an existing role for the game
             role = discord.utils.get(server.roles, name = latest_game['name'])
             if role:
                 await role.edit(colour = discord.Colour(int(color, 16)))
@@ -615,6 +627,29 @@ class AutoRolerPro(commands.Cog):
         # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
         await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
 
+
+    @commands.command()
+    async def test_alias(self, ctx):
+        # Send the original message
+        original_message = await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+
+        # Returns true of the message is a reply to the original message
+        def check(message):
+            return message.reference and message.reference.message_id == original_message.id
+
+        # Wait for a reply in accordance with the check function
+        msg = await self.bot.wait_for('message', check = check)
+        
+        # Add the msg.content as a game to the server
+        new_games, already_exists, failed_to_find = await AddGames(ctx.guild, [msg.content])
+        if len(new_games) > 0:
+            game = list(new_games.values())[0]
+        elif len(already_exists) > 0:
+            game = list(already_exists.values())[0]
+        # elif len(failed_to_find) > 0:
+
+        await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". Is this the game you're refering to?\n{game['role']}", files = await GetImages([game]))
+        
     # @commands.Cog.listener()
     # async def on_message(self, message):
     #     if message.type == discord.MessageType.reply:
@@ -622,15 +657,3 @@ class AutoRolerPro(commands.Cog):
 
     #         if reference.author.id == self.bot.user.id: # Checking if the message was sent by the bot
     #             await message.reply("You replied to me!")
-
-    @commands.command()
-    async def test_alias(self, ctx):
-        # channel = ctx.message.channel
-
-        original_message = await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
-
-        def check(message):
-            return message.reference and message.reference.message_id == original_message.id
-
-        msg = await self.bot.wait_for('message', check = check)
-        await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". Is this the game you're refering to?")
