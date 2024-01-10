@@ -634,7 +634,7 @@ class AutoRolerPro(commands.Cog):
         alias = "MTGArena"
 
         # Send the original message
-        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database! Please reply the full name associated with this game!")
+        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
 
         game = None
         while not game:
@@ -652,7 +652,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             elif len(failed_to_find) > 0:
-                original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database! Please try again by replying to this message!")
+                original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message!*")
             
         await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
 
