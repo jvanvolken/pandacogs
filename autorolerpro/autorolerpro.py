@@ -625,12 +625,13 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def test_alias(self, ctx):
-        channel = ctx.message.channel
+        # channel = ctx.message.channel
 
-        await channel.send(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
+        await ctx.reply(f"Sombody started playing `MTGArena`, but I can't find it in the database! Please reply with the role or name associated with this game!")
 
-        # def check(message):
-        #     return message.content == "Hello"
+        async def check(message):
+            reference = await message.channel.fetch_message(message.reference.message_id)
+            return reference.author.id == self.bot.user.id
 
-        msg = await self.bot.wait_for('message') #, check = check)
-        await msg.reply(f"Thanks, {msg.author.mention}! You replied with {msg.content}. Is this the game you're refering to?")
+        msg = await self.bot.wait_for('message', check = check)
+        await msg.reply(f"Thanks, {msg.author.mention}! You replied with \"{msg.content}\". Is this the game you're refering to?")
