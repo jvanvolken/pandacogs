@@ -574,7 +574,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             else:
-                SetAlias(self.bot, current.guild, current.activity.name, current)
+                await SetAlias(self.bot, current.guild, current.activity.name, current)
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -726,7 +726,7 @@ class AutoRolerPro(commands.Cog):
     
     @commands.command()
     async def add_alias(self, ctx, *, arg):
-        SetAlias(self.bot, ctx.guild, arg)
+        await SetAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
     async def remove_alias(self, ctx, *, arg):
