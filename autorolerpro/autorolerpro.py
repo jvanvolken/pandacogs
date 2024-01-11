@@ -142,9 +142,6 @@ def GetDominantColor(image_url: str, palette_size: int = 16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
-# Adds an alias to the aliases list and saves file
-# def AddAlias(alias: str, game: str):
-
 # Adds a member to the members list and saves file
 def AddMember(member: discord.Member):
     # Collects the desired information about the member
@@ -735,48 +732,3 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(f"`{arg}` has been removed from the list!")
         else:
             await ctx.reply(f"I could not find `{arg}` in the list of aliases!")
-
-    # @commands.command()
-    # async def game_alias(self, ctx, *, arg):
-    #     role = re.findall(r'\<.*?\>', arg)[0]
-    #     alias = arg.replace(role, '').strip()
-
-    #     # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
-    #     await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
-
-    # @commands.command()
-    # async def test_alias(self, ctx):
-
-    #     alias = "MTGArena"
-
-    #     # Send the original message
-    #     original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
-
-    #     game = None
-    #     while not game:
-    #         # Returns true of the message is a reply to the original message
-    #         def check(message):
-    #             return message.reference and message.reference.message_id == original_message.id
-
-    #         # Wait for a reply in accordance with the check function
-    #         msg = await self.bot.wait_for('message', check = check)
-            
-    #         # Add the msg.content as a game to the server
-    #         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, [msg.content])
-    #         if len(new_games) > 0:
-    #             game = list(new_games.values())[0]
-    #         elif len(already_exists) > 0:
-    #             game = list(already_exists.values())[0]
-    #         elif len(failed_to_find) > 0:
-    #             original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message!*")
-            
-    #     await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
-
-        
-    # @commands.Cog.listener()
-    # async def on_message(self, message):
-    #     if message.type == discord.MessageType.reply:
-    #         reference = await message.channel.fetch_message(message.reference.message_id)
-
-    #         if reference.author.id == self.bot.user.id: # Checking if the message was sent by the bot
-    #             await message.reply("You replied to me!")
