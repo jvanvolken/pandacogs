@@ -52,50 +52,36 @@ class ListType(Enum):
     Select = 1
     Remove = 2
 
-# Setup initial empty data
-games = {}
-members = {}
-aliases = {}
+# Create the docker_cog_path if it doesn't already exist
+os.makedirs(docker_cog_path, exist_ok = True)
 
+# Initializes the games list
+if os.path.isfile(games_file):
+    with open(games_file, "r") as fp:
+        games = json.load(fp)
+else:
+    games = {}
+    with open(games_file, "w") as fp:
+        json.dump(games, fp, indent = 2, default = str)
 
-# Initializes all of the necessary data
-def InitializeData():
-    # Create the docker_cog_path if it doesn't already exist
-    os.makedirs(docker_cog_path, exist_ok = True)
+# Initializes the members list
+if os.path.isfile(members_file):
+    with open(members_file, "r") as fp:
+        members = json.load(fp)
+else:
+    members = {}
+    with open(members_file, "w") as fp:
+        json.dump(members, fp, indent = 2, default = str)
 
-    # Initializes the games list
-    if os.path.isfile(games_file):
-        try:
-            with open(games_file, "r") as fp:
-                games = json.load(fp)
-        except json.JSONDecodeError:
-            pass
-    else:
-        with open(games_file, "w") as fp:
-            json.dump({}, fp, indent = 2, default = str)
-
-    # Initializes the members list
-    if os.path.isfile(members_file):
-        try:
-            with open(members_file, "r") as fp:
-                members = json.load(fp)
-        except json.JSONDecodeError:
-            pass
-    else:
-        with open(members_file, "w") as fp:
-            json.dump(members, fp, indent = 2, default = str)
-
-    # Initializes the members list
-    if os.path.isfile(aliases_file):
-        try:
-            with open(aliases_file, "r") as fp:
-                aliases = json.load(fp)
-        except json.JSONDecodeError:
-            pass
-    else:
-        with open(aliases_file, "w") as fp:
-            json.dump(aliases, fp, indent = 2, default = str)
-InitializeData()
+# Initializes the members list
+if os.path.isfile(aliases_file):
+    with open(aliases_file, "r") as fp:
+        aliases = json.load(fp)
+else:
+    aliases = {}
+    with open(aliases_file, "w") as fp:
+        json.dump(aliases, fp, indent = 2, default = str)
+            
 
 # Returns a string list of game names
 def GetNames(game_list: list):
