@@ -57,6 +57,7 @@ games = {}
 members = {}
 aliases = {}
 
+
 # Initializes all of the necessary data
 def InitializeData():
     # Create the docker_cog_path if it doesn't already exist
