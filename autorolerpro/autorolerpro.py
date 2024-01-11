@@ -303,7 +303,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     if member:
         original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
     else:
-        original_message = await test_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name associated with this alias!")
+        original_message = await test_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
 
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
@@ -327,7 +327,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
         elif len(failed_to_find) > 0 and remaining_attempts > 0:
-            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}.*")
+            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
             attempt_count += 1
     
     if game:
