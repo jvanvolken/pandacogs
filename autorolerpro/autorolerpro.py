@@ -708,7 +708,7 @@ class AutoRolerPro(commands.Cog):
             longest_alias = max(list(aliases.keys()), key=len)
 
             # Sets up the message to reply with
-            message = "__**Here's that list of game aliases you asked for!**__\n\n"
+            message = "__**Here's that list of game aliases you asked for!**__\n"
             for alias, game in aliases.items():
                 message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
 
