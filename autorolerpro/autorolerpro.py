@@ -328,11 +328,14 @@ async def SetAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
         elif len(failed_to_find) > 0:
-            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {alias_max_attempts - attempt_count}.*")
+            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {alias_max_attempts - attempt_count - 1}.*")
             attempt_count += 1
     
-    # Once a game is found, it sets the alias and exits
-    await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
+    if game:
+        # Once a game is found, it sets the alias and exits
+        await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
+    else:
+        await msg.reply(f"Thanks for the attempt, {msg.author.mention}, but I wasn't able to find any games to assign the alias `{alias}` to!\n*Try again with `!set_alias {alias}`*")
 
 def RemoveAlias(alias: str):
     if alias in aliases:
