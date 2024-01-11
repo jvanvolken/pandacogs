@@ -734,7 +734,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def add_alias(self, ctx, *, arg):
         # Exits if the member is a bot or isn't whitelisted
-        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -742,7 +742,7 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def remove_alias(self, ctx, *, arg):
         # Exits if the member is a bot or isn't whitelisted
-        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
             return
         
         if RemoveAlias(arg):
