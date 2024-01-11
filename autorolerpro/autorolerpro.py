@@ -278,6 +278,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         
     return new_games, already_exists, failed_to_find
 
+# Adds an alias and game to the aliases list, adds the game if it doesn't already exist
 async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
     admin_channel = guild.get_channel(admin_channel_id)
     test_channel = guild.get_channel(test_channel_id)
@@ -324,6 +325,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     else:
         await msg.reply(f"Thanks for the attempt, {msg.author.mention}, but I wasn't able to find any games to assign the alias `{alias}` to!\n*Try again with `!set_alias {alias}`*")
 
+# Removes a specific alias from the aliases list
 def RemoveAlias(alias: str):
     if alias in aliases:
         del aliases[alias]
