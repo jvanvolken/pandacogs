@@ -113,13 +113,13 @@ async def GetImages(game_list: list):
 def GetListSets(game_list: dict, set_amount: int):
     list_sets = []
     item_count = 0
-    for game in game_list.values():
+    for name, details in game_list.items():
         idx = math.floor(item_count/set_amount)
         if idx < len(list_sets):
-            list_sets[idx][game['name']] = game
+            list_sets[idx][name] = details
         else:
             list_sets.append({})
-            list_sets[idx][game['name']] = game
+            list_sets[idx][name] = details
         item_count += 1
 
     return list_sets
