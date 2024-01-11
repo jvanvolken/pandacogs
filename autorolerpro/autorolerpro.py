@@ -1,4 +1,4 @@
-# Discord Bot Libraries
+
 import requests
 import discord
 import difflib
@@ -22,9 +22,10 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 client = discord.Client(intents = intents)
 
 # Cog Directory in Appdata
-docker_cog_path = "/data/cogs/AutoRoler"
+docker_cog_path = "/data/cogs/AutoRolerPro"
 games_file   = f"{docker_cog_path}/games.json"
 members_file = f"{docker_cog_path}/members.json"
+aliases_file = f"{docker_cog_path}/aliases.json"
 
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
@@ -44,41 +45,57 @@ db_header = {
     'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
 }
 
+alias_max_attempts = 5
+
 # Game list functions
 class ListType(Enum):
     Select = 1
     Remove = 2
 
-# Create the docker_cog_path if it doesn't already exist
-os.makedirs(docker_cog_path, exist_ok = True)
+# Setup initial empty data
+games = {}
+members = {}
+aliases = {}
 
-# Initializes the games list
-if os.path.isfile(games_file):
-    with open(games_file, "r") as fp:
-        games = json.load(fp)
-else:
-    games = {}
-    with open(games_file, "w") as fp:
-        json.dump(games, fp, indent = 2, default = str)
+# Initializes all of the necessary data
+def InitializeData():
+    # Create the docker_cog_path if it doesn't already exist
+    os.makedirs(docker_cog_path, exist_ok = True)
 
-# Initializes the members list
-if os.path.isfile(members_file):
-    with open(members_file, "r") as fp:
-        members = json.load(fp)
-else:
-    members = {}
-    with open(members_file, "w") as fp:
-        json.dump(members, fp, indent = 2, default = str)
+    # Initializes the games list
+    if os.path.isfile(games_file):
+        with open(games_file, "r") as fp:
+            games = json.load(fp)
+    else:
+        with open(games_file, "w") as fp:
+            json.dump(games, fp, indent = 2, default = str)
+
+    # Initializes the members list
+    if os.path.isfile(members_file):
+        with open(members_file, "r") as fp:
+            members = json.load(fp)
+    else:
+        with open(members_file, "w") as fp:
+            json.dump(members, fp, indent = 2, default = str)
+
+    # Initializes the members list
+    if os.path.isfile(aliases_file):
+        with open(aliases_file, "r") as fp:
+            aliases = json.load(fp)
+    else:
+        with open(aliases_file, "w") as fp:
+            json.dump(aliases, fp, indent = 2, default = str)
+InitializeData()
 
 # Returns a string list of game names
-def GetNames(game_list):
+def GetNames(game_list: list):
     names = []
     for game in game_list.values():
         names.append(game['name'])
     return f"`{'`, `'.join(names)}`"
 
-# Returns a string list of game names
-async def GetImages(game_list):
+# Returns a list of image files
+async def GetImages(game_list: list):
     images = []
     for game in game_list.values():
         response = requests.get(game['cover_url'])
@@ -96,7 +113,7 @@ async def GetImages(game_list):
     return images
 
 # Return a list of game sets containing a max of 25 games per set
-def GetGameSets(game_list):
+def GetGameSets(game_list: list):
     message_sets = []
     game_count = 0
     for game in game_list.values():
@@ -111,7 +128,7 @@ def GetGameSets(game_list):
     return message_sets
 
 # Returns the dominant color of an image
-def GetDominantColor(image_url, palette_size=16):
+def GetDominantColor(image_url: str, palette_size: int = 16):
     response = requests.get(image_url)
     img = Image.open(BytesIO(response.content))
 
@@ -129,8 +146,15 @@ def GetDominantColor(image_url, palette_size=16):
 
     return ('%02X%02X%02X' % tuple(dominant_color))
 
+# Adds an alias to the aliases list and saves file
+def AddAlias(alias: str, game: str):
+    aliases[alias] = game
+    # Saves the members dictionary to the json file
+    with open(aliases_file, "w") as fp:
+        json.dump(aliases, fp, indent = 2, default = str)
+
 # Adds a member to the members list and saves file
-def AddMember(member):
+def AddMember(member: discord.Member):
     # Collects the desired information about the member
     member_details = {}
     for detail in ['name', 'display_name', 'created_at', 'joined_at', 'roles']:
@@ -147,8 +171,8 @@ def AddMember(member):
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
 
-    # Update first dict with second recursively
-def MergeDictionaries(d1, d2):
+# Update first dict with second recursively
+def MergeDictionaries(d1: dict, d2: dict):
     if isinstance(d1, dict):
         for k, v in d1.items():
             if k in d2:
@@ -158,19 +182,19 @@ def MergeDictionaries(d1, d2):
     else:
         return d2
 
-# Updates a member to the members list and saves file
-def UpdateMember(member_name, new_details):
+# Updates a member in the members list and saves file
+def UpdateMember(member: discord.Member, new_details: dict):
     # Updates specific member with new details
-    MergeDictionaries(members[member_name], new_details)
+    MergeDictionaries(members[member.name], new_details)
         
     # Saves the members dictionary to the json file
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
 
 # Removes game from games list and saves to file
-async def RemoveGame(server, game):
+async def RemoveGame(guild: discord.Guild, game: dict):
     if game['name'] in games:
-        role = discord.utils.get(server.roles, name = game['name'])
+        role = discord.utils.get(guild.roles, name = game['name'])
         if role:
             await role.delete()
         else:
@@ -179,11 +203,14 @@ async def RemoveGame(server, game):
         del games[game['name']]
         with open(games_file, "w") as fp:
             json.dump(games, fp, indent = 2, default = str)
+        
+        return True
     else:
         print(f"Failed to remove game. Could not find {game['name']} in list.")
+        return False
 
 # Adds a list of games to the games list after verifying they are real games
-async def AddGames(server, game_list):
+async def AddGames(guild: discord.Guild, game_list: list):
     new_games      = {}
     already_exists = {}
     failed_to_find = {}
@@ -215,7 +242,7 @@ async def AddGames(server, game_list):
         if latest_game and latest_game['name'] in games:
             if "role" not in games[latest_game['name']]:
                 # Looks for an existing role for the game
-                role = discord.utils.get(server.roles, name = latest_game['name'])
+                role = discord.utils.get(guild.roles, name = latest_game['name'])
                 if role:
                     # Stores the role for future use
                     games[latest_game['name']]['role'] = role.mention
@@ -241,11 +268,11 @@ async def AddGames(server, game_list):
             color = GetDominantColor(url)
             
             # Looks for an existing role for the game
-            role = discord.utils.get(server.roles, name = latest_game['name'])
+            role = discord.utils.get(guild.roles, name = latest_game['name'])
             if role:
                 await role.edit(colour = discord.Colour(int(color, 16)))
             else:
-                role = await server.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+                role = await guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
 
             # Stores the role for future use
             latest_game['role'] = role.mention
@@ -261,6 +288,51 @@ async def AddGames(server, game_list):
             failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
         
     return new_games, already_exists, failed_to_find
+
+async def SetAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
+    admin_channel = guild.get_channel(admin_channel_id)
+
+    # Send the original message
+    if member:
+        original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
+    else:
+        original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name associated with this alias!")
+
+    # Sets up a loop to allow for multiple attempts at setting a name
+    game = None
+    attempt_count = 0
+    while not game and attempt_count < alias_max_attempts:
+        # Returns true of the message is a reply to the original message
+        def check(message):
+            return message.reference and message.reference.message_id == original_message.id
+
+        # Wait for a reply in accordance with the check function
+        msg = await bot.wait_for('message', check = check)
+        
+        # Add the msg.content as a game to the server
+        new_games, already_exists, failed_to_find = await AddGames(guild, [msg.content])
+
+        # If a new or existing game is found, assign it to game to exit the loop
+        if len(new_games) > 0:
+            game = list(new_games.values())[0]
+        elif len(already_exists) > 0:
+            game = list(already_exists.values())[0]
+        elif len(failed_to_find) > 0:
+            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {alias_max_attempts - attempt_count}.*")
+            attempt_count += 1
+    
+    # Once a game is found, it sets the alias and exits
+    await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
+
+def RemoveAlias(alias: str):
+    if alias in aliases:
+        del aliases[alias]
+        with open(aliases_file, "w") as fp:
+            json.dump(aliases, fp, indent = 2, default = str)
+
+        return True 
+    else:
+        return False
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
@@ -290,7 +362,7 @@ class DirectMessageView(discord.ui.View):
                 
                 # Records answer for this game and the current datetime for last played
                 update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}}}
-                UpdateMember(self.member.name, update)
+                UpdateMember(self.member, update)
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
@@ -314,7 +386,7 @@ class DirectMessageView(discord.ui.View):
 
                 # Records answer for this game and the current datetime for last played
                 update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : False, 'last_played' : None}}}
-                UpdateMember(self.member.name, update)
+                UpdateMember(self.member, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
@@ -333,7 +405,7 @@ class DirectMessageView(discord.ui.View):
             try:
                 # Updates the out_out flag for the member
                 update = {'opt_out' : True}
-                UpdateMember(self.member.name, update)
+                UpdateMember(self.member, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
@@ -428,13 +500,16 @@ class GameListView(discord.ui.View):
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.game['name']}`.\nPlease try adding the game again using !add_games {self.game['name']}", ephemeral = True)
 
             elif self.list_type is ListType.Remove:
-                await RemoveGame(self.ctx.guild, self.game)
-                del self.game_list[self.game['name']]
+                result = await RemoveGame(self.ctx.guild, self.game)
+                if result:
+                    del self.game_list[self.game['name']]
 
-                view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list)
-                view.message = await interaction.message.edit(view = view)
+                    view = GameListView(self.original_message, self.ctx, ListType.Remove, self.game_list)
+                    view.message = await interaction.message.edit(view = view)
 
-                await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True, delete_after = 10)
+                    await interaction.response.send_message(f"I have removed {self.game['name']} from the list!", ephemeral = True, delete_after = 10)
+                else:
+                    await interaction.response.send_message(f"I couldn't removed {self.game['name']} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
 
     async def on_timeout(self):
         if not self.original_message:
@@ -489,8 +564,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             else:
-                # TODO: Make this an interactive message where an admin can set the activity name as an alias to an existing game role
-                await admin_channel.send(f"{member_display_name} started playing `{current.activity.name}`, but I can't find it in the database!")
+                SetAlias(self.bot, current.guild, current.activity.name, current)
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -521,14 +595,14 @@ class AutoRolerPro(commands.Cog):
     async def opt_in(self, ctx):
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
-        UpdateMember(ctx.message.author.name, update)
+        UpdateMember(ctx.message.author, update)
         await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!")
 
     @commands.command()
     async def opt_out(self, ctx,):
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
-        UpdateMember(ctx.message.author.name, update)
+        UpdateMember(ctx.message.author, update)
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
 
     @commands.command()
@@ -602,6 +676,10 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
+        # Exits if the member is a bot or isn't whitelisted
+        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+            return
+        
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             message_sets = GetGameSets(games)
@@ -620,41 +698,68 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
     @commands.command()
-    async def game_alias(self, ctx, *, arg):
-        role = re.findall(r'\<.*?\>', arg)[0]
-        alias = arg.replace(role, '').strip()
+    async def list_aliases(self, ctx):
+        """Lists the collected game aliases for the server."""
+        if len(aliases) > 0:
+            # Get's the longest alias for formatting
+            longest_alias = max(list(aliases.keys()), key=len)
 
-        # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
-        await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
+            # Sets up the message to reply with
+            message = "__**Here's that list of game aliases you asked for!**__\n\n"
+            for alias, game in aliases.items():
+                message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
 
+            # Replies with the message
+            await ctx.reply(message)
+        else:
+            await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
+    
+    @commands.command()
+    async def add_alias(self, ctx, *, arg):
+        SetAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
-    async def test_alias(self, ctx):
+    async def remove_alias(self, ctx, *, arg):
+        if RemoveAlias(arg):
+            await ctx.reply(f"`{arg}` has been removed from the list!")
+        else:
+            await ctx.reply(f"I could not find `{arg}` in the list of aliases!")
 
-        alias = "MTGArena"
+    # @commands.command()
+    # async def game_alias(self, ctx, *, arg):
+    #     role = re.findall(r'\<.*?\>', arg)[0]
+    #     alias = arg.replace(role, '').strip()
 
-        # Send the original message
-        original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
+    #     # TODO: Make this an interactive reply with YES/NO buttons then add the alias to the game database
+    #     await ctx.reply(f"You would like me to give the {role} role an alias of `{alias}`, is this correct?")
 
-        game = None
-        while not game:
-            # Returns true of the message is a reply to the original message
-            def check(message):
-                return message.reference and message.reference.message_id == original_message.id
+    # @commands.command()
+    # async def test_alias(self, ctx):
 
-            # Wait for a reply in accordance with the check function
-            msg = await self.bot.wait_for('message', check = check)
+    #     alias = "MTGArena"
+
+    #     # Send the original message
+    #     original_message = await ctx.reply(f"Sombody started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
+
+    #     game = None
+    #     while not game:
+    #         # Returns true of the message is a reply to the original message
+    #         def check(message):
+    #             return message.reference and message.reference.message_id == original_message.id
+
+    #         # Wait for a reply in accordance with the check function
+    #         msg = await self.bot.wait_for('message', check = check)
             
-            # Add the msg.content as a game to the server
-            new_games, already_exists, failed_to_find = await AddGames(ctx.guild, [msg.content])
-            if len(new_games) > 0:
-                game = list(new_games.values())[0]
-            elif len(already_exists) > 0:
-                game = list(already_exists.values())[0]
-            elif len(failed_to_find) > 0:
-                original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message!*")
+    #         # Add the msg.content as a game to the server
+    #         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, [msg.content])
+    #         if len(new_games) > 0:
+    #             game = list(new_games.values())[0]
+    #         elif len(already_exists) > 0:
+    #             game = list(already_exists.values())[0]
+    #         elif len(failed_to_find) > 0:
+    #             original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message!*")
             
-        await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
+    #     await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
 
         
     # @commands.Cog.listener()
