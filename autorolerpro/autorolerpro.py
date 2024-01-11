@@ -157,11 +157,7 @@ def GetDominantColor(image_url: str, palette_size: int = 16):
     return ('%02X%02X%02X' % tuple(dominant_color))
 
 # Adds an alias to the aliases list and saves file
-def AddAlias(alias: str, game: str):
-    aliases[alias] = game
-    # Saves the members dictionary to the json file
-    with open(aliases_file, "w") as fp:
-        json.dump(aliases, fp, indent = 2, default = str)
+# def AddAlias(alias: str, game: str):
 
 # Adds a member to the members list and saves file
 def AddMember(member: discord.Member):
@@ -299,14 +295,15 @@ async def AddGames(guild: discord.Guild, game_list: list):
         
     return new_games, already_exists, failed_to_find
 
-async def SetAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
+async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
     admin_channel = guild.get_channel(admin_channel_id)
+    test_channel = guild.get_channel(test_channel_id)
 
     # Send the original message
     if member:
         original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
     else:
-        original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name associated with this alias!")
+        original_message = await test_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name associated with this alias!")
 
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
@@ -322,16 +319,23 @@ async def SetAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         # Add the msg.content as a game to the server
         new_games, already_exists, failed_to_find = await AddGames(guild, [msg.content])
 
+        remaining_attempts = alias_max_attempts - attempt_count - 1
+
         # If a new or existing game is found, assign it to game to exit the loop
         if len(new_games) > 0:
             game = list(new_games.values())[0]
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
-        elif len(failed_to_find) > 0:
-            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {alias_max_attempts - attempt_count - 1}.*")
+        elif len(failed_to_find) > 0 and remaining_attempts > 0:
+            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}.*")
             attempt_count += 1
     
     if game:
+        aliases[alias] = game['name']
+        # Saves the members dictionary to the json file
+        with open(aliases_file, "w") as fp:
+            json.dump(aliases, fp, indent = 2, default = str)
+
         # Once a game is found, it sets the alias and exits
         await msg.reply(f"Thanks, {msg.author.mention}! I've given {game['role']} an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
     else:
@@ -577,7 +581,7 @@ class AutoRolerPro(commands.Cog):
             elif len(already_exists) > 0:
                 game = list(already_exists.values())[0]
             else:
-                await SetAlias(self.bot, current.guild, current.activity.name, current)
+                await AddAlias(self.bot, current.guild, current.activity.name, current)
                 return
             
             # Get the role associated with the current activity name (game name)
@@ -729,10 +733,18 @@ class AutoRolerPro(commands.Cog):
     
     @commands.command()
     async def add_alias(self, ctx, *, arg):
-        await SetAlias(self.bot, ctx.guild, arg)
+        # Exits if the member is a bot or isn't whitelisted
+        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+            return
+        
+        await AddAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
     async def remove_alias(self, ctx, *, arg):
+        # Exits if the member is a bot or isn't whitelisted
+        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+            return
+        
         if RemoveAlias(arg):
             await ctx.reply(f"`{arg}` has been removed from the list!")
         else:
