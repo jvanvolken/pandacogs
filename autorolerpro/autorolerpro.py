@@ -556,16 +556,25 @@ class AutoRolerPro(commands.Cog):
         
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
-            # If there isn't a game recorded for the current activity already, add it
-            new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
-            if len(new_games) > 0:
-                game = list(new_games.values())[0]
-                await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! - I've gone ahead and added it to the server's list of games!\n*{game['summary']}*", files = await GetImages(new_games))
-            elif len(already_exists) > 0:
-                game = list(already_exists.values())[0]
-            else:
-                await AddAlias(self.bot, current.guild, current.activity.name, current)
-                return
+            
+            if current.activity.name in aliases:
+                game_name = aliases[current.activity.name]
+                if game_name in games:
+                    game = games[game_name]
+                else:
+                    await admin_channel.send(f"{member.mention} started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                    return
+            else:     
+                # If there isn't a game recorded for the current activity already, add it
+                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                if len(new_games) > 0:
+                    game = list(new_games.values())[0]
+                    await bot_channel.send(f"Hey, guys! Looks like some folks have started playing a new game, {game['role']}! - I've gone ahead and added it to the server's list of games!\n*{game['summary']}*", files = await GetImages(new_games))
+                elif len(already_exists) > 0:
+                    game = list(already_exists.values())[0]
+                else:
+                    await AddAlias(self.bot, current.guild, current.activity.name, current)
+                    return
             
             # Get the role associated with the current activity name (game name)
             role = discord.utils.get(current.guild.roles, name = game['name'])
