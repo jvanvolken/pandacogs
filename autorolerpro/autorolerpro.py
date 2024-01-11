@@ -7,7 +7,6 @@ import math
 import json
 import io
 import os
-import re
 
 from PIL import Image
 from io import BytesIO
@@ -82,7 +81,7 @@ else:
     aliases = {}
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
-            
+
 
 # Returns a string list of game names
 def GetNames(game_list: list):
