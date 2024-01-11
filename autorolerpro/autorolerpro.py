@@ -765,14 +765,3 @@ class AutoRolerPro(commands.Cog):
                 set_count += 1
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
-
-    @commands.command()
-    async def remove_alias(self, ctx, *, arg):
-        # Exits if the member is a bot or isn't whitelisted
-        if ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
-            return
-        
-        if RemoveAlias(arg):
-            await ctx.reply(f"`{arg}` has been removed from the list!")
-        else:
-            await ctx.reply(f"I could not find `{arg}` in the list of aliases!")
