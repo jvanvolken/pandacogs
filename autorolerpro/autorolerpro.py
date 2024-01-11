@@ -699,7 +699,7 @@ class AutoRolerPro(commands.Cog):
     async def remove_games(self, ctx):
         """Lists the collected games to select for removal."""
         # Exits if the member is a bot or isn't whitelisted
-        if ctx.message.bot or ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if  ctx.message.author.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
