@@ -65,24 +65,33 @@ def InitializeData():
 
     # Initializes the games list
     if os.path.isfile(games_file):
-        with open(games_file, "r") as fp:
-            games = json.load(fp)
+        try:
+            with open(games_file, "r") as fp:
+                games = json.load(fp)
+        except json.JSONDecodeError:
+            pass
     else:
         with open(games_file, "w") as fp:
-            json.dump(games, fp, indent = 2, default = str)
+            json.dump({}, fp, indent = 2, default = str)
 
     # Initializes the members list
     if os.path.isfile(members_file):
-        with open(members_file, "r") as fp:
-            members = json.load(fp)
+        try:
+            with open(members_file, "r") as fp:
+                members = json.load(fp)
+        except json.JSONDecodeError:
+            pass
     else:
         with open(members_file, "w") as fp:
             json.dump(members, fp, indent = 2, default = str)
 
     # Initializes the members list
     if os.path.isfile(aliases_file):
-        with open(aliases_file, "r") as fp:
-            aliases = json.load(fp)
+        try:
+            with open(aliases_file, "r") as fp:
+                aliases = json.load(fp)
+        except json.JSONDecodeError:
+            pass
     else:
         with open(aliases_file, "w") as fp:
             json.dump(aliases, fp, indent = 2, default = str)
