@@ -448,18 +448,6 @@ class ListView(discord.ui.View):
             self.member = member
             self.role = self.guild.get_role(self.details['role'])
             
-            # Get the role from the role ID associated with the game
-            if not self.role:
-                # Looks for an existing role for the game
-                role = discord.utils.get(guild.roles, name = self.name)
-                if role:
-                    # Stores the role for future use
-                    games[name]['role'] = role.id
-
-                    # Update game in game list and saves file
-                    with open(games_file, "w") as fp:
-                        json.dump(games, fp, indent = 2, default = str)
-            
             # Check if message author has the role and change button color accordingly
             if self.member:
                 if self.role in self.member.roles:
