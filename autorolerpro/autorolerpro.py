@@ -424,7 +424,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called ListView that subclasses discord.ui.View
 class ListView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
-        super().__init__(timeout = 60 * 3) # Times out after 3 minutes
+        super().__init__(timeout = 10) # Times out after 3 minutes
 
         self.original_message = original_message
         self.list_type = list_type
@@ -587,9 +587,9 @@ class AutoRolerPro(commands.Cog):
                 if len(new_games) > 0:
                     game = list(new_games.values())[0]
 
-                    original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!  -  Go ahead and click the button below to add yourself to the role!\n*```yaml\n{game['summary']}```*"
+                    original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                     view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
-                    view.message = await bot_channel.send(original_message, view = view, files = await GetImages(new_games))
+                    view.message = await bot_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
 
                 elif len(already_exists) > 0:
                     game = list(already_exists.values())[0]
