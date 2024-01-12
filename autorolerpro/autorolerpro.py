@@ -424,7 +424,7 @@ class DirectMessageView(discord.ui.View):
 # Create a class called ListView that subclasses discord.ui.View
 class ListView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
-        super().__init__(timeout = 10) # Times out after 3 minutes 60 * 3
+        super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
 
         self.original_message = original_message
         self.list_type = list_type
