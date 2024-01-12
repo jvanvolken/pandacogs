@@ -586,9 +586,11 @@ class AutoRolerPro(commands.Cog):
                 new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
                 if len(new_games) > 0:
                     game = list(new_games.values())[0]
-                    original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!  -  I've gone ahead and added it to the server's list of games!\n*```yaml\n{game['summary']}```*"
-                    view = ListView(original_message, ListType.Select_Game, new_games, current.guild, current)
+
+                    original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!  -  Go ahead and click the button below to add yourself to the role!\n*```yaml\n{game['summary']}```*"
+                    view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
                     view.message = await bot_channel.send(original_message, view = view, files = await GetImages(new_games))
+
                 elif len(already_exists) > 0:
                     game = list(already_exists.values())[0]
                 else:
