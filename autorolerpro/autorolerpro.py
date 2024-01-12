@@ -486,7 +486,7 @@ class ListView(discord.ui.View):
             
             if self.list_type is ListType.Select_Game:
                 # Looks for the role with the same name as the game
-                if self.role:
+                # if self.role:
                     if self.role in interaction.user.roles:
                         # Assign role to member
                         member = interaction.user
@@ -506,8 +506,8 @@ class ListView(discord.ui.View):
 
                         # Informs the user that the role has been assigned to them
                         await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
-                else:
-                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
+                # else:
+                    # await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
 
             elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
