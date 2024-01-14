@@ -92,7 +92,7 @@ else:
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
     Timer(backup_frequency * 3600, BackupRoutine).start()
-    print(f"\nInitiating routine backup! [{datetime.now()}]")
+    print(f"\nInitiating routine backup! [{str(datetime.now())}]")
 
     if updated['games']:
         with open(games_file, "w") as fp:
