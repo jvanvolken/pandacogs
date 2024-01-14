@@ -60,6 +60,8 @@ os.makedirs(docker_cog_path, exist_ok = True)
 if os.path.isfile(games_file):
     with open(games_file, "r") as fp:
         games = json.load(fp)
+        if 'history' in games:
+            del games['history']
 else:
     games = {}
     with open(games_file, "w") as fp:
@@ -344,18 +346,18 @@ def StartPlayingGame(member: discord.Member, game_name: str):
 
         # Constructs history dictionary for game if missing
         if 'history' not in games[game_name]:
-            games['history'] = {}
+            games[game_name]['history'] = {}
         
         # Adds the current date to the game's history if missing
-        if date not in games['history']:
-            games['history'][date] = {}
+        if date not in games[game_name]['history']:
+            games[game_name]['history'][date] = {}
 
         # Adds the member to the current date if missing
-        if member.name not in games['history'][date]:
-            games['history'][date][member.name] = {}
+        if member.name not in games[game_name]['history'][date]:
+            games[game_name]['history'][date][member.name] = {}
         
         # Sets the member's last_played datetime for the current day and game
-        games['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
         # Saves the changes to the games_file
         with open(games_file, "w") as fp:
@@ -370,19 +372,19 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         date = datetime.now().strftime('%Y-%m-%d')
 
         # Constructs history dictionary for game if missing
-        if 'history' in games[game_name] and date in games['history'] and member.name in games['history'][date]:
+        if 'history' in games[game_name] and date in games[game_name]['history'] and member.name in games[game_name]['history'][date]:
             # Get the difference in time between last_played and now
-            last_played  = games['history'][date][member.name]['last_played']
+            last_played  = games[game_name]['history'][date][member.name]['last_played']
             delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
 
             # Convert delta_time to hours and round to 2 decimal places
             hours = round(delta_time.total_seconds()/3600, 2)
 
             # Adds the member to the current date if missing
-            if 'playtime' not in games['history'][date][member.name]:
-                games['history'][date][member.name]['playtime'] = 0
+            if 'playtime' not in games[game_name]['history'][date][member.name]:
+                games[game_name]['history'][date][member.name]['playtime'] = 0
 
-            games['history'][date][member.name]['playtime'] += hours
+            games[game_name]['history'][date][member.name]['playtime'] += hours
 
             # Saves the changes to the games_file
             with open(games_file, "w") as fp:
