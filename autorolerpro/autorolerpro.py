@@ -396,7 +396,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         print(f"Could not find {game_name} in the game list when {member} started playing!")
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
-def GetPlaytime(game_list: dict, days: int, member: discord.Member = None):
+def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
     gameplay = {}
     for game_name, game_value in game_list.items():
         # Initializes the gameplay dictionary with zeros for each game
@@ -408,7 +408,10 @@ def GetPlaytime(game_list: dict, days: int, member: discord.Member = None):
                     # If member is provided, filter by their name
                     if member == None or name == member.name:
                         gameplay[game_name] += details['total-time']
-    return gameplay
+
+    # Sort the list by highest hours played and shrink to count
+    sorted_list = sorted(gameplay.items(), key = lambda x:x[1], reverse=True)[:count]
+    return dict(sorted_list)
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
@@ -607,9 +610,57 @@ class ListView(discord.ui.View):
             await self.message.delete()
         else:
             if self.member:
-                await self.message.edit(content = f"{self.original_message}\n *This request has timed out! If you weren't done yet, please resend the original command!*", view = None)
+                await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
             else:
                 await self.message.edit(content = f"{self.original_message}", view = None)
+
+# Create a class called PlaytimeView that subclasses discord.ui.View
+class PlaytimeView(discord.ui.View):
+    def __init__(self, original_message: str, member: discord.Member = None):
+        super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
+
+        self.original_message = original_message
+        self.member = member
+
+        self.add_item(self.ServerButton(self.original_message))
+        self.add_item(self.SelfButton(self.original_message, self.member))
+
+    # Create a class called YesButton that subclasses discord.ui.Button
+    class ServerButton(discord.ui.Button):
+        def __init__(self, original_message: str):
+            super().__init__(label = "Server", style = discord.ButtonStyle.primary, emoji = "💻")
+            self.original_message = original_message
+
+        async def callback(self, interaction):
+            try:
+                playtime_message = ""
+                for game, hours in GetPlaytime(games, 30, 5).items():
+                    playtime_message += f"- **{game}** *({hours:,} hours)*\n"
+
+                await interaction.response.send_message(f"Here you go, {self.member.mention}! These are the server's top 5 games this month!\n{playtime_message}")
+            except Exception as error:
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.")
+                raise Exception(error)
+
+    class SelfButton(discord.ui.Button):
+        def __init__(self, original_message: str, member: discord.Member):
+            super().__init__(label = "Self", style = discord.ButtonStyle.primary, emoji = "😁")
+            self.original_message = original_message
+            self.member = member
+
+        async def callback(self, interaction):
+            try:
+                playtime_message = ""
+                for game, hours in GetPlaytime(games, 30, 5, self.member).items():
+                    playtime_message += f"- **{game}** *({hours:,} hours)*\n"
+
+                await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
+            except Exception as error:
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
+                raise Exception(error)
+            
+    async def on_timeout(self):
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
@@ -641,11 +692,6 @@ class AutoRolerPro(commands.Cog):
         if current.name not in members:
             AddMember(current)
 
-        member = members[current.name]
-        # Exit if the member has opted out of the autoroler
-        if member['opt_out']:
-            return
-        
         # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
         if previous.activity and previous.activity.name == current.activity.name:
             return
@@ -654,6 +700,11 @@ class AutoRolerPro(commands.Cog):
         if current.activity and current.activity.name not in activity_blacklist:
             StartPlayingGame(current, current.activity.name)
 
+            member = members[current.name]
+            # Exit if the member has opted out of the autoroler
+            if member['opt_out']:
+                return
+        
             # Checks of the activity is an alias first to avoid a potentially unnecessary API call
             if current.activity.name in aliases:
                 game_name = aliases[current.activity.name]
@@ -879,3 +930,9 @@ class AutoRolerPro(commands.Cog):
                 set_count += 1
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
+
+    @commands.command()
+    async def top_games(self, ctx, member = False):
+        original_message = f"Hey, {member.mention}! Would you like to see the top games for the server or just yourself?"
+        view = PlaytimeView(original_message, member)
+        view.message = await ctx.reply(f"{original_message}", view = view)
