@@ -11,7 +11,7 @@ import os
 from PIL import Image
 from io import BytesIO
 from redbot.core import commands
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 
 # Initializes intents
@@ -21,10 +21,10 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 client = discord.Client(intents = intents)
 
 # Cog Directory in Appdata
-docker_cog_path = "/data/cogs/AutoRolerPro"
-games_file   = f"{docker_cog_path}/games.json"
-members_file = f"{docker_cog_path}/members.json"
-aliases_file = f"{docker_cog_path}/aliases.json"
+docker_cog_path  = "/data/cogs/AutoRolerPro"
+games_file       = f"{docker_cog_path}/games.json"
+members_file     = f"{docker_cog_path}/members.json"
+aliases_file     = f"{docker_cog_path}/aliases.json"
 
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
@@ -44,6 +44,7 @@ db_header = {
     'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
 }
 
+# Sets the max attempts to set an alias
 alias_max_attempts = 5
 
 # List types
@@ -73,7 +74,7 @@ else:
     with open(members_file, "w") as fp:
         json.dump(members, fp, indent = 2, default = str)
 
-# Initializes the members list
+# Initializes the aliases list
 if os.path.isfile(aliases_file):
     with open(aliases_file, "r") as fp:
         aliases = json.load(fp)
@@ -81,7 +82,6 @@ else:
     aliases = {}
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
-
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -336,6 +336,78 @@ def RemoveAlias(alias_name: str):
     else:
         return False
 
+# Handles tracking of gameplay when someone starts playing
+def StartPlayingGame(member: discord.Member, game_name: str):
+    if game_name in games:
+        # Grabs the current YYYY-MM-DD from the current datetime
+        date = datetime.now().strftime('%Y-%m-%d')
+
+        # Constructs history dictionary for game if missing
+        if 'history' not in games[game_name]:
+            games['history'] = {}
+        
+        # Adds the current date to the game's history if missing
+        if date not in games['history']:
+            games['history'][date] = {}
+
+        # Adds the member to the current date if missing
+        if member.name not in games['history'][date]:
+            games['history'][date][member.name] = {}
+        
+        # Sets the member's last_played datetime for the current day and game
+        games['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+        # Saves the changes to the games_file
+        with open(games_file, "w") as fp:
+            json.dump(games, fp, indent = 2, default = str)
+    else:
+        print(f"Could not find {game_name} in the game list when {member} started playing!")
+
+# Records number of hours played since member started playing game and tallies for the day
+def StopPlayingGame(member: discord.Member, game_name: str):
+    if game_name in games:
+        # Grabs the current YYYY-MM-DD from the current datetime
+        date = datetime.now().strftime('%Y-%m-%d')
+
+        # Constructs history dictionary for game if missing
+        if 'history' in games[game_name] and date in games['history'] and member.name in games['history'][date]:
+            # Get the difference in time between last_played and now
+            last_played  = games['history'][date][member.name]['last_played']
+            delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
+
+            # Convert delta_time to hours and round to 2 decimal places
+            hours = round(delta_time.total_seconds()/3600, 2)
+
+            # Adds the member to the current date if missing
+            if 'playtime' not in games['history'][date][member.name]:
+                games['history'][date][member.name]['playtime'] = 0
+
+            games['history'][date][member.name]['playtime'] += hours
+
+            # Saves the changes to the games_file
+            with open(games_file, "w") as fp:
+                json.dump(games, fp, indent = 2, default = str)
+                
+        else:
+            print(f"Something went wrong when {member} stopped playing {game_name}!")
+    else:
+        print(f"Could not find {game_name} in the game list when {member} started playing!")
+
+# Gets the total playtime over the last number of given days. Include optional member to filter
+def GetPlaytime(game_list: dict, days: int, member: discord.Member = None):
+    gameplay = {}
+    for game_name, game_value in game_list.items():
+        # Initializes the gameplay dictionary with zeros for each game
+        gameplay[game_name] = 0
+        for day, day_value in game_value['history'].items():
+            # Checks if day is within the number of days specified
+            if datetime.strptime(day, '%Y.%m.%d') > datetime.now() - timedelta(days = days):
+                for name, details in day_value.items():
+                    # If member is provided, filter by their name
+                    if member == None or name == member.name:
+                        gameplay[game_name] += details['total-time']
+    return gameplay
+
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
     def __init__(self, original_message, role, member):
@@ -550,22 +622,24 @@ class AutoRolerPro(commands.Cog):
         admin_channel = current.guild.get_channel(admin_channel_id)
         test_channel = current.guild.get_channel(test_channel_id)
 
+        # Gather member information
         member_display_name = current.display_name.encode().decode('ascii','ignore')
-        member_name = current.name
-
-        # Exit if there's not current activity
-        if current.activity is None:
-            return
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or member_name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+            return
+        
+        # Exit if there's not current activity
+        if current.activity is None:
+            if previous.activity and previous.activity.name in games:
+                StopPlayingGame(current, previous.activity.name)
             return
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
-        if member_name not in members:
+        if current.name not in members:
             AddMember(current)
 
-        member = members[member_name]
+        member = members[current.name]
         # Exit if the member has opted out of the autoroler
         if member['opt_out']:
             return
@@ -576,7 +650,9 @@ class AutoRolerPro(commands.Cog):
         
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
-            
+            StartPlayingGame(current, current.activity.name)
+
+            # Checks of the activity is an alias first to avoid a potentially unnecessary API call
             if current.activity.name in aliases:
                 game_name = aliases[current.activity.name]
                 if game_name in games:
@@ -601,7 +677,7 @@ class AutoRolerPro(commands.Cog):
                     return
             
             # Get the role associated with the current activity name (game name)
-            role = discord.utils.get(current.guild.roles, name = game['name'])
+            role = current.guild.get_role(game['role'])
             
             # Exit if the member doesn't want to be bothered about this game
             if role.name in member['games'] and not member['games'][role.name]['tracked']:
@@ -609,16 +685,16 @@ class AutoRolerPro(commands.Cog):
             
             # When somebody starts playing a game and if they are part of the role
             if role in current.roles and role.name in member['games']: 
-                await admin_channel.send(f"{member_display_name} started playing `{game['name']}`!")
+                await admin_channel.send(f"`{member_display_name}` started playing `{game['name']}`!")
             else:
                 # Informs the test channel that the member is playing a game without it's role assigned
-                await admin_channel.send(f"{member_display_name} started playing `{game['name']}` and/or does not have the role or is not being tracked!")
+                await admin_channel.send(f"`{member_display_name}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
 
                 # Get the direct message channel from the member
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, {member_display_name}! I'm from the [Pavilion Horde server]({general_channel_link}) and I noticed you were playing `{game['name']}` but don't have the role assigned!"
+                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({general_channel_link}) and I noticed you were playing `{game['name']}` but don't have the role assigned!"
                 
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current)
