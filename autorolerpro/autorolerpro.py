@@ -91,7 +91,7 @@ else:
 
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
-    Timer(backup_frequency, BackupRoutine).start()
+    Timer(backup_frequency * 3600, BackupRoutine).start()
     print("Initiating routine backup!")
 
     if updated['games']:
@@ -115,7 +115,7 @@ def BackupRoutine():
     else:
         print("--Aliases file skipped, no changes!")
 
-Timer(backup_frequency, BackupRoutine).start()
+Timer(backup_frequency * 3600, BackupRoutine).start()
     
 # Returns a string list of game names
 def GetNames(game_list: list):
