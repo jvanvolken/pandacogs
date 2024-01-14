@@ -117,10 +117,10 @@ def Log(message):
     # Initializes the members list
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
-            fp.writelines(message)
+            fp.writelines(f"\n{message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(message)
+            fp.writelines(f"\n{message}")
 
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
