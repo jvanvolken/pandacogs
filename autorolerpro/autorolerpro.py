@@ -409,7 +409,7 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
                 for name, details in day_value.items():
                     # If member is provided, filter by their name
                     if member == None or name == member.name:
-                        gameplay[game_name] += details['total-time']
+                        gameplay[game_name] += details['playtime']
 
     # Sort the list by highest hours played and shrink to count
     sorted_list = sorted(gameplay.items(), key = lambda x:x[1], reverse=True)[:count]
