@@ -688,7 +688,7 @@ class AutoRolerPro(commands.Cog):
         member_display_name = current.display_name.encode().decode('ascii','ignore')
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish"]:
             return
         
         # Exit if there's not current activity
@@ -865,7 +865,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish"]:
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -909,7 +909,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish"]:
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -921,7 +921,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish"]:
             return
         
         if len(aliases) > 0:
