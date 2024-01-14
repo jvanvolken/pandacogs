@@ -442,9 +442,9 @@ def BackupRoutine(backup_scheduler: sched.scheduler):
     backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
     print("Scheduled event activated!")
 
-backup_scheduler = sched.scheduler(time.time, time.sleep)
-backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
-backup_scheduler.run()
+# backup_scheduler = sched.scheduler(time.time, time.sleep)
+# backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
+# backup_scheduler.run()
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
