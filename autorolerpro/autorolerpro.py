@@ -68,7 +68,7 @@ update_flags = {
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
-backup_frequency = 0.1
+backup_frequency = 0.005
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
