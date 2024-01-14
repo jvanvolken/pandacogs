@@ -3,18 +3,16 @@ import requests
 import discord
 import difflib
 import string
-import sched
-import time
 import math
 import json
-import io
 import os
 
-from PIL import Image
-from io import BytesIO
-from redbot.core import commands
 from datetime import datetime, timedelta
+from redbot.core import commands
+from threading import Timer
+from io import BytesIO
 from enum import Enum
+from PIL import Image
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
@@ -27,6 +25,9 @@ docker_cog_path  = "/data/cogs/AutoRolerPro"
 games_file       = f"{docker_cog_path}/games.json"
 members_file     = f"{docker_cog_path}/members.json"
 aliases_file     = f"{docker_cog_path}/aliases.json"
+
+# Dictionary of updated file flags
+updated = {'games' : False, 'members': False, 'aliases': False}
 
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
@@ -50,7 +51,7 @@ db_header = {
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
-backup_frequency = 0.003
+backup_frequency = 0.005
 
 # List types
 class ListType(Enum):
@@ -88,6 +89,34 @@ else:
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
 
+# Sets up the non-blocking data backup routine in accordance with the backup frequency
+def BackupRoutine():
+    Timer(backup_frequency, BackupRoutine).start()
+    print("Initiating routine backup!")
+
+    if updated['games']:
+        with open(games_file, "w") as fp:
+            json.dump(games, fp, indent = 2, default = str)
+        print("--Games file saved successfully!")
+    else:
+        print("--Games file skipped, no changes!")
+
+    if updated['members']:
+        with open(members_file, "w") as fp:
+            json.dump(members, fp, indent = 2, default = str)
+        print("--Members file saved successfully!")
+    else:
+        print("--Members file skipped, no changes!")
+
+    if updated['aliases']:
+        with open(aliases_file, "w") as fp:
+            json.dump(aliases, fp, indent = 2, default = str)
+        print("--Aliases file saved successfully!")
+    else:
+        print("--Aliases file skipped, no changes!")
+
+Timer(backup_frequency, BackupRoutine).start()
+    
 # Returns a string list of game names
 def GetNames(game_list: list):
     names = []
@@ -106,7 +135,7 @@ async def GetImages(game_list: list):
         filename = "".join(c for c in game['name'] if c.isalpha() or c.isdigit() or c == ' ').rstrip()
 
         # Convert PIL image to a useable binary image
-        with io.BytesIO() as image_binary:
+        with BytesIO() as image_binary:
             img.save(image_binary, 'PNG')
             image_binary.seek(0)
             images.append(discord.File(fp=image_binary, filename=f"{filename}_cover.png"))
@@ -161,9 +190,12 @@ def AddMember(member: discord.Member):
     # Adds the member details to the members list
     members[member_details['name']] = member_details
 
+    # Toggles the updated flag for members
+    updated['members'] = True
+
     # Saves the members dictionary to the json file
-    with open(members_file, "w") as fp:
-        json.dump(members, fp, indent = 2, default = str)
+    # with open(members_file, "w") as fp:
+    #     json.dump(members, fp, indent = 2, default = str)
 
 # Update first dict with second recursively
 def MergeDictionaries(d1: dict, d2: dict):
@@ -180,10 +212,12 @@ def MergeDictionaries(d1: dict, d2: dict):
 def UpdateMember(member: discord.Member, new_details: dict):
     # Updates specific member with new details
     MergeDictionaries(members[member.name], new_details)
-        
+    
+    # Toggles the updated flag for members
+    updated['members'] = False
     # Saves the members dictionary to the json file
-    with open(members_file, "w") as fp:
-        json.dump(members, fp, indent = 2, default = str)
+    # with open(members_file, "w") as fp:
+    #     json.dump(members, fp, indent = 2, default = str)
 
 # Removes game from games list and saves to file
 async def RemoveGame(role: discord.Role, game_name: str):
@@ -195,8 +229,12 @@ async def RemoveGame(role: discord.Role, game_name: str):
             print(f"Failed to remove game. Could not find this role: `{game_name}`!")
 
         del games[game_name]
-        with open(games_file, "w") as fp:
-            json.dump(games, fp, indent = 2, default = str)
+
+        # Toggles the updated flag for games
+        updated['games'] = True
+
+        # with open(games_file, "w") as fp:
+        #     json.dump(games, fp, indent = 2, default = str)
         
         return True
     else:
@@ -242,9 +280,12 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     # Stores the role for future use
                     games[latest_game['name']]['role'] = role.id
 
+                    # Toggles the updated flag for games
+                    updated['games'] = True
+
                     # Update game in game list and saves file
-                    with open(games_file, "w") as fp:
-                        json.dump(games, fp, indent = 2, default = str)
+                    # with open(games_file, "w") as fp:
+                    #     json.dump(games, fp, indent = 2, default = str)
 
             already_exists[latest_game['name']] = games[latest_game['name']]
         elif latest_game: 
@@ -277,8 +318,11 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             # Add game to game list and saves file
             games[latest_game['name']] = latest_game
-            with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str)
+
+            # Toggles the updated flag for games
+            updated['games'] = True
+            # with open(games_file, "w") as fp:
+            #     json.dump(games, fp, indent = 2, default = str)
         else:
             failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
         
@@ -322,9 +366,12 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     
     if game:
         aliases[alias] = game['name']
+
+        # Toggles the updated flag for aliases
+        updated['aliases'] = True
         # Saves the members dictionary to the json file
-        with open(aliases_file, "w") as fp:
-            json.dump(aliases, fp, indent = 2, default = str)
+        # with open(aliases_file, "w") as fp:
+        #     json.dump(aliases, fp, indent = 2, default = str)
 
         # Once a game is found, it sets the alias and exits
         await msg.reply(f"Thanks, {msg.author.mention}! I've given <@&{game['role']}> an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
@@ -335,8 +382,11 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
 def RemoveAlias(alias_name: str):
     if alias_name in aliases:
         del aliases[alias_name]
-        with open(aliases_file, "w") as fp:
-            json.dump(aliases, fp, indent = 2, default = str)
+
+        # Toggles the updated flag for aliases
+        updated['aliases'] = True
+        # with open(aliases_file, "w") as fp:
+        #     json.dump(aliases, fp, indent = 2, default = str)
 
         return True 
     else:
@@ -369,9 +419,11 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     # Sets the member's last_played datetime for the current day and game
     games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
+    # Toggles the updated flag for games
+    updated['games'] = True
     # Saves the changes to the games_file
-    with open(games_file, "w") as fp:
-        json.dump(games, fp, indent = 2, default = str)
+    # with open(games_file, "w") as fp:
+        # json.dump(games, fp, indent = 2, default = str)
 
 # Records number of hours played since member started playing game and tallies for the day
 def StopPlayingGame(member: discord.Member, game_name: str):
@@ -402,9 +454,11 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         
         games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
+        # Toggles the updated flag for games
+        updated['games'] = True
         # Saves the changes to the games_file
-        with open(games_file, "w") as fp:
-            json.dump(games, fp, indent = 2, default = str)
+        # with open(games_file, "w") as fp:
+        #     json.dump(games, fp, indent = 2, default = str)
     else:
         print(f"Something went wrong when {member} stopped playing {game_name}!")
 
@@ -435,16 +489,6 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
     # Sort the list by highest hours played and shrink to count
     sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
     return dict(sorted_list)
-
-# Set up scheduler for routine backups
-def BackupRoutine(backup_scheduler: sched.scheduler): 
-    # Schedule the next backup
-    backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
-    print("Scheduled event activated!")
-
-# backup_scheduler = sched.scheduler(time.time, time.sleep)
-# backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
-# backup_scheduler.run()
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
