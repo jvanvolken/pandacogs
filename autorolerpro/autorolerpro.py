@@ -756,44 +756,40 @@ class AutoRolerPro(commands.Cog):
         # Sets up the non-blocking data backup routine in accordance with the backup frequency
         def BackupRoutine():
             # Sets up the next backup routine
-            Timer(2, BackupRoutine).start()
+            Timer(10, BackupRoutine).start()
             # Logs the current date and time
             current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-            print(current_datetime)
 
-            with open(log_file, "a") as fp:
-                fp.writelines(f"\n{current_datetime}")
+            Log(f"{current_datetime}: Initiating routine data backup sequence.")
+
+            # Returns true if games flag is updated
+            comment = UpdateFlag(Flags.Games)
+            if comment:
+                with open(games_file, "w") as fp:
+                    json.dump(games, fp, indent = 2, default = str)        
                 
-            # Log(f"{current_datetime}: Initiating routine data backup sequence.")
+                # Logs backup
+                Log(f"{current_datetime}: Successfully saved to {games_file}\n--{comment}")
 
-            # # Returns true if games flag is updated
-            # comment = UpdateFlag(Flags.Games)
-            # if comment:
-            #     with open(games_file, "w") as fp:
-            #         json.dump(games, fp, indent = 2, default = str)        
+            # Returns true if members flag is updated
+            comment = UpdateFlag(Flags.Members)
+            if comment:
+                with open(members_file, "w") as fp:
+                    json.dump(members, fp, indent = 2, default = str)
                 
-            #     # Logs backup
-            #     Log(f"{current_datetime}: Successfully saved to {games_file}\n--{comment}")
+                # Logs backup
+                Log(f"{current_datetime}: Successfully saved to {members_file}\n--{comment}")
 
-            # # Returns true if members flag is updated
-            # comment = UpdateFlag(Flags.Members)
-            # if comment:
-            #     with open(members_file, "w") as fp:
-            #         json.dump(members, fp, indent = 2, default = str)
+            # Returns true if aliases flag is updated
+            comment = UpdateFlag(Flags.Aliases)
+            if comment:
+                with open(aliases_file, "w") as fp:
+                    json.dump(aliases, fp, indent = 2, default = str)
                 
-            #     # Logs backup
-            #     Log(f"{current_datetime}: Successfully saved to {members_file}\n--{comment}")
+                # Logs backup
+                Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{comment}")
 
-            # # Returns true if aliases flag is updated
-            # comment = UpdateFlag(Flags.Aliases)
-            # if comment:
-            #     with open(aliases_file, "w") as fp:
-            #         json.dump(aliases, fp, indent = 2, default = str)
-                
-            #     # Logs backup
-            #     Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{comment}")
-
-        Timer(2, BackupRoutine).start()
+        Timer(10, BackupRoutine).start()
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
