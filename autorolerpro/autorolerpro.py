@@ -214,7 +214,7 @@ def UpdateMember(member: discord.Member, new_details: dict):
     MergeDictionaries(members[member.name], new_details)
     
     # Toggles the updated flag for members
-    updated['members'] = False
+    updated['members'] = True
     # Saves the members dictionary to the json file
     # with open(members_file, "w") as fp:
     #     json.dump(members, fp, indent = 2, default = str)
