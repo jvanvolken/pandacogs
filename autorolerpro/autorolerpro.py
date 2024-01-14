@@ -932,7 +932,7 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
 
     @commands.command()
-    async def top_games(self, ctx, member = False):
-        original_message = f"Hey, {member.mention}! Would you like to see the top games for the server or just yourself?"
-        view = PlaytimeView(original_message, member)
+    async def top_games(self, ctx):
+        original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
+        view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
