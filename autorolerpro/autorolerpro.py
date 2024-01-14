@@ -51,7 +51,7 @@ db_header = {
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
-backup_frequency = 0.005
+backup_frequency = 0.1
 
 # List types
 class ListType(Enum):
@@ -92,7 +92,7 @@ else:
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
     Timer(backup_frequency * 3600, BackupRoutine).start()
-    print("Initiating routine backup!")
+    print(f"\nInitiating routine backup! [{datetime.now()}]")
 
     if updated['games']:
         with open(games_file, "w") as fp:
@@ -516,6 +516,7 @@ class DirectMessageView(discord.ui.View):
                 # Assign role to member
                 await self.member.add_roles(self.role)
                 
+                # TODO: Only assigning tracked when responding here, need to also toggle tracked when interfacing with !list_games
                 # Records answer for this game and the current datetime for last played
                 update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}}}
                 UpdateMember(self.member, update)
