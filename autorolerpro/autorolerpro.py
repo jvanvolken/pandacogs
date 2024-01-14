@@ -405,7 +405,7 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
         gameplay[game_name] = 0
         for day, day_value in game_value['history'].items():
             # Checks if day is within the number of days specified
-            if datetime.strptime(day, '%Y.%m.%d') > datetime.now() - timedelta(days = days):
+            if datetime.strptime(day, '%Y-%m-%d') > datetime.now() - timedelta(days = days):
                 for name, details in day_value.items():
                     # If member is provided, filter by their name
                     if member == None or name == member.name:
