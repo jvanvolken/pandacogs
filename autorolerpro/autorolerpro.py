@@ -444,6 +444,7 @@ class DirectMessageView(discord.ui.View):
                 # Records answer for this game and the current datetime for last played
                 update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}}}
                 UpdateMember(self.member, update)
+                StartPlayingGame(self.member, self.role.name)
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
