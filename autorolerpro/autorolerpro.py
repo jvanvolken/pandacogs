@@ -60,8 +60,6 @@ os.makedirs(docker_cog_path, exist_ok = True)
 if os.path.isfile(games_file):
     with open(games_file, "r") as fp:
         games = json.load(fp)
-        if 'history' in games:
-            del games['history']
 else:
     games = {}
     with open(games_file, "w") as fp:
@@ -399,6 +397,10 @@ def StopPlayingGame(member: discord.Member, game_name: str):
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
     gameplay = {}
     for game_name, game_value in game_list.items():
+        # Skips game if there's not history
+        if 'history' not in game_value:
+            continue
+        
         # Initializes the gameplay dictionary with zeros for each game
         gameplay[game_name] = 0
         for day, day_value in game_value['history'].items():
