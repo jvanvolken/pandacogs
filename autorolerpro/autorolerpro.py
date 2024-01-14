@@ -206,6 +206,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
     for game in game_list:
         game = string.capwords(game)
 
+        # TODO: Check existing games first to prevent a potentially unnecessary API call
         # Get games with the provided name
         db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
@@ -338,60 +339,69 @@ def RemoveAlias(alias_name: str):
 
 # Handles tracking of gameplay when someone starts playing
 def StartPlayingGame(member: discord.Member, game_name: str):
-    if game_name in games:
-        # Grabs the current YYYY-MM-DD from the current datetime
-        date = datetime.now().strftime('%Y-%m-%d')
+    # Checks of game_name is an alias; if not and game_name is also not in games, return and log failure
+    if game_name in aliases:
+        game_name = aliases[game_name]
+    elif game_name not in games:
+        print(f"Could not find {game_name} in the game list or aliases when {member} started playing!")
+        return
+            
+    # Grabs the current YYYY-MM-DD from the current datetime
+    date = datetime.now().strftime('%Y-%m-%d')
 
-        # Constructs history dictionary for game if missing
-        if 'history' not in games[game_name]:
-            games[game_name]['history'] = {}
-        
-        # Adds the current date to the game's history if missing
-        if date not in games[game_name]['history']:
-            games[game_name]['history'][date] = {}
+    # Constructs history dictionary for game if missing
+    if 'history' not in games[game_name]:
+        games[game_name]['history'] = {}
+    
+    # Adds the current date to the game's history if missing
+    if date not in games[game_name]['history']:
+        games[game_name]['history'][date] = {}
+
+    # Adds the member to the current date if missing
+    if member.name not in games[game_name]['history'][date]:
+        games[game_name]['history'][date][member.name] = {}
+    
+    # Sets the member's last_played datetime for the current day and game
+    games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    # Saves the changes to the games_file
+    with open(games_file, "w") as fp:
+        json.dump(games, fp, indent = 2, default = str)
+
+# Records number of hours played since member started playing game and tallies for the day
+def StopPlayingGame(member: discord.Member, game_name: str):
+    # Checks of game_name is an alias; if not and game_name is also not in games, return and log failure
+    if game_name in aliases:
+        game_name = aliases[game_name]
+    elif game_name not in games:
+        print(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!")
+        return
+    
+    # Grabs the current YYYY-MM-DD from the current datetime
+    date = datetime.now().strftime('%Y-%m-%d')
+
+    # Constructs history dictionary for game if missing
+    if 'history' in games[game_name] and date in games[game_name]['history'] and member.name in games[game_name]['history'][date]:
+        # Get the difference in time between last_played and now
+        last_played  = games[game_name]['history'][date][member.name]['last_played']
+        delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
+
+        # TODO: Compare now date with last_played date, if now is next day, split hours between the two days
+
+        # Convert delta_time to hours and round to 2 decimal places
+        hours = round(delta_time.total_seconds()/3600, 2)
 
         # Adds the member to the current date if missing
-        if member.name not in games[game_name]['history'][date]:
-            games[game_name]['history'][date][member.name] = {}
+        if 'playtime' not in games[game_name]['history'][date][member.name]:
+            games[game_name]['history'][date][member.name]['playtime'] = 0
         
-        # Sets the member's last_played datetime for the current day and game
-        games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
         # Saves the changes to the games_file
         with open(games_file, "w") as fp:
             json.dump(games, fp, indent = 2, default = str)
     else:
-        print(f"Could not find {game_name} in the game list when {member} started playing!")
-
-# Records number of hours played since member started playing game and tallies for the day
-def StopPlayingGame(member: discord.Member, game_name: str):
-    if game_name in games:
-        # Grabs the current YYYY-MM-DD from the current datetime
-        date = datetime.now().strftime('%Y-%m-%d')
-
-        # Constructs history dictionary for game if missing
-        if 'history' in games[game_name] and date in games[game_name]['history'] and member.name in games[game_name]['history'][date]:
-            # Get the difference in time between last_played and now
-            last_played  = games[game_name]['history'][date][member.name]['last_played']
-            delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
-
-            # Convert delta_time to hours and round to 2 decimal places
-            hours = round(delta_time.total_seconds()/3600, 2)
-
-            # Adds the member to the current date if missing
-            if 'playtime' not in games[game_name]['history'][date][member.name]:
-                games[game_name]['history'][date][member.name]['playtime'] = 0
-            
-            games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
-
-            # Saves the changes to the games_file
-            with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str)
-                
-        else:
-            print(f"Something went wrong when {member} stopped playing {game_name}!")
-    else:
-        print(f"Could not find {game_name} in the game list when {member} started playing!")
+        print(f"Something went wrong when {member} stopped playing {game_name}!")
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
@@ -701,19 +711,22 @@ class AutoRolerPro(commands.Cog):
         if current.name not in members:
             AddMember(current)
 
+        # Assigns member with current.name
+        member = members[current.name]
+
         # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
         if previous.activity and previous.activity.name == current.activity.name:
             return
         
         # Continues if there's a current activity and if it's not in the blacklist
         if current.activity and current.activity.name not in activity_blacklist:
+            # Log game activity for server stats
             StartPlayingGame(current, current.activity.name)
-
-            member = members[current.name]
+            
             # Exit if the member has opted out of the autoroler
             if member['opt_out']:
                 return
-        
+            
             # Checks of the activity is an alias first to avoid a potentially unnecessary API call
             if current.activity.name in aliases:
                 game_name = aliases[current.activity.name]
@@ -737,7 +750,7 @@ class AutoRolerPro(commands.Cog):
                 else:
                     await AddAlias(self.bot, current.guild, current.activity.name, current)
                     return
-            
+                
             # Get the role associated with the current activity name (game name)
             role = current.guild.get_role(game['role'])
             
