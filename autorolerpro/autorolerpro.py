@@ -624,14 +624,15 @@ class PlaytimeView(discord.ui.View):
         self.original_message = original_message
         self.member = member
 
-        self.add_item(self.ServerButton(self.original_message))
+        self.add_item(self.ServerButton(self.original_message, self.member))
         self.add_item(self.SelfButton(self.original_message, self.member))
 
     # Create a class called YesButton that subclasses discord.ui.Button
     class ServerButton(discord.ui.Button):
-        def __init__(self, original_message: str):
+        def __init__(self, original_message: str, member: discord.Member):
             super().__init__(label = "Server", style = discord.ButtonStyle.secondary, emoji = "💻")
             self.original_message = original_message
+            self.member = member
 
         async def callback(self, interaction):
             try:
@@ -641,7 +642,7 @@ class PlaytimeView(discord.ui.View):
 
                 await interaction.response.send_message(f"Here you go, {self.member.mention}! These are the server's top 5 games this month!\n{playtime_message}")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.")
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
                 raise Exception(error)
 
     class SelfButton(discord.ui.Button):
