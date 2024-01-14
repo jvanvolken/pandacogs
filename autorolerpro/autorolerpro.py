@@ -395,24 +395,28 @@ def StopPlayingGame(member: discord.Member, game_name: str):
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
-    gameplay = {}
+    top_games = {}
     for game_name, game_value in game_list.items():
         # Skips game if there's not history
         if 'history' not in game_value:
             continue
         
         # Initializes the gameplay dictionary with zeros for each game
-        gameplay[game_name] = 0
+        top_games[game_name] = 0
         for day, day_value in game_value['history'].items():
             # Checks if day is within the number of days specified
             if datetime.strptime(day, '%Y-%m-%d') > datetime.now() - timedelta(days = days):
                 for name, details in day_value.items():
                     # If member is provided, filter by their name
                     if member == None or name == member.name:
-                        gameplay[game_name] += details['playtime']
+                        top_games[game_name] += details['playtime']
+        
+        # Delete game_name from top_games if it's zero
+        if top_games[game_name] == 0:
+            del top_games[game_name]
 
     # Sort the list by highest hours played and shrink to count
-    sorted_list = sorted(gameplay.items(), key = lambda x:x[1], reverse=True)[:count]
+    sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
     return dict(sorted_list)
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
