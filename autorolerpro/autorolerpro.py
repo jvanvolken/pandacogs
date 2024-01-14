@@ -381,8 +381,8 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             # Adds the member to the current date if missing
             if 'playtime' not in games[game_name]['history'][date][member.name]:
                 games[game_name]['history'][date][member.name]['playtime'] = 0
-
-            games[game_name]['history'][date][member.name]['playtime'] += hours
+            
+            games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
             # Saves the changes to the games_file
             with open(games_file, "w") as fp:
@@ -414,6 +414,8 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
         # Delete game_name from top_games if it's zero
         if top_games[game_name] == 0:
             del top_games[game_name]
+        else:
+            top_games[game_name] = round(top_games[game_name], 2)
 
     # Sort the list by highest hours played and shrink to count
     sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
