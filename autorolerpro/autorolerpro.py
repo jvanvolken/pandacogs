@@ -751,6 +751,7 @@ class AutoRolerPro(commands.Cog):
     """My custom cog"""
     def __init__(self, bot):
         self.bot = bot
+        print("AutorolerPro loaded!")
 
         # Sets up the non-blocking data backup routine in accordance with the backup frequency
         def BackupRoutine():
