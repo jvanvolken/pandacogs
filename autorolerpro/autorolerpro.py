@@ -116,13 +116,11 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
 def Log(message):
     # Initializes the members list
     if os.path.isfile(log_file):
-        file = open(log_file, "w")
+        with open(log_file, "a") as fp:
+            fp.writelines(message)
     else:
-        # Append-adds at last
-        file = open(log_file, "a")
-
-    file.writelines(message)
-    file.close()
+        with open(log_file, "w") as fp:
+            fp.writelines(message)
 
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
