@@ -20,14 +20,24 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 # Initializes client with intents
 client = discord.Client(intents = intents)
 
+# List types
+class ListType(Enum):
+    Select_Game  = 1
+    Remove_Game  = 2
+    Remove_Alias = 3
+
+# List types
+class Flags(Enum):
+    Games  = 1
+    Members  = 2
+    Aliases = 3
+
 # Cog Directory in Appdata
 docker_cog_path  = "/data/cogs/AutoRolerPro"
 games_file       = f"{docker_cog_path}/games.json"
 members_file     = f"{docker_cog_path}/members.json"
 aliases_file     = f"{docker_cog_path}/aliases.json"
-
-# Dictionary of updated file flags
-updated = {'games' : False, 'members': False, 'aliases': False}
+log_file         = f"{docker_cog_path}/log.txt"
 
 # Channel Links
 general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
@@ -47,17 +57,18 @@ db_header = {
     'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
 }
 
+# Dictionary of updated file flags
+update_flags = {
+    Flags.Games: {'status': False, 'comment': ""}, 
+    Flags.Members: {'status': False, 'comment': ""}, 
+    Flags.Aliases: {'status': False, 'comment': ""}
+}
+
 # Sets the default max attempts to set an alias
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
 backup_frequency = 0.1
-
-# List types
-class ListType(Enum):
-    Select_Game  = 1
-    Remove_Game  = 2
-    Remove_Alias = 3
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -88,7 +99,64 @@ else:
     aliases = {}
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
-    
+
+
+def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
+    # Stores a temp flags
+    temp_flag = update_flags[flag]
+
+    # Updates the flag
+    update_flags[flag] = {'status': status, 'comment': f"{comment}\n{temp_flag['comment']}"}
+
+    if temp_flag['status']:
+        return temp_flag['comment']
+    else:
+        return None
+
+def Log(message):
+    # Append-adds at last
+    file1 = open(log_file, "a")  # append mode
+    file1.write(message)
+    file1.close()
+
+# Sets up the non-blocking data backup routine in accordance with the backup frequency
+def BackupRoutine():
+    # Sets up the next backup routine
+    Timer(backup_frequency * 3600, BackupRoutine).start()
+
+    # Logs the current date and time
+    current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    Log(f"{current_datetime}: Initiating routine data backup sequence.")
+
+    # Returns true if games flag is updated
+    comment = UpdateFlag(Flags.Games)
+    if comment:
+        with open(games_file, "w") as fp:
+            json.dump(games, fp, indent = 2, default = str)        
+        
+        # Logs backup
+        Log(f"{current_datetime}: Successfully saved to {games_file}\n--{comment}")
+
+    # Returns true if members flag is updated
+    comment = UpdateFlag(Flags.Members)
+    if comment:
+        with open(members_file, "w") as fp:
+            json.dump(members, fp, indent = 2, default = str)
+        
+        # Logs backup
+        Log(f"{current_datetime}: Successfully saved to {members_file}\n--{comment}")
+
+    # Returns true if aliases flag is updated
+    comment = UpdateFlag(Flags.Aliases)
+    if comment:
+        with open(aliases_file, "w") as fp:
+            json.dump(aliases, fp, indent = 2, default = str)
+        
+        # Logs backup
+        Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{comment}")
+
+Timer(backup_frequency * 3600, BackupRoutine).start()
+
 # Returns a string list of game names
 def GetNames(game_list: list):
     names = []
@@ -163,7 +231,7 @@ def AddMember(member: discord.Member):
     members[member_details['name']] = member_details
 
     # Toggles the updated flag for members
-    updated['members'] = True
+    UpdateFlag(Flags.Members, True, f"Added a new member, {member.name}")
 
     # Saves the members dictionary to the json file
     # with open(members_file, "w") as fp:
@@ -186,7 +254,7 @@ def UpdateMember(member: discord.Member, new_details: dict):
     MergeDictionaries(members[member.name], new_details)
     
     # Toggles the updated flag for members
-    updated['members'] = True
+    UpdateFlag(Flags.Members, True, f"Updated a member, {member.name}")
     # Saves the members dictionary to the json file
     # with open(members_file, "w") as fp:
     #     json.dump(members, fp, indent = 2, default = str)
@@ -203,7 +271,7 @@ async def RemoveGame(role: discord.Role, game_name: str):
         del games[game_name]
 
         # Toggles the updated flag for games
-        updated['games'] = True
+        UpdateFlag(Flags.Games, True, f"Removed a game, {game_name}")
 
         # with open(games_file, "w") as fp:
         #     json.dump(games, fp, indent = 2, default = str)
@@ -253,7 +321,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     games[latest_game['name']]['role'] = role.id
 
                     # Toggles the updated flag for games
-                    updated['games'] = True
+                    UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
 
                     # Update game in game list and saves file
                     # with open(games_file, "w") as fp:
@@ -292,7 +360,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             games[latest_game['name']] = latest_game
 
             # Toggles the updated flag for games
-            updated['games'] = True
+            UpdateFlag(Flags.Games, True, f"Added new game and role to server, {latest_game['name']}")
             # with open(games_file, "w") as fp:
             #     json.dump(games, fp, indent = 2, default = str)
         else:
@@ -340,7 +408,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         aliases[alias] = game['name']
 
         # Toggles the updated flag for aliases
-        updated['aliases'] = True
+        UpdateFlag(Flags.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
         # Saves the members dictionary to the json file
         # with open(aliases_file, "w") as fp:
         #     json.dump(aliases, fp, indent = 2, default = str)
@@ -356,7 +424,7 @@ def RemoveAlias(alias_name: str):
         del aliases[alias_name]
 
         # Toggles the updated flag for aliases
-        updated['aliases'] = True
+        UpdateFlag(Flags.Aliases, True, f"Removed the {alias_name} alias.")
         # with open(aliases_file, "w") as fp:
         #     json.dump(aliases, fp, indent = 2, default = str)
 
@@ -392,7 +460,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
     # Toggles the updated flag for games
-    updated['games'] = True
+    UpdateFlag(Flags.Games, True, f"{member.name} started playing {game_name}")
     # Saves the changes to the games_file
     # with open(games_file, "w") as fp:
         # json.dump(games, fp, indent = 2, default = str)
@@ -427,7 +495,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
         # Toggles the updated flag for games
-        updated['games'] = True
+        UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
         # Saves the changes to the games_file
         # with open(games_file, "w") as fp:
         #     json.dump(games, fp, indent = 2, default = str)
@@ -717,34 +785,6 @@ class AutoRolerPro(commands.Cog):
     """My custom cog"""
     def __init__(self, bot):
         self.bot = bot
-
-        # Sets up the non-blocking data backup routine in accordance with the backup frequency
-        def BackupRoutine():
-            Timer(backup_frequency * 3600, BackupRoutine).start()
-            print(f"\nInitiating routine backup! [{str(datetime.now())}]")
-
-            if updated['games']:
-                with open(games_file, "w") as fp:
-                    json.dump(games, fp, indent = 2, default = str)
-                print("--Games file saved successfully!")
-            else:
-                print("--Games file skipped, no changes!")
-
-            if updated['members']:
-                with open(members_file, "w") as fp:
-                    json.dump(members, fp, indent = 2, default = str)
-                print("--Members file saved successfully!")
-            else:
-                print("--Members file skipped, no changes!")
-
-            if updated['aliases']:
-                with open(aliases_file, "w") as fp:
-                    json.dump(aliases, fp, indent = 2, default = str)
-                print("--Aliases file saved successfully!")
-            else:
-                print("--Aliases file skipped, no changes!")
-
-        Timer(backup_frequency * 3600, BackupRoutine).start()
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
