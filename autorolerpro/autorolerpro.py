@@ -640,7 +640,7 @@ class PlaytimeView(discord.ui.View):
                 for game, hours in GetPlaytime(games, 30, 5).items():
                     playtime_message += f"- **{game}** *({hours:,} hours)*\n"
 
-                await interaction.response.send_message(f"Here you go, {self.member.mention}! These are the server's top 5 games this month!\n{playtime_message}")
+                await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
                 raise Exception(error)
