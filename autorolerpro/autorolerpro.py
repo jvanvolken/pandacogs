@@ -88,34 +88,6 @@ else:
     aliases = {}
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
-
-# Sets up the non-blocking data backup routine in accordance with the backup frequency
-def BackupRoutine():
-    Timer(backup_frequency * 3600, BackupRoutine).start()
-    print(f"\nInitiating routine backup! [{str(datetime.now())}]")
-
-    if updated['games']:
-        with open(games_file, "w") as fp:
-            json.dump(games, fp, indent = 2, default = str)
-        print("--Games file saved successfully!")
-    else:
-        print("--Games file skipped, no changes!")
-
-    if updated['members']:
-        with open(members_file, "w") as fp:
-            json.dump(members, fp, indent = 2, default = str)
-        print("--Members file saved successfully!")
-    else:
-        print("--Members file skipped, no changes!")
-
-    if updated['aliases']:
-        with open(aliases_file, "w") as fp:
-            json.dump(aliases, fp, indent = 2, default = str)
-        print("--Aliases file saved successfully!")
-    else:
-        print("--Aliases file skipped, no changes!")
-
-Timer(backup_frequency * 3600, BackupRoutine).start()
     
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -745,6 +717,34 @@ class AutoRolerPro(commands.Cog):
     """My custom cog"""
     def __init__(self, bot):
         self.bot = bot
+
+        # Sets up the non-blocking data backup routine in accordance with the backup frequency
+        def BackupRoutine():
+            Timer(backup_frequency * 3600, BackupRoutine).start()
+            print(f"\nInitiating routine backup! [{str(datetime.now())}]")
+
+            if updated['games']:
+                with open(games_file, "w") as fp:
+                    json.dump(games, fp, indent = 2, default = str)
+                print("--Games file saved successfully!")
+            else:
+                print("--Games file skipped, no changes!")
+
+            if updated['members']:
+                with open(members_file, "w") as fp:
+                    json.dump(members, fp, indent = 2, default = str)
+                print("--Members file saved successfully!")
+            else:
+                print("--Members file skipped, no changes!")
+
+            if updated['aliases']:
+                with open(aliases_file, "w") as fp:
+                    json.dump(aliases, fp, indent = 2, default = str)
+                print("--Aliases file saved successfully!")
+            else:
+                print("--Aliases file skipped, no changes!")
+
+        Timer(backup_frequency * 3600, BackupRoutine).start()
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
