@@ -51,7 +51,7 @@ db_header = {
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
-backup_frequency = 0.005
+backup_frequency = 0.1
 
 # List types
 class ListType(Enum):
