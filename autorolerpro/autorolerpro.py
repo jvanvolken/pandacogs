@@ -3,6 +3,8 @@ import requests
 import discord
 import difflib
 import string
+import sched
+import time
 import math
 import json
 import io
@@ -44,8 +46,11 @@ db_header = {
     'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
 }
 
-# Sets the max attempts to set an alias
+# Sets the default max attempts to set an alias
 alias_max_attempts = 5
+
+# Sets the default backup frequency (hours)
+backup_frequency = 0.003
 
 # List types
 class ListType(Enum):
@@ -430,6 +435,16 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
     # Sort the list by highest hours played and shrink to count
     sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
     return dict(sorted_list)
+
+# Set up scheduler for routine backups
+def BackupRoutine(backup_scheduler: sched.scheduler): 
+    # Schedule the next backup
+    backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
+    print("Scheduled event activated!")
+
+backup_scheduler = sched.scheduler(time.time, time.sleep)
+backup_scheduler.enter(backup_frequency * 3600, 1, BackupRoutine, (backup_scheduler,))
+backup_scheduler.run()
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
