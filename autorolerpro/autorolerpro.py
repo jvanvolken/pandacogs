@@ -761,6 +761,9 @@ class AutoRolerPro(commands.Cog):
             current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
             print(current_datetime)
 
+            with open(log_file, "a") as fp:
+                fp.writelines(f"\n{current_datetime}")
+                
             # Log(f"{current_datetime}: Initiating routine data backup sequence.")
 
             # # Returns true if games flag is updated
