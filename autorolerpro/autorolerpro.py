@@ -114,10 +114,15 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
         return None
 
 def Log(message):
-    # Append-adds at last
-    file1 = open(log_file, "a")  # append mode
-    file1.write(message)
-    file1.close()
+    # Initializes the members list
+    if os.path.isfile(log_file):
+        file = open(log_file, "w")
+    else:
+        # Append-adds at last
+        file = open(log_file, "a")
+
+    file.writelines(message)
+    file.close()
 
 # Sets up the non-blocking data backup routine in accordance with the backup frequency
 def BackupRoutine():
