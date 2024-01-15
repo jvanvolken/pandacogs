@@ -112,10 +112,10 @@ def Log(message):
     # Initializes the members list
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
-            fp.writelines(f"\n{message}")
+            fp.writelines(f"{message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(f"\n{message}")
+            fp.writelines(f"{message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
