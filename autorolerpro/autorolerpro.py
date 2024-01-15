@@ -754,6 +754,8 @@ class AutoRolerPro(commands.Cog):
         self.bot = bot
         print("AutorolerPro loaded!")
 
+        self.BackupRoutine.start()
+
         # Sets up the non-blocking data backup routine in accordance with the backup frequency
         # def BackupRoutine():
         #     # Sets up the next backup routine
@@ -795,16 +797,16 @@ class AutoRolerPro(commands.Cog):
     async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        await self.bot.wait_until_ready()
-        
-        message_channel = self.bot.get_channel(test_channel_id)
-        print(f"Got channel {message_channel}")
-        await message_channel.send("From on_ready")
+    # @commands.Cog.listener()
+    # async def on_ready(self):
+    #     await self.bot.wait_until_ready()
 
-        if not self.BackupRoutine.is_running():
-            self.BackupRoutine.start()
+    #     message_channel = self.bot.get_channel(test_channel_id)
+    #     print(f"Got channel {message_channel}")
+    #     await message_channel.send("From on_ready")
+
+    #     if not self.BackupRoutine.is_running():
+    #         self.BackupRoutine.start()
 
     @tasks.loop(seconds=10)
     async def BackupRoutine(self):
