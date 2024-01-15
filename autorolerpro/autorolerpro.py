@@ -833,8 +833,8 @@ class AutoRolerPro(commands.Cog):
         if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
-        # Exit if there's not current activity
-        if previous.activity and (current.activity is None or current.activity.name != previous.activity.name):
+        # Detect if someone stopped playing a game
+        if previous.activity and previous.activity.name not in activity_blacklist and (current.activity is None or current.activity.name != previous.activity.name):
             StopPlayingGame(current, previous.activity.name)
             return
         
