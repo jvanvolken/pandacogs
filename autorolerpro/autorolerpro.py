@@ -8,7 +8,7 @@ import json
 import os
 
 from datetime import datetime, timedelta
-from redbot.core import commands
+from redbot.core import commands, bot
 from discord.ext import tasks
 from threading import Timer
 from io import BytesIO
@@ -750,7 +750,7 @@ class PlaytimeView(discord.ui.View):
 
 class AutoRolerPro(commands.Cog):
     """My custom cog"""
-    def __init__(self, bot):
+    def __init__(self, bot: bot.Red):
         self.bot = bot
         print("AutorolerPro loaded!")
 
@@ -792,10 +792,15 @@ class AutoRolerPro(commands.Cog):
 
         # Timer(10, BackupRoutine).start()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @tasks.loop(seconds=5.0)
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if not self.BackupRoutine.is_running():
+            self.BackupRoutine.start()
+
+    @tasks.loop(seconds=10)
     async def BackupRoutine(self):
         message_channel = self.bot.get_channel(test_channel_id)
         print(f"Got channel {message_channel}")
@@ -1073,7 +1078,3 @@ class AutoRolerPro(commands.Cog):
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
-
-    @commands.command()
-    async def get_type(self, ctx):
-        await ctx.reply(f"{type(self.bot)}")
