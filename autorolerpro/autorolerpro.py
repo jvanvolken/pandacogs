@@ -321,7 +321,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             games[latest_game['name']] = latest_game
 
             # Toggles the updated flag for games
-            UpdateFlag(Flags.Games, True, f"Added new game and role to server, {latest_game['name']}")
+            UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
             # with open(games_file, "w") as fp:
             #     json.dump(games, fp, indent = 2, default = str)
         else:
@@ -519,7 +519,7 @@ class DirectMessageView(discord.ui.View):
                 
                 # TODO: Only assigning tracked when responding here, need to also toggle tracked when interfacing with !list_games
                 # Records answer for this game and the current datetime for last played
-                update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : True, 'last_played' : datetime.now()}}}
+                update = {'games' : {self.role.name : {'tracked' : True}}}
                 UpdateMember(self.member, update)
 
                 # Responds to the request
@@ -544,7 +544,7 @@ class DirectMessageView(discord.ui.View):
                     await self.member.remove_roles(self.role)
 
                 # Records answer for this game and the current datetime for last played
-                update = {'games' : {self.role.name : {'name' : self.role.name, 'tracked' : False, 'last_played' : None}}}
+                update = {'games' : {self.role.name : {'tracked' : False}}}
                 UpdateMember(self.member, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
@@ -656,6 +656,10 @@ class ListView(discord.ui.View):
                         # Assign role to member
                         member = interaction.user
                         await member.add_roles(self.role)
+
+                        # Assigns member with current.name
+                        update = {'games' : {self.name : {'tracked' : True}}}
+                        UpdateMember(self.name, update)
 
                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
                         view.message = await interaction.message.edit(view = view)
@@ -854,7 +858,7 @@ class AutoRolerPro(commands.Cog):
                 if game_name in games:
                     game = games[game_name]
                 else:
-                    await admin_channel.send(f"{member.mention} started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                    await admin_channel.send(f"`{member_display_name}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
                     return
             else:     
                 # If there isn't a game recorded for the current activity already, add it
