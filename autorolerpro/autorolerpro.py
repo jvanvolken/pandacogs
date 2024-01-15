@@ -835,7 +835,7 @@ class AutoRolerPro(commands.Cog):
         
         # Exit if there's not current activity
         if current.activity is None:
-            if previous.activity and previous.activity.name in games:
+            if previous.activity:
                 StopPlayingGame(current, previous.activity.name)
             return
         
