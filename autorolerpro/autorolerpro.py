@@ -102,16 +102,10 @@ else:
 
 # Updates the specified flag to queue for the backup routine
 def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
-    # Stores a temp flags
-    temp_flag = update_flags[flag]
-
-    # Updates the flag
-    update_flags[flag] = {'status': status, 'comment': f"{comment}\n{temp_flag['comment']}"}
-
-    if temp_flag['status']:
-        return temp_flag['comment']
+    if not status:
+        update_flags[flag] = {'status': False, 'comment': ""}
     else:
-        return None
+        update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n{comment}"}
 
 # Writes or appends a message to the log_file
 def Log(message):
@@ -760,39 +754,57 @@ class AutoRolerPro(commands.Cog):
 
     @tasks.loop(hours = backup_frequency)
     async def BackupRoutine(self):
-        # message_channel = self.bot.get_channel(test_channel_id)
-        # await message_channel.send("From BackupRoutine")
+        # Gets the test channel for debug output
+        message_channel = self.bot.get_channel(test_channel_id)
 
         # Logs the current date and time
         current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
         Log(f"{current_datetime}: Initiating routine data backup sequence.")
 
         # Returns true if games flag is updated
-        comment = UpdateFlag(Flags.Games)
-        if comment:
+        game_flag = update_flags[Flags.Games]
+        if game_flag['status']:
             with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str)        
-            
+                json.dump(games, fp, indent = 2, default = str) 
+
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {games_file}\n--{comment}")
+            Log(f"{current_datetime}: Successfully saved to {games_file}\n--{game_flag['comment']}")
+
+            # Messages the test channel for debug
+            await message_channel.send(f"{current_datetime}: Successfully backed up games data\n--{game_flag['comment']}")
+
+            # Resets flag
+            UpdateFlag(Flags.Games)
 
         # Returns true if members flag is updated
-        comment = UpdateFlag(Flags.Members)
-        if comment:
+        game_flag = update_flags[Flags.Members]
+        if game_flag['status']:
             with open(members_file, "w") as fp:
                 json.dump(members, fp, indent = 2, default = str)
             
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {members_file}\n--{comment}")
+            Log(f"{current_datetime}: Successfully saved to {members_file}\n--{game_flag['comment']}")
+
+            # Messages the test channel for debug
+            await message_channel.send(f"{current_datetime}: Successfully backed up members data\n--{game_flag['comment']}")
+
+            # Resets flag
+            UpdateFlag(Flags.Members)
 
         # Returns true if aliases flag is updated
-        comment = UpdateFlag(Flags.Aliases)
-        if comment:
+        game_flag = update_flags[Flags.Aliases]
+        if game_flag['status']:
             with open(aliases_file, "w") as fp:
                 json.dump(aliases, fp, indent = 2, default = str)
             
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{comment}")
+            Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{game_flag['comment']}")
+
+            # Messages the test channel for debug
+            await message_channel.send(f"{current_datetime}: Successfully backed up alias data\n--{game_flag['comment']}")
+
+            # Resets flag
+            UpdateFlag(Flags.Aliases)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
