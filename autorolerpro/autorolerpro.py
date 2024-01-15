@@ -483,7 +483,7 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
             if datetime.strptime(day, '%Y-%m-%d') > datetime.now() - timedelta(days = days):
                 for name, details in day_value.items():
                     # If member is provided, filter by their name
-                    if member == None or name == member.name:
+                    if (member == None or name == member.name) and 'playtime' in details:
                         top_games[game_name] += details['playtime']
         
         # Delete game_name from top_games if it's zero
