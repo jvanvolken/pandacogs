@@ -68,7 +68,7 @@ update_flags = {
 alias_max_attempts = 5
 
 # Sets the default backup frequency (hours)
-backup_frequency = 30 / 60 / 60 # 30 seconds
+backup_frequency = 1 / 60 # 1 minute
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -100,6 +100,9 @@ else:
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
 
+def GetTime():
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
 # Updates the specified flag to queue for the backup routine
 def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
     if not status:
@@ -109,26 +112,30 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
 
 # Writes or appends a message to the log_file
 def Log(message):
-    # Initializes the members list
+    # Initializes the log file or appends to an existing one
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
             fp.write("\n")
-            fp.writelines(f"{message}")
+            fp.writelines(f"{GetTime()}: {message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(f"{message}")
+            fp.writelines(f"{GetTime()}: {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
     names = []
+    # Loops through the game_list and appends to a list of names
     for game in game_list.values():
         names.append(game['name'])
+    
+    # Joins the names together in a string, separating each with a comma
     return f"`{'`, `'.join(names)}`"
 
 # Returns a list of image files
 async def GetImages(game_list: list):
     images = []
     for game in game_list.values():
+        # Request the http content of the game's cover url
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
@@ -185,6 +192,7 @@ def AddMember(member: discord.Member):
         if hasattr(member, detail):
             member_details[detail] = getattr(member, detail)
 
+    # Add server specific details to member record
     member_details['games'] = {}
     member_details['opt_out'] = False
     
@@ -207,7 +215,7 @@ def MergeDictionaries(d1: dict, d2: dict):
 
 # Updates a member in the members list and saves file
 def UpdateMember(member: discord.Member, new_details: dict):
-    # Updates specific member with new details
+    # Updates specific member with new details using the recursive MergeDictionaries function
     MergeDictionaries(members[member.name], new_details)
     
     # Toggles the updated flag for members
@@ -216,11 +224,11 @@ def UpdateMember(member: discord.Member, new_details: dict):
 # Removes game from games list and saves to file
 async def RemoveGame(role: discord.Role, game_name: str):
     if game_name in games:
-        # role = discord.utils.get(guild.roles, name = game_name) #TODO: Shouldn't need this anymore after replacing guild with role reference
+        # Delete the role if found, if role doesn't exist, do nothing
         if role:
             await role.delete()
         else:
-            print(f"Failed to remove game. Could not find this role: `{game_name}`!")
+            Log(f"Failed to remove game. Could not find this role: `{game_name}`!")
 
         del games[game_name]
 
@@ -229,7 +237,7 @@ async def RemoveGame(role: discord.Role, game_name: str):
         
         return True
     else:
-        print(f"Failed to remove game. Could not find {game_name} in list.")
+        Log(f"Failed to remove game. Could not find {game_name} in list.")
         return False
 
 # Adds a list of games to the games list after verifying they are real games
@@ -240,7 +248,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
     for game in game_list:
         game = string.capwords(game)
 
-        # TODO: Check existing games first to prevent a potentially unnecessary API call
         # Get games with the provided name
         db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
         results = db_json.json()
@@ -315,6 +322,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
 # Adds an alias and game to the aliases list, adds the game if it doesn't already exist
 async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
+    # Get the admin and test text channels
     admin_channel = guild.get_channel(admin_channel_id)
     test_channel = guild.get_channel(test_channel_id)
 
@@ -338,6 +346,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         # Add the msg.content as a game to the server
         new_games, already_exists, failed_to_find = await AddGames(guild, [msg.content])
 
+        # Decrement remaining_attempts by 1
         remaining_attempts = alias_max_attempts - attempt_count - 1
 
         # If a new or existing game is found, assign it to game to exit the loop
@@ -349,7 +358,9 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
             original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
             attempt_count += 1
     
+    # Update alias if a game was ultimately found
     if game:
+        # Assign game to the new alias
         aliases[alias] = game['name']
 
         # Toggles the updated flag for aliases
@@ -378,7 +389,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        print(f"Could not find {game_name} in the game list or aliases when {member} started playing!")
+        Log(f"Could not find {game_name} in the game list or aliases when {member} started playing!")
         return
             
     # Grabs the current YYYY-MM-DD from the current datetime
@@ -397,7 +408,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
         games[game_name]['history'][date][member.name] = {}
     
     # Sets the member's last_played datetime for the current day and game
-    games[game_name]['history'][date][member.name]['last_played'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    games[game_name]['history'][date][member.name]['last_played'] = GetTime()
 
     # Toggles the updated flag for games
     UpdateFlag(Flags.Games, True, f"{member.name} started playing {game_name}")
@@ -408,7 +419,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        print(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!")
+        Log(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!")
         return
     
     # Grabs the current YYYY-MM-DD from the current datetime
@@ -434,7 +445,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         # Toggles the updated flag for games
         UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
     else:
-        print(f"Something went wrong when {member} stopped playing {game_name}!")
+        Log(f"Something went wrong when {member} stopped playing {game_name}!")
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
@@ -727,8 +738,9 @@ class AutoRolerPro(commands.Cog):
     """My custom cog"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
-        print("AutorolerPro loaded!")
+        Log("AutorolerPro loaded!")
 
+        # Start the backup routine
         self.BackupRoutine.start()
     
     async def cog_unload(self):
@@ -736,14 +748,8 @@ class AutoRolerPro(commands.Cog):
 
     @tasks.loop(hours = backup_frequency)
     async def BackupRoutine(self):
-        # Gets the test channel for debug output
-        message_channel = self.bot.get_channel(test_channel_id)
-
-        # Logs the current date and time
-        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-
         # Initializes the log message
-        log_message = f"{current_datetime}: Initiating routine data backup sequence ------------------------------"
+        log_message = f"Initiating routine data backup sequence ------------------------------"
 
         # Returns true if games flag is updated
         game_flag = update_flags[Flags.Games]
