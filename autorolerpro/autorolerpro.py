@@ -128,6 +128,8 @@ def GetNames(game_list: list):
     for game in game_list.values():
         names.append(game['name'])
     
+    # TODO: Would like to @ the role for new games and use string names for failed to find games
+    
     # Joins the names together in a string, separating each with a comma
     return f"`{'`, `'.join(names)}`"
 
@@ -624,7 +626,8 @@ class ListView(discord.ui.View):
                 extra_comment = ""
                 if self.list_type is ListType.Select_Game:
                     extra_comment = "Please use !list_games to interact!"
-                    
+                
+                # TODO: Let anyone click this button
                 await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
                 return
             
