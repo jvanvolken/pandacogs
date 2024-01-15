@@ -26,11 +26,18 @@ class ListType(Enum):
     Remove_Game  = 2
     Remove_Alias = 3
 
-# List types
+# Flag types
 class Flags(Enum):
     Games    = 1
     Members  = 2
     Aliases  = 3
+
+# Log Types
+class LogType(Enum):
+    Log     = "LOG"
+    Warning = "WARNING"
+    Error   = "ERROR"
+    Fatal   = "FATAL"
 
 # Cog Directory in Appdata
 docker_cog_path  = "/data/cogs/AutoRolerPro"
@@ -111,15 +118,15 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
         update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
 
 # Writes or appends a message to the log_file
-def Log(message):
+def Log(message: str, log_type: LogType = LogType.Log):
     # Initializes the log file or appends to an existing one
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
             fp.write("\n")
-            fp.writelines(f"{GetTime()}: {message}")
+            fp.writelines(f"{GetTime()}: ({log_type.value}) {message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(f"{GetTime()}: {message}")
+            fp.writelines(f"{GetTime()}: ({log_type.value}) {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -234,7 +241,7 @@ async def RemoveGame(role: discord.Role, game_name: str):
         if role:
             await role.delete()
         else:
-            Log(f"Failed to remove game. Could not find this role: `{game_name}`!")
+            Log(f"Failed to remove game. Could not find this role: `{game_name}`!", LogType.Warning)
 
         del games[game_name]
 
@@ -243,7 +250,7 @@ async def RemoveGame(role: discord.Role, game_name: str):
         
         return True
     else:
-        Log(f"Failed to remove game. Could not find {game_name} in list.")
+        Log(f"Failed to remove game. Could not find {game_name} in list.", LogType.Error)
         return False
 
 # Adds a list of games to the games list after verifying they are real games
@@ -395,7 +402,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member} started playing!")
+        Log(f"Could not find {game_name} in the game list or aliases when {member} started playing!", LogType.Error)
         return
             
     # Grabs the current YYYY-MM-DD from the current datetime
@@ -425,7 +432,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!")
+        Log(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!", LogType.Error)
         return
     
     # Grabs the current YYYY-MM-DD from the current datetime
@@ -451,7 +458,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         # Toggles the updated flag for games
         UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
     else:
-        Log(f"Something went wrong when {member} stopped playing {game_name}!")
+        Log(f"Something went wrong when {member} stopped playing {game_name}!", LogType.Error)
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
@@ -517,6 +524,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.role.name}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.role.name}` role to you. Please check the logs for further details.")
+                Log(error, LogType.Error)
                 raise Exception(error)
                 
     # Create a class called NoButton that subclasses discord.ui.Button             
@@ -541,6 +549,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
+                Log(error, LogType.Error)
                 raise Exception(error)
               
     # Create a class called OptOutButton that subclasses discord.ui.Button                   
@@ -561,6 +570,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
+                Log(error, LogType.Error)
                 raise Exception(error)
 
     async def on_timeout(self):
@@ -719,6 +729,7 @@ class PlaytimeView(discord.ui.View):
                 await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
+                Log(error, LogType.Error)
                 raise Exception(error)
 
     class SelfButton(discord.ui.Button):
@@ -736,6 +747,7 @@ class PlaytimeView(discord.ui.View):
                 await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
+                Log(error, LogType.Error)
                 raise Exception(error)
             
     async def on_timeout(self):
@@ -745,7 +757,7 @@ class AutoRolerPro(commands.Cog):
     """My custom cog"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
-        Log("AutorolerPro loaded!")
+        Log("AutorolerPro loaded!", LogType.Log)
 
         # Start the backup routine
         self.BackupRoutine.start()
@@ -804,7 +816,7 @@ class AutoRolerPro(commands.Cog):
             log_message += f"\n  Aliases file not updated, no changes."
 
         # Logs the events of the backup routine
-        Log(log_message)
+        Log(log_message, LogType.Log)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
@@ -818,7 +830,7 @@ class AutoRolerPro(commands.Cog):
         member_display_name = current.display_name.encode().decode('ascii','ignore')
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85"]:
+        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
         # Exit if there's not current activity
@@ -998,7 +1010,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -1042,7 +1054,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -1054,7 +1066,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85"]:
+        if member.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
         if len(aliases) > 0:
