@@ -105,7 +105,7 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
     if not status:
         update_flags[flag] = {'status': False, 'comment': ""}
     else:
-        update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n--{comment}"}
+        update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
 
 # Writes or appends a message to the log_file
 def Log(message):
@@ -194,10 +194,6 @@ def AddMember(member: discord.Member):
     # Toggles the updated flag for members
     UpdateFlag(Flags.Members, True, f"Added a new member, {member.name}")
 
-    # Saves the members dictionary to the json file
-    # with open(members_file, "w") as fp:
-    #     json.dump(members, fp, indent = 2, default = str)
-
 # Update first dict with second recursively
 def MergeDictionaries(d1: dict, d2: dict):
     if isinstance(d1, dict):
@@ -216,9 +212,6 @@ def UpdateMember(member: discord.Member, new_details: dict):
     
     # Toggles the updated flag for members
     UpdateFlag(Flags.Members, True, f"Updated member information, {member.name}")
-    # Saves the members dictionary to the json file
-    # with open(members_file, "w") as fp:
-    #     json.dump(members, fp, indent = 2, default = str)
 
 # Removes game from games list and saves to file
 async def RemoveGame(role: discord.Role, game_name: str):
@@ -233,9 +226,6 @@ async def RemoveGame(role: discord.Role, game_name: str):
 
         # Toggles the updated flag for games
         UpdateFlag(Flags.Games, True, f"Removed a game, {game_name}")
-
-        # with open(games_file, "w") as fp:
-        #     json.dump(games, fp, indent = 2, default = str)
         
         return True
     else:
@@ -284,10 +274,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     # Toggles the updated flag for games
                     UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
 
-                    # Update game in game list and saves file
-                    # with open(games_file, "w") as fp:
-                    #     json.dump(games, fp, indent = 2, default = str)
-
             already_exists[latest_game['name']] = games[latest_game['name']]
         elif latest_game: 
             # Request the cover image urls
@@ -322,8 +308,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             # Toggles the updated flag for games
             UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
-            # with open(games_file, "w") as fp:
-            #     json.dump(games, fp, indent = 2, default = str)
         else:
             failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
         
@@ -370,9 +354,6 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
 
         # Toggles the updated flag for aliases
         UpdateFlag(Flags.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
-        # Saves the members dictionary to the json file
-        # with open(aliases_file, "w") as fp:
-        #     json.dump(aliases, fp, indent = 2, default = str)
 
         # Once a game is found, it sets the alias and exits
         await msg.reply(f"Thanks, {msg.author.mention}! I've given <@&{game['role']}> an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
@@ -386,8 +367,6 @@ def RemoveAlias(alias_name: str):
 
         # Toggles the updated flag for aliases
         UpdateFlag(Flags.Aliases, True, f"Removed the {alias_name} alias.")
-        # with open(aliases_file, "w") as fp:
-        #     json.dump(aliases, fp, indent = 2, default = str)
 
         return True 
     else:
@@ -422,9 +401,6 @@ def StartPlayingGame(member: discord.Member, game_name: str):
 
     # Toggles the updated flag for games
     UpdateFlag(Flags.Games, True, f"{member.name} started playing {game_name}")
-    # Saves the changes to the games_file
-    # with open(games_file, "w") as fp:
-    #     json.dump(games, fp, indent = 2, default = str)
 
 # Records number of hours played since member started playing game and tallies for the day
 def StopPlayingGame(member: discord.Member, game_name: str):
@@ -457,9 +433,6 @@ def StopPlayingGame(member: discord.Member, game_name: str):
 
         # Toggles the updated flag for games
         UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
-        # Saves the changes to the games_file
-        # with open(games_file, "w") as fp:
-        #     json.dump(games, fp, indent = 2, default = str)
     else:
         print(f"Something went wrong when {member} stopped playing {game_name}!")
 
@@ -770,7 +743,7 @@ class AutoRolerPro(commands.Cog):
         current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
         # Initializes the log message
-        log_message = f"{current_datetime}: Initiating routine data backup sequence."
+        log_message = f"{current_datetime}: Initiating routine data backup sequence ------------------------------"
 
         # Returns true if games flag is updated
         game_flag = update_flags[Flags.Games]
@@ -779,13 +752,13 @@ class AutoRolerPro(commands.Cog):
                 json.dump(games, fp, indent = 2, default = str) 
 
             # Adds games file update to log message
-            log_message += f"\nSuccessfully saved to {games_file} {game_flag['comment']}"
+            log_message += f"\n  Successfully saved to {games_file} {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Games)
         else:
             # Adds aliases file update to log message
-            log_message += f"\nGames file not updated, no changes."
+            log_message += f"\n  Games file not updated, no changes."
 
         # Returns true if members flag is updated
         game_flag = update_flags[Flags.Members]
@@ -794,13 +767,13 @@ class AutoRolerPro(commands.Cog):
                 json.dump(members, fp, indent = 2, default = str)
             
             # Adds members file update to log message
-            log_message += f"\nSuccessfully saved to {members_file}! {game_flag['comment']}"
+            log_message += f"\n  Successfully saved to {members_file}! {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Members)
         else:
             # Adds aliases file update to log message
-            log_message += f"\nMembers file not updated, no changes."
+            log_message += f"\n  Members file not updated, no changes."
 
         # Returns true if aliases flag is updated
         game_flag = update_flags[Flags.Aliases]
@@ -809,15 +782,14 @@ class AutoRolerPro(commands.Cog):
                 json.dump(aliases, fp, indent = 2, default = str)
             
             # Adds aliases file update to log message
-            log_message += f"\nSuccessfully saved to {aliases_file}! {game_flag['comment']}"
+            log_message += f"\n  Successfully saved to {aliases_file}! {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Aliases)
         else:
             # Adds aliases file update to log message
-            log_message += f"\nAliases file not updated, no changes."
+            log_message += f"\n  Aliases file not updated, no changes."
 
-            
         Log(log_message)
         # Messages the test channel for debug
         await message_channel.send(log_message)
