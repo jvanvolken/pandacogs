@@ -114,14 +114,14 @@ else:
 #     else:
 #         return None
 
-# def Log(message):
-#     # Initializes the members list
-#     if os.path.isfile(log_file):
-#         with open(log_file, "a") as fp:
-#             fp.writelines(f"\n{message}")
-#     else:
-#         with open(log_file, "w") as fp:
-#             fp.writelines(f"\n{message}")
+def Log(message):
+    # Initializes the members list
+    if os.path.isfile(log_file):
+        with open(log_file, "a") as fp:
+            fp.writelines(f"\n{message}")
+    else:
+        with open(log_file, "w") as fp:
+            fp.writelines(f"\n{message}")
 
 
 # Returns a string list of game names
@@ -797,22 +797,14 @@ class AutoRolerPro(commands.Cog):
     async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    # @commands.Cog.listener()
-    # async def on_ready(self):
-    #     await self.bot.wait_until_ready()
-
-    #     message_channel = self.bot.get_channel(test_channel_id)
-    #     print(f"Got channel {message_channel}")
-    #     await message_channel.send("From on_ready")
-
-    #     if not self.BackupRoutine.is_running():
-    #         self.BackupRoutine.start()
-
     @tasks.loop(seconds=10)
     async def BackupRoutine(self):
-        message_channel = self.bot.get_channel(test_channel_id)
-        print(f"Got channel {message_channel}")
-        await message_channel.send("From BackupRoutine")
+        # message_channel = self.bot.get_channel(test_channel_id)
+        # await message_channel.send("From BackupRoutine")
+
+        # Logs the current date and time
+        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        Log(f"{current_datetime}: Initiating routine data backup sequence.")
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
