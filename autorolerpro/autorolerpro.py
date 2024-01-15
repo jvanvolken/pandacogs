@@ -9,6 +9,7 @@ import os
 
 from datetime import datetime, timedelta
 from redbot.core import commands
+from discord.ext import tasks
 from threading import Timer
 from io import BytesIO
 from enum import Enum
@@ -790,6 +791,15 @@ class AutoRolerPro(commands.Cog):
         #         Log(f"{current_datetime}: Successfully saved to {aliases_file}\n--{comment}")
 
         # Timer(10, BackupRoutine).start()
+
+    def cog_unload(self):
+        self.BackupRoutine.cancel()
+
+    @tasks.loop(hours=backup_frequency)
+    async def BackupRoutine(self):
+        message_channel = self.bot.get_channel(test_channel_id)
+        print(f"Got channel {message_channel}")
+        await message_channel.send("From BackupRoutine")
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
