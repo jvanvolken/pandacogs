@@ -797,6 +797,10 @@ class AutoRolerPro(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
+        message_channel = self.bot.get_channel(test_channel_id)
+        print(f"Got channel {message_channel}")
+        await message_channel.send("From on_ready")
+
         if not self.BackupRoutine.is_running():
             self.BackupRoutine.start()
 
