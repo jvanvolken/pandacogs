@@ -834,9 +834,8 @@ class AutoRolerPro(commands.Cog):
             return
         
         # Exit if there's not current activity
-        if current.activity is None:
-            if previous.activity:
-                StopPlayingGame(current, previous.activity.name)
+        if previous.activity and (current.activity is None or current.activity.name != previous.activity.name):
+            StopPlayingGame(current, previous.activity.name)
             return
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
