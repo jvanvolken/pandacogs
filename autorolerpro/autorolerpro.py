@@ -112,7 +112,8 @@ def Log(message):
     # Initializes the members list
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
-            fp.writelines(f"\n{message}")
+            fp.write("\n")
+            fp.writelines(f"{message}")
     else:
         with open(log_file, "w") as fp:
             fp.writelines(f"{message}")
@@ -768,10 +769,10 @@ class AutoRolerPro(commands.Cog):
                 json.dump(games, fp, indent = 2, default = str) 
 
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {games_file}\n{game_flag['comment']}")
+            Log(f"{current_datetime}: Successfully saved to {games_file} {game_flag['comment']}")
 
             # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up games data!\n{game_flag['comment']}")
+            await message_channel.send(f"{current_datetime}: Successfully backed up games data! {game_flag['comment']}")
 
             # Resets flag
             UpdateFlag(Flags.Games)
@@ -783,10 +784,10 @@ class AutoRolerPro(commands.Cog):
                 json.dump(members, fp, indent = 2, default = str)
             
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {members_file}!\n{game_flag['comment']}")
+            Log(f"{current_datetime}: Successfully saved to {members_file}! {game_flag['comment']}")
 
             # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up members data!\n{game_flag['comment']}")
+            await message_channel.send(f"{current_datetime}: Successfully backed up members data! {game_flag['comment']}")
 
             # Resets flag
             UpdateFlag(Flags.Members)
@@ -798,10 +799,10 @@ class AutoRolerPro(commands.Cog):
                 json.dump(aliases, fp, indent = 2, default = str)
             
             # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {aliases_file}!\n{game_flag['comment']}")
+            Log(f"{current_datetime}: Successfully saved to {aliases_file}! {game_flag['comment']}")
 
             # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up alias data!\n{game_flag['comment']}")
+            await message_channel.send(f"{current_datetime}: Successfully backed up alias data! {game_flag['comment']}")
 
             # Resets flag
             UpdateFlag(Flags.Aliases)
