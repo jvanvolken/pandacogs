@@ -790,9 +790,8 @@ class AutoRolerPro(commands.Cog):
             # Adds aliases file update to log message
             log_message += f"\n  Aliases file not updated, no changes."
 
+        # Logs the events of the backup routine
         Log(log_message)
-        # Messages the test channel for debug
-        await message_channel.send(log_message)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
