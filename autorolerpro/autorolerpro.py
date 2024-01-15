@@ -648,6 +648,10 @@ class ListView(discord.ui.View):
                         member = interaction.user
                         await member.remove_roles(self.role)
 
+                        # Updates member details
+                        update = {'games' : {self.name : {'tracked' : False}}}
+                        UpdateMember(member, update)
+
                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
                         view.message = await interaction.message.edit(view = view)
 
@@ -657,9 +661,9 @@ class ListView(discord.ui.View):
                         member = interaction.user
                         await member.add_roles(self.role)
 
-                        # Assigns member with current.name
+                        # Updates member details
                         update = {'games' : {self.name : {'tracked' : True}}}
-                        UpdateMember(self.name, update)
+                        UpdateMember(member, update)
 
                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
                         view.message = await interaction.message.edit(view = view)
