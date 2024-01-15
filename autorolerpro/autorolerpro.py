@@ -795,7 +795,7 @@ class AutoRolerPro(commands.Cog):
     def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @tasks.loop(hours=backup_frequency)
+    @tasks.loop(seconds=5.0)
     async def BackupRoutine(self):
         message_channel = self.bot.get_channel(test_channel_id)
         print(f"Got channel {message_channel}")
@@ -1073,3 +1073,7 @@ class AutoRolerPro(commands.Cog):
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
+
+    @commands.command()
+    async def get_type(self, ctx):
+        await ctx.reply(f"{type(self.bot)}")
