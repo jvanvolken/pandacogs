@@ -215,7 +215,7 @@ def UpdateMember(member: discord.Member, new_details: dict):
     MergeDictionaries(members[member.name], new_details)
     
     # Toggles the updated flag for members
-    UpdateFlag(Flags.Members, True, f"Updated a member, {member.name}")
+    UpdateFlag(Flags.Members, True, f"Updated member information, {member.name}")
     # Saves the members dictionary to the json file
     # with open(members_file, "w") as fp:
     #     json.dump(members, fp, indent = 2, default = str)
@@ -768,7 +768,9 @@ class AutoRolerPro(commands.Cog):
 
         # Logs the current date and time
         current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-        Log(f"{current_datetime}: Initiating routine data backup sequence.")
+
+        # Initializes the log message
+        log_message = f"{current_datetime}: Initiating routine data backup sequence."
 
         # Returns true if games flag is updated
         game_flag = update_flags[Flags.Games]
@@ -776,14 +778,14 @@ class AutoRolerPro(commands.Cog):
             with open(games_file, "w") as fp:
                 json.dump(games, fp, indent = 2, default = str) 
 
-            # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {games_file} {game_flag['comment']}")
-
-            # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up games data! {game_flag['comment']}")
+            # Adds games file update to log message
+            log_message += f"\nSuccessfully saved to {games_file} {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Games)
+        else:
+            # Adds aliases file update to log message
+            log_message += f"\nGames file not updated, no changes."
 
         # Returns true if members flag is updated
         game_flag = update_flags[Flags.Members]
@@ -791,14 +793,14 @@ class AutoRolerPro(commands.Cog):
             with open(members_file, "w") as fp:
                 json.dump(members, fp, indent = 2, default = str)
             
-            # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {members_file}! {game_flag['comment']}")
-
-            # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up members data! {game_flag['comment']}")
+            # Adds members file update to log message
+            log_message += f"\nSuccessfully saved to {members_file}! {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Members)
+        else:
+            # Adds aliases file update to log message
+            log_message += f"\nMembers file not updated, no changes."
 
         # Returns true if aliases flag is updated
         game_flag = update_flags[Flags.Aliases]
@@ -806,14 +808,19 @@ class AutoRolerPro(commands.Cog):
             with open(aliases_file, "w") as fp:
                 json.dump(aliases, fp, indent = 2, default = str)
             
-            # Logs backup
-            Log(f"{current_datetime}: Successfully saved to {aliases_file}! {game_flag['comment']}")
-
-            # Messages the test channel for debug
-            await message_channel.send(f"{current_datetime}: Successfully backed up alias data! {game_flag['comment']}")
+            # Adds aliases file update to log message
+            log_message += f"\nSuccessfully saved to {aliases_file}! {game_flag['comment']}"
 
             # Resets flag
             UpdateFlag(Flags.Aliases)
+        else:
+            # Adds aliases file update to log message
+            log_message += f"\nAliases file not updated, no changes."
+
+            
+        Log(log_message)
+        # Messages the test channel for debug
+        await message_channel.send(log_message)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
