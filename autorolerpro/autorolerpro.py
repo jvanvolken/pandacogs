@@ -28,9 +28,9 @@ class ListType(Enum):
 
 # List types
 class Flags(Enum):
-    Games  = 1
+    Games    = 1
     Members  = 2
-    Aliases = 3
+    Aliases  = 3
 
 # Cog Directory in Appdata
 docker_cog_path  = "/data/cogs/AutoRolerPro"
@@ -215,6 +215,10 @@ def MergeDictionaries(d1: dict, d2: dict):
 
 # Updates a member in the members list and saves file
 def UpdateMember(member: discord.Member, new_details: dict):
+    # Checks if member was previously added, if not, add them.
+    if member.name not in members:
+        AddMember(member)
+
     # Updates specific member with new details using the recursive MergeDictionaries function
     MergeDictionaries(members[member.name], new_details)
     
