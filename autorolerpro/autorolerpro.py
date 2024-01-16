@@ -428,37 +428,76 @@ def StartPlayingGame(member: discord.Member, game_name: str):
 
 # Records number of hours played since member started playing game and tallies for the day
 def StopPlayingGame(member: discord.Member, game_name: str):
-    # Checks of game_name is an alias; if not and game_name is also not in games, return and log failure
+    # Checks if game_name is an alias; if not and game_name is also not in games, return and log failure
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member} stopped playing!", LogType.Error)
+        Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Error)
+        return
+
+    # Checks if game has history, log error if missing
+    if 'history' not in games[game_name]:
+        Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.Error)
         return
     
+    def AddPlaytime(date, hours):
+        # Adds playtime to the current date and member if missing
+        if 'playtime' not in games[game_name]['history'][date][member.name]:
+            games[game_name]['history'][date][member.name]['playtime'] = 0
+
+        # Add hours to playtime for the day
+        games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
+
+        # Remove last_played when it's accounted for
+        del games[game_name]['history'][date][member.name]['last_played']
+
+        # Toggles the updated flag for games
+        UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
+    
     # Grabs the current YYYY-MM-DD from the current datetime
-    date = datetime.now().strftime('%Y-%m-%d')
+    today = datetime.now().strftime('%Y-%m-%d')
 
-    # Constructs history dictionary for game if missing
-    if 'history' in games[game_name] and date in games[game_name]['history'] and member.name in games[game_name]['history'][date]:
+    if today in games[game_name]['history']:
+        # Verifies that member has history for today, logs error if not
+        if member.name not in games[game_name]['history'][today]:
+            Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.Error)
+            return
+        
         # Get the difference in time between last_played and now
-        last_played  = games[game_name]['history'][date][member.name]['last_played']
+        last_played = games[game_name]['history'][today][member.name]['last_played']
         delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
-
-        # TODO: Compare now date with last_played date, if now is next day, split hours between the two days
 
         # Convert delta_time to hours and round to 2 decimal places
         hours = round(delta_time.total_seconds()/3600, 2)
 
-        # Adds the member to the current date if missing
-        if 'playtime' not in games[game_name]['history'][date][member.name]:
-            games[game_name]['history'][date][member.name]['playtime'] = 0
-        
-        games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
-
-        # Toggles the updated flag for games
-        UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
+        # Add playtime for today
+        AddPlaytime(today, hours)
     else:
-        Log(f"Something went wrong when {member} stopped playing {game_name}!", LogType.Error)
+        Log(f"Sombody played overnight, splitting time across two days!", LogType.Log)
+        # Get yesterday's date
+        yesterday = (datetime.now() - timedelta(days = 1)).strftime('%Y-%m-%d')
+
+        # Check if there's a last_played in yesterday's history
+        if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
+            # Get yesterday's last_played time and midnight
+            last_played  = games[game_name]['history'][yesterday][member.name]['last_played']
+            midnight = (last_played + timedelta(days=1)).replace(hour=0, minute=0, microsecond=0, second=0)
+            
+            # Convert delta_time to hours and round to 2 decimal places
+            delta_time = midnight - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
+            hours = round(delta_time.total_seconds()/3600, 2)
+
+            # Add playtime for yesterday
+            AddPlaytime(yesterday, hours)
+
+            # Convert delta_time to hours and round to 2 decimal places
+            delta_time = datetime.now() - midnight
+            hours = round(delta_time.total_seconds()/3600, 2)
+
+            # Add playtime for today
+            AddPlaytime(today, hours)
+        else:
+            Log(f"Could not find last_played for {game_name} after {member.name} stopped playing!", LogType.Error)
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
