@@ -135,10 +135,18 @@ def GetNames(game_list: list):
     for game in game_list.values():
         names.append(game['name'])
     
-    # TODO: Would like to @ the role for new games and use string names for failed to find games
-    
     # Joins the names together in a string, separating each with a comma
     return f"`{'`, `'.join(names)}`"
+
+# Returns a string list of role mentions
+def GetRoles(game_list: list):
+    roles = []
+    # Loops through the game_list and appends to a list of role mentions
+    for game in game_list.values():
+        roles.append(f"<@&{game['role']}>")
+    
+    # Joins the role mentions together in a string, separating each with a comma
+    return f"`{'`, `'.join(roles)}`"
 
 # Returns a list of image files
 async def GetImages(game_list: list):
@@ -1023,22 +1031,22 @@ class AutoRolerPro(commands.Cog):
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetNames(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
             view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetNames(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
             view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetNames(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
