@@ -694,7 +694,7 @@ class ListView(discord.ui.View):
                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
                         view.message = await interaction.message.edit(view = view)
 
-                        await interaction.response.send_message(f"I have removed you from the `{self.name}` role! Also, I won't message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
+                        await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
                     else:
                         # Assign role to member
                         member = interaction.user
