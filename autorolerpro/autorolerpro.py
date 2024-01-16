@@ -262,7 +262,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         game = string.capwords(game)
 
         # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,rating,first_release_date; limit 500; where summary != null; where rating != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : db_header, 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         results = db_json.json()
 
         # Collect the game names
@@ -329,7 +329,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             # Toggles the updated flag for games
             UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
         else:
-            failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'rating' : 0, 'first_release_date' : 'unknown'}
+            failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
     return new_games, already_exists, failed_to_find
 
