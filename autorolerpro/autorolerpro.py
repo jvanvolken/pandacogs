@@ -146,7 +146,7 @@ def GetRoles(game_list: list):
         roles.append(f"<@&{game['role']}>")
     
     # Joins the role mentions together in a string, separating each with a comma
-    return f"`{', '.join(roles)}"
+    return f"{', '.join(roles)}"
 
 # Returns a list of image files
 async def GetImages(game_list: list):
