@@ -723,8 +723,9 @@ class PlaytimeView(discord.ui.View):
         async def callback(self, interaction):
             try:
                 playtime_message = ""
-                for game, hours in GetPlaytime(games, 30, 5).items():
-                    playtime_message += f"- **{game}** *({hours:,} hours)*\n"
+                for game, time in GetPlaytime(games, 30, 5).items():
+                    hours, minutes = divmod(time*60, 60)
+                    playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
 
                 await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}")
             except Exception as error:
@@ -741,8 +742,9 @@ class PlaytimeView(discord.ui.View):
         async def callback(self, interaction):
             try:
                 playtime_message = ""
-                for game, hours in GetPlaytime(games, 30, 5, self.member).items():
-                    playtime_message += f"- **{game}** *({hours:,} hours)*\n"
+                for game, time in GetPlaytime(games, 30, 5, self.member).items():
+                    hours, minutes = divmod(time*60, 60)
+                    playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
 
                 await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
             except Exception as error:
