@@ -903,10 +903,7 @@ class AutoRolerPro(commands.Cog):
             return
         
         # Continues if there's a current activity and if it's not in the blacklist
-        if current.activity and current.activity.name not in activity_blacklist:
-            # Log game activity for server stats
-            StartPlayingGame(current, current.activity.name)
-            
+        if current.activity and current.activity.name not in activity_blacklist:            
             # Exit if the member has opted out of the autoroler
             if member['opt_out']:
                 return
@@ -935,6 +932,9 @@ class AutoRolerPro(commands.Cog):
                     await AddAlias(self.bot, current.guild, current.activity.name, current)
                     return
                 
+            # Log game activity for server stats
+            StartPlayingGame(current, game['name'])
+
             # Get the role associated with the current activity name (game name)
             role = current.guild.get_role(game['role'])
             
