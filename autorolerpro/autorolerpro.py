@@ -540,21 +540,26 @@ class DirectMessageView(discord.ui.View):
     def __init__(self, original_message, role, member):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours
 
+        if not self.game:
+            Log("Direct message was not provided a game! Check if the view was properly constructed before sending the message.", LogType.Error)
+            return
+        
         self.original_message = original_message
         self.role = role
         self.member = member
 
-        self.add_item(self.YesButton(self.original_message, self.role, self.member))
-        self.add_item(self.NoButton(self.original_message, self.role, self.member))
-        self.add_item(self.OptOutButton(self.original_message, self.role, self.member))
+        self.add_item(self.YesButton(self.original_message, self.role, self.member, self.game))
+        self.add_item(self.NoButton(self.original_message, self.role, self.member, self.game))
+        self.add_item(self.OptOutButton(self.original_message, self.role, self.member, self.game))
 
     # Create a class called YesButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
-        def __init__(self, original_message, role, member):
+        def __init__(self, original_message, role, member, game):
             super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
             self.original_message = original_message
             self.role = role
             self.member = member
+            self.game = game
 
         async def callback(self, interaction):
             try:
@@ -562,14 +567,14 @@ class DirectMessageView(discord.ui.View):
                 await self.member.add_roles(self.role)
                 
                 # Records answer for this game and the current datetime for last played
-                update = {'games' : {self.role.name : {'tracked' : True}}}
+                update = {'games' : {self.game['name'] : {'tracked' : True}}}
                 UpdateMember(self.member, update)
 
                 # Responds to the request
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
-                await interaction.response.send_message(f"Awesome! I've added you to the `{self.role.name}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None, files = GetImages(self.game))
+                await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.role.name}` role to you. Please check the logs for further details.")
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please check the logs for further details.")
                 Log(error, LogType.Error)
                 raise Exception(error)
                 
@@ -591,8 +596,8 @@ class DirectMessageView(discord.ui.View):
                 update = {'games' : {self.role.name : {'tracked' : False}}}
                 UpdateMember(self.member, update)
                 
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
-                await interaction.response.send_message(f"Understood! I won't ask about `{self.role.name}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None, files = GetImages(self.game))
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 Log(error, LogType.Error)
@@ -612,7 +617,7 @@ class DirectMessageView(discord.ui.View):
                 update = {'opt_out' : True}
                 UpdateMember(self.member, update)
 
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None, files = GetImages(self.game))
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
@@ -881,15 +886,15 @@ class AutoRolerPro(commands.Cog):
         if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
             return
         
+        # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
+        if current.name not in members:
+            AddMember(current)
+
         # Detect if someone stopped playing a game
         if previous.activity and previous.activity.name not in activity_blacklist and (current.activity is None or current.activity.name != previous.activity.name):
             StopPlayingGame(current, previous.activity.name)
             return
         
-        # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
-        if current.name not in members:
-            AddMember(current)
-
         # Assigns member with current.name
         member = members[current.name]
 
@@ -948,11 +953,12 @@ class AutoRolerPro(commands.Cog):
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({general_channel_link}) and I noticed you were playing `{game['name']}` but don't have the role assigned!"
+                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({general_channel_link}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
                 
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current)
-                view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view)
+                view.game = game
+                view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = GetImages(game))
     
     @commands.command()
     async def opt_in(self, ctx):
