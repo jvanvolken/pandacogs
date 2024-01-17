@@ -187,8 +187,8 @@ def GetListSets(game_list: dict, set_amount: int, filter: str = None):
             similarity = SequenceMatcher(None, name.lower(), filter.lower()).ratio()
             Log(f"Similarity Score for {filter.lower()} and {name.lower()} is ({similarity}).", LogType.Debug)
 
-            # If the filter is not in the name and similarity score is below 0.4, skip this game
-            if filter not in name and similarity < 0.4:
+            # If the filter is not in the name and similarity score is below 0.5, skip this game
+            if filter not in name and similarity < 0.5:
                 Log(f"Skipping {name.lower()}!", LogType.Debug)
                 continue
 
