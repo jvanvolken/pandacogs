@@ -562,16 +562,13 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    def __init__(self, original_message, role, member):
+    def __init__(self, original_message, role, member, game):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours
-
-        if not self.game:
-            Log("Direct message was not provided a game! Check if the view was properly constructed before sending the message.", LogType.Error)
-            return
         
         self.original_message = original_message
         self.role = role
         self.member = member
+        self.game = game
 
         self.add_item(self.YesButton(self.original_message, self.role, self.member, self.game))
         self.add_item(self.NoButton(self.original_message, self.role, self.member, self.game))
@@ -981,8 +978,7 @@ class AutoRolerPro(commands.Cog):
                 original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({general_channel_link}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
                 
                 # Populate view and send direct message
-                view = DirectMessageView(original_message, role, current)
-                view.game = game
+                view = DirectMessageView(original_message, role, current, game)
                 view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = GetImages(game))
     
     @commands.command()
