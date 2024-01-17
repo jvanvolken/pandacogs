@@ -36,6 +36,7 @@ class Flags(Enum):
 # Log Types
 class LogType(Enum):
     Log     = "LOG"
+    Debug   = "DEBUG"
     Warning = "WARNING"
     Error   = "ERROR"
     Fatal   = "FATAL"
@@ -71,6 +72,9 @@ update_flags = {
     Flags.Members: {'status': False, 'comment': ""}, 
     Flags.Aliases: {'status': False, 'comment': ""}
 }
+
+# Sets debug mode
+debug_mode = True
 
 # Sets the default max attempts to set an alias
 alias_max_attempts = 5
@@ -120,6 +124,10 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
 
 # Writes or appends a message to the log_file
 def Log(message: str, log_type: LogType = LogType.Log):
+    # Skips debug logs if debug mode is False
+    if log_type == LogType.Debug and not debug_mode:
+        return
+    
     # Initializes the log file or appends to an existing one
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
@@ -176,12 +184,12 @@ def GetListSets(game_list: dict, set_amount: int, filter: str = None):
 
         # Check eligability if there's a filter
         if filter:
-            similarity = SequenceMatcher(None, name, filter).ratio()
-            Log(f"Similarity Score for {filter} and {name} is ({similarity}).", LogType.Log)
+            similarity = SequenceMatcher(None, name.lower(), filter.lower()).ratio()
+            Log(f"Similarity Score for {filter.lower()} and {name.lower()} is ({similarity}).", LogType.Debug)
 
-            # If the filter is not in the name and similarity score is below 0.5, skip this game
-            if filter not in name and similarity < 0.5:
-                Log(f"Skipping {name}!", LogType.Log)
+            # If the filter is not in the name and similarity score is below 0.4, skip this game
+            if filter not in name and similarity < 0.4:
+                Log(f"Skipping {name.lower()}!", LogType.Debug)
                 continue
 
         # Get the next index from set_amount
