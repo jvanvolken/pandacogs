@@ -1017,17 +1017,20 @@ class AutoRolerPro(commands.Cog):
             # Convert a long list of games into sets of 25 or less
             message_sets = GetListSets(games, 25, arg)
 
-            # Loop through sets and send a message per
-            set_count = 0
-            while set_count < len(message_sets):
-                if set_count == 0:
-                    original_message = f"Here's your game list, {member.mention}!"
-                    view = ListView(original_message, ListType.Select_Game, message_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = view)
-                else:
-                    view = ListView("", ListType.Select_Game, message_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(f"", view = view)
-                set_count += 1
+            if not message_sets:
+                await ctx.reply(f"Could not find any games similar to {arg}")
+            else:
+                # Loop through sets and send a message per
+                set_count = 0
+                while set_count < len(message_sets):
+                    if set_count == 0:
+                        original_message = f"Here's your game list, {member.mention}!"
+                        view = ListView(original_message, ListType.Select_Game, message_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = view)
+                    else:
+                        view = ListView("", ListType.Select_Game, message_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(f"", view = view)
+                    set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
