@@ -602,11 +602,12 @@ class DirectMessageView(discord.ui.View):
                 
     # Create a class called NoButton that subclasses discord.ui.Button             
     class NoButton(discord.ui.Button):
-        def __init__(self, original_message, role, member):
+        def __init__(self, original_message, role, member, game):
             super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
             self.original_message = original_message
             self.role = role
             self.member = member
+            self.game = game
 
         async def callback(self, interaction):
             try:
@@ -627,11 +628,12 @@ class DirectMessageView(discord.ui.View):
               
     # Create a class called OptOutButton that subclasses discord.ui.Button                   
     class OptOutButton(discord.ui.Button):
-        def __init__(self, original_message, role, member):
+        def __init__(self, original_message, role, member, game):
             super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
             self.original_message = original_message
             self.role = role
             self.member = member
+            self.game = game
 
         async def callback(self, interaction):
             try:
