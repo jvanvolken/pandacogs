@@ -9,6 +9,7 @@ import os
 
 from datetime import datetime, timedelta
 from redbot.core import commands, bot
+from difflib import SequenceMatcher
 from discord.ext import tasks
 from io import BytesIO
 from enum import Enum
@@ -168,16 +169,28 @@ async def GetImages(game_list: list):
     return images
 
 # Return a list of game sets containing a max of 25 games per set
-def GetListSets(game_list: dict, set_amount: int):
+def GetListSets(game_list: dict, set_amount: int, filter: str = None):
     list_sets = []
     item_count = 0
     for name, details in game_list.items():
+
+        # Check eligability if there's a filter
+        if filter:
+            similarity = SequenceMatcher(None, name, filter).ratio()
+
+            # If the filter is not in the name and similarity score is below 0.5, skip this game
+            if filter not in name and similarity < 0.5:
+                continue
+
+        # Get the next index from set_amount
         idx = math.floor(item_count/set_amount)
         if idx < len(list_sets):
             list_sets[idx][name] = details
         else:
             list_sets.append({})
             list_sets[idx][name] = details
+
+        # Iterate the number of items counted
         item_count += 1
 
     return list_sets
@@ -983,7 +996,7 @@ class AutoRolerPro(commands.Cog):
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
 
     @commands.command()
-    async def list_games(self, ctx):
+    async def list_games(self, ctx, *, arg = None):
         """Lists the collected game roles for the server."""
         # Get member that sent the command
         member = ctx.message.author
@@ -991,7 +1004,7 @@ class AutoRolerPro(commands.Cog):
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
-            message_sets = GetListSets(games, 25)
+            message_sets = GetListSets(games, 25, arg)
 
             # Loop through sets and send a message per
             set_count = 0
@@ -1057,7 +1070,7 @@ class AutoRolerPro(commands.Cog):
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
-    async def remove_games(self, ctx):
+    async def remove_games(self, ctx, *, arg = None):
         """Lists the collected games to select for removal."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1068,7 +1081,7 @@ class AutoRolerPro(commands.Cog):
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
-            list_sets = GetListSets(games, 25)
+            list_sets = GetListSets(games, 25, arg)
 
             set_count = 0
             while set_count < len(list_sets):
