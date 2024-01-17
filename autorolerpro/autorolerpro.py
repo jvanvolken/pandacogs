@@ -1015,20 +1015,20 @@ class AutoRolerPro(commands.Cog):
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
-            message_sets = GetListSets(games, 25, arg)
+            list_sets = GetListSets(games, 25, arg)
 
-            if not message_sets:
-                await ctx.reply(f"Could not find any games similar to {arg}")
+            if not list_sets:
+                await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 # Loop through sets and send a message per
                 set_count = 0
-                while set_count < len(message_sets):
+                while set_count < len(list_sets):
                     if set_count == 0:
                         original_message = f"Here's your game list, {member.mention}!"
-                        view = ListView(original_message, ListType.Select_Game, message_sets[set_count], ctx.guild, member)
+                        view = ListView(original_message, ListType.Select_Game, list_sets[set_count], ctx.guild, member)
                         view.message = await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = view)
                     else:
-                        view = ListView("", ListType.Select_Game, message_sets[set_count], ctx.guild, member)
+                        view = ListView("", ListType.Select_Game, list_sets[set_count], ctx.guild, member)
                         view.message = await ctx.reply(f"", view = view)
                     set_count += 1
         else:
@@ -1097,16 +1097,19 @@ class AutoRolerPro(commands.Cog):
         if len(games) > 0:
             list_sets = GetListSets(games, 25, arg)
 
-            set_count = 0
-            while set_count < len(list_sets):
-                if set_count == 0:
-                    original_message = f"Here you go, {member.mention}. Please select the game(s) you'd like to remove..."
-                    view = ListView(original_message, ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(original_message, view = view) 
-                else:
-                    view = ListView("", ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(view = view)
-                set_count += 1
+            if not list_sets:
+                await ctx.reply(f"Could not find any games similar to `{arg}`")
+            else:
+                set_count = 0
+                while set_count < len(list_sets):
+                    if set_count == 0:
+                        original_message = f"Here you go, {member.mention}. Please select the game(s) you'd like to remove..."
+                        view = ListView(original_message, ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(original_message, view = view) 
+                    else:
+                        view = ListView("", ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(view = view)
+                    set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
@@ -1140,7 +1143,7 @@ class AutoRolerPro(commands.Cog):
         await AddAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
-    async def remove_aliases(self, ctx):
+    async def remove_aliases(self, ctx, *, filter):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1150,18 +1153,21 @@ class AutoRolerPro(commands.Cog):
             return
         
         if len(aliases) > 0:
-            list_sets = GetListSets(aliases, 25)
+            list_sets = GetListSets(aliases, 25, filter)
 
-            set_count = 0
-            while set_count < len(list_sets):
-                if set_count == 0:
-                    original_message = f"Here you go, {member.mention}. Please select the aliases you'd like to remove..."
-                    view = ListView(original_message, ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(original_message, view = view) 
-                else:
-                    view = ListView("", ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-                    view.message = await ctx.reply(view = view)
-                set_count += 1
+            if not filter:
+                await ctx.reply(f"Could not find any aliases similar to `{filter}`")
+            else:
+                set_count = 0
+                while set_count < len(list_sets):
+                    if set_count == 0:
+                        original_message = f"Here you go, {member.mention}. Please select the aliases you'd like to remove..."
+                        view = ListView(original_message, ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(original_message, view = view) 
+                    else:
+                        view = ListView("", ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
+                        view.message = await ctx.reply(view = view)
+                    set_count += 1
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
 
