@@ -593,7 +593,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member, update)
 
                 # Responds to the request
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None, files = await GetImages({self.game['name'] : self.game}))
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please check the logs for further details.")
@@ -619,7 +619,7 @@ class DirectMessageView(discord.ui.View):
                 update = {'games' : {self.role.name : {'tracked' : False}}}
                 UpdateMember(self.member, update)
                 
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None, files = await GetImages({self.game['name'] : self.game}))
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
@@ -641,7 +641,7 @@ class DirectMessageView(discord.ui.View):
                 update = {'opt_out' : True}
                 UpdateMember(self.member, update)
 
-                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None, files = await GetImages({self.game['name'] : self.game}))
+                await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
