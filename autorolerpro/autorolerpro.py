@@ -1007,7 +1007,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def list_games(self, ctx, *, arg = None):
-        """Lists the collected game roles for the server."""
+        """Returns a list of games from the server."""
         # Get member that sent the command
         member = ctx.message.author
 
@@ -1081,7 +1081,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def remove_games(self, ctx, *, arg = None):
-        """Lists the collected games to select for removal."""
+        """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
         member = ctx.message.author
 
@@ -1108,7 +1108,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def list_aliases(self, ctx):
-        """Lists the collected game aliases for the server."""
+        """Returns a list of aliases from the server."""
         if len(aliases) > 0:
             # Get's the longest alias for formatting
             longest_alias = max(list(aliases.keys()), key=len)
@@ -1125,7 +1125,7 @@ class AutoRolerPro(commands.Cog):
     
     @commands.command()
     async def add_alias(self, ctx, *, arg):
-        """Adds an alias to the collection of game aliases for the server."""
+        """Adds the provided alias to the server."""
         # Get member that sent the command
         member = ctx.message.author
 
@@ -1137,7 +1137,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def remove_aliases(self, ctx):
-        """Lists the collected game aliases to select for removal."""
+        """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member = ctx.message.author
 
@@ -1163,6 +1163,7 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def top_games(self, ctx):
+        '''Returns the top 5 games played in the server or by yourself.'''
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
