@@ -713,7 +713,6 @@ class ListView(discord.ui.View):
                 if self.list_type is ListType.Select_Game:
                     extra_comment = "Please use !list_games to interact!"
                 
-                # TODO: Let anyone click this button
                 await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
                 return
             
