@@ -238,7 +238,7 @@ def GetDominantColor(image_url: str, palette_size: int = 16):
 def AddMember(member: discord.Member):
     # Collects the desired information about the member
     member_details = {}
-    for detail in ['name', 'display_name', 'created_at', 'joined_at', 'roles']:
+    for detail in ['name', 'display_name', 'created_at', 'joined_at']:
         if hasattr(member, detail):
             member_details[detail] = getattr(member, detail)
 
