@@ -907,7 +907,7 @@ class AutoRolerPro(commands.Cog):
         member_display_name = current.display_name.encode().decode('ascii','ignore')
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue"]:
+        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue", "explainablechaos"]:
             return
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
