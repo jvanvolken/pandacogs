@@ -112,6 +112,13 @@ else:
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
 
+for name, value in members.items():
+    if 'roles' in members[name]:
+        del members[name]['roles']
+
+with open(members_file, "w") as fp:
+    json.dump(members, fp, indent = 2, default = str)
+
 # Returns a string formatted datetime of now
 def GetTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -563,7 +570,7 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
-    def __init__(self, original_message, role, member, game):
+    def __init__(self, original_message: str, role: discord.Role, member: discord.Member, game):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours
         
         self.original_message = original_message
@@ -828,7 +835,6 @@ class PlaytimeView(discord.ui.View):
                     await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
                 else:
                     await interaction.response.send_message(f"Hey, {self.member.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
-
 
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
