@@ -816,12 +816,20 @@ class PlaytimeView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
-                playtime_message = ""
-                for game, time in GetPlaytime(games, 30, 5, self.member).items():
-                    hours, minutes = divmod(time*60, 60)
-                    playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
+                # Get the list of the top # of games
+                playtime_list = GetPlaytime(games, 30, 5, self.member)
+                if playtime_list:
+                    # Initialize the playtime message for the games played
+                    playtime_message = ""
+                    for game, time in playtime_list.items():
+                        hours, minutes = divmod(time*60, 60)
+                        playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
 
-                await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
+                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
+                else:
+                    await interaction.response.send_message(f"Hey, {self.member.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
+
+
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
                 Log(error, LogType.Error)
