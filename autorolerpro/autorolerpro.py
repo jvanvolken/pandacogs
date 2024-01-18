@@ -112,13 +112,6 @@ else:
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str)
 
-for name, value in members.items():
-    if 'roles' in members[name]:
-        del members[name]['roles']
-
-with open(members_file, "w") as fp:
-    json.dump(members, fp, indent = 2, default = str)
-
 # Returns a string formatted datetime of now
 def GetTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
