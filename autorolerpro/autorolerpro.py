@@ -102,28 +102,15 @@ else:
         'ActivityBlacklist': ["Spotify"],
         'DebugMode': True,
         'AliasMaxAttempts': 5,
-        'BackupFrequency': 1 / 60
+        'BackupFrequency': 1
     }
 
     with open(config_file, "w") as fp:
         json.dump(config, fp, indent = 2, default = str)
 
-
-config['Links'] =  {
-    'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
-}
-config['ChannelIDs'] = {
-    'Bot': 634197647787556864,
-    'Admin': 1013251079418421248,
-    'Test': 665572348350693406
-}
-config['ActivityBlacklist'] = ["Spotify"]
-config['DebugMode'] = True
-config['AliasMaxAttempts'] = 5
-config['BackupFrequency'] = 1 / 60
+config['BackupFrequency'] = 1
 with open(config_file, "w") as fp:
     json.dump(config, fp, indent = 2, default = str)
-
 
 # Initializes the games list
 if os.path.isfile(games_file):
@@ -889,7 +876,7 @@ class AutoRolerPro(commands.Cog):
     async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @tasks.loop(hours = config['BackupFrequency'])
+    @tasks.loop(minutes = config['BackupFrequency'])
     async def BackupRoutine(self):
         # Initializes the log message
         log_message = f"Initiating routine data backup sequence ------------------------------"
