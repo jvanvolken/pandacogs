@@ -60,8 +60,6 @@ test_channel_id = 665572348350693406
 # Blacklist for member activities
 activity_blacklist = ["Spotify"]
 
-# Instantiates IGDB wrapper
-# curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
 
 
 # Dictionary of updated file flags
@@ -89,9 +87,11 @@ if os.path.isfile(config_file):
         config = json.load(fp)
 else:
     config = {}
+    # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+    # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
     config['credentials'] = {
-        'Client-ID': 'fqwgh1wot9cg7nqu8wsfuzw01lsln9',
-        'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
+        'Client-ID': 'CHANGE-ME',
+        'Authorization': 'CHANGE-ME'
     }
     with open(config_file, "w") as fp:
         json.dump(config, fp, indent = 2, default = str)
