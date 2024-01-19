@@ -49,32 +49,12 @@ aliases_file     = f"{docker_cog_path}/aliases.json"
 config_file      = f"{docker_cog_path}/config.json"
 log_file         = f"{docker_cog_path}/log.txt"
 
-# # Channel Links
-# general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
-
-# # Bot Channel
-# bot_channel_id = 634197647787556864
-# admin_channel_id = 1013251079418421248
-# test_channel_id = 665572348350693406
-
-# # Blacklist for member activities
-# activity_blacklist = ["Spotify"]
-
 # Dictionary of updated file flags
 update_flags = {
     Flags.Games: {'status': False, 'comment': ""}, 
     Flags.Members: {'status': False, 'comment': ""}, 
     Flags.Aliases: {'status': False, 'comment': ""}
 }
-
-# # Sets debug mode
-# debug_mode = True
-
-# # Sets the default max attempts to set an alias
-# alias_max_attempts = 5
-
-# # Sets the default backup frequency (hours)
-# backup_frequency = 1 / 60 # 1 minute
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -107,10 +87,6 @@ else:
 
     with open(config_file, "w") as fp:
         json.dump(config, fp, indent = 2, default = str)
-
-config['BackupFrequency'] = 1
-with open(config_file, "w") as fp:
-    json.dump(config, fp, indent = 2, default = str)
 
 # Initializes the games list
 if os.path.isfile(games_file):
