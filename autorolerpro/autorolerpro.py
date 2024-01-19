@@ -46,7 +46,7 @@ docker_cog_path  = "/data/cogs/AutoRolerPro"
 games_file       = f"{docker_cog_path}/games.json"
 members_file     = f"{docker_cog_path}/members.json"
 aliases_file     = f"{docker_cog_path}/aliases.json"
-settings_file    = f"{docker_cog_path}/settings.json"
+config_file      = f"{docker_cog_path}/config.json"
 log_file         = f"{docker_cog_path}/log.txt"
 
 # Channel Links
@@ -83,18 +83,18 @@ backup_frequency = 1 / 60 # 1 minute
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
 
-# Initializes settings
-if os.path.isfile(settings_file):
-    with open(settings_file, "r") as fp:
-        settings = json.load(fp)
+# Initializes config
+if os.path.isfile(config_file):
+    with open(config_file, "r") as fp:
+        config = json.load(fp)
 else:
-    settings = {}
-    settings['credentials'] = {
+    config = {}
+    config['credentials'] = {
         'Client-ID': 'fqwgh1wot9cg7nqu8wsfuzw01lsln9',
         'Authorization': 'Bearer 9csdv9i9a61vpschjcdcsfm4nblpyq'
     }
-    with open(settings_file, "w") as fp:
-        json.dump(settings, fp, indent = 2, default = str)
+    with open(config_file, "w") as fp:
+        json.dump(config, fp, indent = 2, default = str)
 
 # Initializes the games list
 if os.path.isfile(games_file):
@@ -307,7 +307,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         game = string.capwords(game)
 
         # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : settings['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         results = db_json.json()
 
         # Collect the game names
@@ -342,7 +342,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             already_exists[latest_game['name']] = games[latest_game['name']]
         elif latest_game: 
             # Request the cover image urls
-            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : settings['credentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['credentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
             results = db_json.json()
 
             # Formats the cover URL
