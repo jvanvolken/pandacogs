@@ -316,6 +316,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
+        Log(str(results), LogType.Debug)
+
         # Collect the game names
         game_names = [details['name'] for details in results]
 
