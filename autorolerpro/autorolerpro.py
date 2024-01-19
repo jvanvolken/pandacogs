@@ -32,6 +32,7 @@ class Flags(Enum):
     Games    = 1
     Members  = 2
     Aliases  = 3
+    Config   = 3
 
 # Log Types
 class LogType(Enum):
@@ -51,9 +52,10 @@ log_file         = f"{docker_cog_path}/log.txt"
 
 # Dictionary of updated file flags
 update_flags = {
-    Flags.Games: {'status': False, 'comment': ""}, 
+    Flags.Games:   {'status': False, 'comment': ""}, 
     Flags.Members: {'status': False, 'comment': ""}, 
-    Flags.Aliases: {'status': False, 'comment': ""}
+    Flags.Aliases: {'status': False, 'comment': ""}, 
+    Flags.Config:  {'status': False, 'comment': ""}
 }
 
 # Create the docker_cog_path if it doesn't already exist
@@ -90,6 +92,12 @@ if os.path.isfile(config_file):
     for entry, value in default_config.items():
         if entry not in config:
             config[entry] = value
+            update_flags[Flags.Config] = {'status': True, 'comment': ""}
+
+    # Saves the updated config file if necessary
+    if update_flags[Flags.Config]['status']:
+        with open(config_file, "w") as fp:
+            json.dump(config, fp, indent = 2, default = str)
 else:
     config = default_config
     with open(config_file, "w") as fp:
@@ -886,7 +894,7 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(Flags.Games)
         else:
             # Adds aliases file update to log message
-            log_message += f"\n  Games file not updated, no changes."
+            Log("Games file not updated, no changes.", LogType.Debug)
 
         # Returns true if members flag is updated
         game_flag = update_flags[Flags.Members]
@@ -901,7 +909,7 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(Flags.Members)
         else:
             # Adds aliases file update to log message
-            log_message += f"\n  Members file not updated, no changes."
+            Log("Members file not updated, no changes.", LogType.Debug)
 
         # Returns true if aliases flag is updated
         game_flag = update_flags[Flags.Aliases]
@@ -916,7 +924,22 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(Flags.Aliases)
         else:
             # Adds aliases file update to log message
-            log_message += f"\n  Aliases file not updated, no changes."
+            Log("Aliases file not updated, no changes.", LogType.Debug)
+
+        # Returns true if aliases flag is updated
+        game_flag = update_flags[Flags.Config]
+        if game_flag['status']:
+            with open(config_file, "w") as fp:
+                json.dump(config, fp, indent = 2, default = str)
+            
+            # Adds aliases file update to log message
+            log_message += f"\n  Successfully saved to {config_file}! {game_flag['comment']}"
+
+            # Resets flag
+            UpdateFlag(Flags.Config)
+        else:
+            # Adds aliases file update to log message
+            Log("Config file not updated, no changes.", LogType.Debug)
 
         # Logs the events of the backup routine
         Log(log_message, LogType.Log)
