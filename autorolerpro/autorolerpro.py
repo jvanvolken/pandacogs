@@ -49,18 +49,16 @@ aliases_file     = f"{docker_cog_path}/aliases.json"
 config_file      = f"{docker_cog_path}/config.json"
 log_file         = f"{docker_cog_path}/log.txt"
 
-# Channel Links
-general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
+# # Channel Links
+# general_channel_link = "https://discord.com/channels/633799810700410880/633799810700410882"
 
-# Bot Channel
-bot_channel_id = 634197647787556864
-admin_channel_id = 1013251079418421248
-test_channel_id = 665572348350693406
+# # Bot Channel
+# bot_channel_id = 634197647787556864
+# admin_channel_id = 1013251079418421248
+# test_channel_id = 665572348350693406
 
-# Blacklist for member activities
-activity_blacklist = ["Spotify"]
-
-
+# # Blacklist for member activities
+# activity_blacklist = ["Spotify"]
 
 # Dictionary of updated file flags
 update_flags = {
@@ -69,14 +67,14 @@ update_flags = {
     Flags.Aliases: {'status': False, 'comment': ""}
 }
 
-# Sets debug mode
-debug_mode = True
+# # Sets debug mode
+# debug_mode = True
 
-# Sets the default max attempts to set an alias
-alias_max_attempts = 5
+# # Sets the default max attempts to set an alias
+# alias_max_attempts = 5
 
-# Sets the default backup frequency (hours)
-backup_frequency = 1 / 60 # 1 minute
+# # Sets the default backup frequency (hours)
+# backup_frequency = 1 / 60 # 1 minute
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -86,15 +84,46 @@ if os.path.isfile(config_file):
     with open(config_file, "r") as fp:
         config = json.load(fp)
 else:
-    config = {}
-    # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
-    # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-    config['credentials'] = {
-        'Client-ID': 'CHANGE-ME',
-        'Authorization': 'CHANGE-ME'
+    config = {
+        # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+        # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
+        'credentials': {
+            'Client-ID': 'CHANGE-ME',
+            'Authorization': 'CHANGE-ME'
+        },
+        'Links': {
+            'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
+        },
+        'ChannelIDs' : {
+            'Bot': 634197647787556864,
+            'Admin': 1013251079418421248,
+            'Test': 665572348350693406
+        },
+        'ActivityBlacklist': ["Spotify"],
+        'DebugMode': True,
+        'AliasMaxAttempts': 5,
+        'BackupFrequency': 1 / 60
     }
+
     with open(config_file, "w") as fp:
         json.dump(config, fp, indent = 2, default = str)
+
+
+config['Links'] =  {
+    'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
+}
+config['ChannelIDs'] = {
+    'Bot': 634197647787556864,
+    'Admin': 1013251079418421248,
+    'Test': 665572348350693406
+}
+config['ActivityBlacklist'] = ["Spotify"]
+config['DebugMode'] = True
+config['AliasMaxAttempts'] = 5
+config['BackupFrequency'] = 1 / 60
+with open(config_file, "w") as fp:
+    json.dump(config, fp, indent = 2, default = str)
+
 
 # Initializes the games list
 if os.path.isfile(games_file):
@@ -137,7 +166,7 @@ def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
 # Writes or appends a message to the log_file
 def Log(message: str, log_type: LogType = LogType.Log):
     # Skips debug logs if debug mode is False
-    if log_type == LogType.Debug and not debug_mode:
+    if log_type == LogType.Debug and not config['DebugMode']:
         return
     
     # Initializes the log file or appends to an existing one
@@ -381,8 +410,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
 # Adds an alias and game to the aliases list, adds the game if it doesn't already exist
 async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
     # Get the admin and test text channels
-    admin_channel = guild.get_channel(admin_channel_id)
-    test_channel = guild.get_channel(test_channel_id)
+    admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
+    test_channel = guild.get_channel(config['ChannelIDs']['Test'])
 
     # Send the original message
     if member:
@@ -393,7 +422,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
     attempt_count = 0
-    while not game and attempt_count < alias_max_attempts:
+    while not game and attempt_count < config['AliasMaxAttempts']:
         # Returns true of the message is a reply to the original message
         def check(message):
             return message.reference and message.reference.message_id == original_message.id
@@ -405,7 +434,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         new_games, already_exists, failed_to_find = await AddGames(guild, [msg.content])
 
         # Decrement remaining_attempts by 1
-        remaining_attempts = alias_max_attempts - attempt_count - 1
+        remaining_attempts = config['AliasMaxAttempts'] - attempt_count - 1
 
         # If a new or existing game is found, assign it to game to exit the loop
         if len(new_games) > 0:
@@ -606,7 +635,7 @@ class DirectMessageView(discord.ui.View):
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
-                await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({general_channel_link}) to meet some new friends!")
+                await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please check the logs for further details.")
                 Log(error, LogType.Error)
@@ -632,7 +661,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
-                await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({general_channel_link})!")
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 Log(error, LogType.Error)
@@ -654,7 +683,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
-                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({general_channel_link})!")
+                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
                 Log(error, LogType.Error)
@@ -662,7 +691,7 @@ class DirectMessageView(discord.ui.View):
 
     async def on_timeout(self):
         #TODO Make this edit dynamic based on what the user selected (or didn't)
-        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({general_channel_link})!*", view = None)
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({config['Links']['GeneralChannel']})!*", view = None)
 
 # Create a class called ListView that subclasses discord.ui.View
 class ListView(discord.ui.View):
@@ -860,7 +889,7 @@ class AutoRolerPro(commands.Cog):
     async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @tasks.loop(hours = backup_frequency)
+    @tasks.loop(hours = config['BackupFrequency'])
     async def BackupRoutine(self):
         # Initializes the log message
         log_message = f"Initiating routine data backup sequence ------------------------------"
@@ -917,9 +946,9 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous: discord.Member, current: discord.Member):
         # Get important information about the context of the event
-        bot_channel = current.guild.get_channel(bot_channel_id)
-        admin_channel = current.guild.get_channel(admin_channel_id)
-        test_channel = current.guild.get_channel(test_channel_id)
+        bot_channel = current.guild.get_channel(config['ChannelIDs']['Bot'])
+        admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
+        test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
         # Gather member information
         member_display_name = current.display_name.encode().decode('ascii','ignore')
@@ -933,7 +962,7 @@ class AutoRolerPro(commands.Cog):
             AddMember(current)
 
         # Detect if someone stopped playing a game
-        if previous.activity and previous.activity.name not in activity_blacklist and (current.activity is None or current.activity.name != previous.activity.name):
+        if previous.activity and previous.activity.name not in config['ActivityBlacklist'] and (current.activity is None or current.activity.name != previous.activity.name):
             StopPlayingGame(current, previous.activity.name)
             return
         
@@ -945,7 +974,7 @@ class AutoRolerPro(commands.Cog):
             return
         
         # Continues if there's a current activity and if it's not in the blacklist
-        if current.activity and current.activity.name not in activity_blacklist:            
+        if current.activity and current.activity.name not in config['ActivityBlacklist']:            
             # Exit if the member has opted out of the autoroler
             if member['opt_out']:
                 return
@@ -995,7 +1024,7 @@ class AutoRolerPro(commands.Cog):
                 dm_channel = await current.create_dm()
 
                 # Setup original message
-                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({general_channel_link}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
+                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
                 
                 # Populate view and send direct message
                 view = DirectMessageView(original_message, role, current, game)
