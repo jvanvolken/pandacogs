@@ -59,32 +59,39 @@ update_flags = {
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
 
+default_config = {
+    # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+    # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
+    'credentials': {
+        'Client-ID': 'CHANGE-ME',
+        'Authorization': 'CHANGE-ME'
+    },
+    'Links': {
+        'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
+    },
+    'ChannelIDs' : {
+        'Bot': 634197647787556864,
+        'Admin': 1013251079418421248,
+        'Test': 665572348350693406
+    },
+    'ActivityBlacklist': ["Spotify"],
+    'DebugMode': True,
+    'AliasMaxAttempts': 5,
+    'BackupFrequency': 1,
+    'AllowEroticTitles': False
+}
+
 # Initializes config
 if os.path.isfile(config_file):
     with open(config_file, "r") as fp:
         config = json.load(fp)
-else:
-    config = {
-        # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
-        # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-        'credentials': {
-            'Client-ID': 'CHANGE-ME',
-            'Authorization': 'CHANGE-ME'
-        },
-        'Links': {
-            'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
-        },
-        'ChannelIDs' : {
-            'Bot': 634197647787556864,
-            'Admin': 1013251079418421248,
-            'Test': 665572348350693406
-        },
-        'ActivityBlacklist': ["Spotify"],
-        'DebugMode': True,
-        'AliasMaxAttempts': 5,
-        'BackupFrequency': 1
-    }
 
+    # Add missing default config entries
+    for entry, value in default_config.items():
+        if entry not in config:
+            config[entry] = value
+else:
+    config = default_config
     with open(config_file, "w") as fp:
         json.dump(config, fp, indent = 2, default = str)
 
@@ -298,8 +305,15 @@ async def AddGames(guild: discord.Guild, game_list: list):
     for game in game_list:
         game = string.capwords(game)
 
-        # Get games with the provided name
-        db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+        # Check if erotic titles are allowed in the config
+        if config['AllowEroticTitles']:
+            # Request all game titles that match the game name
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+        else:
+            # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42)'})
+
+        # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
         # Collect the game names
