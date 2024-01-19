@@ -311,7 +311,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         else:
             # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42)'})
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
 
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
