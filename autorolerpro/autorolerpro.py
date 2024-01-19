@@ -64,7 +64,7 @@ os.makedirs(docker_cog_path, exist_ok = True)
 default_config = {
     # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
     # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-    'credentials': {
+    'IGDBCredentials': {
         'Client-ID': 'CHANGE-ME',
         'Authorization': 'CHANGE-ME'
     },
@@ -316,10 +316,10 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
             # Request all game titles that match the game name
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         else:
             # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['credentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
+            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
 
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
@@ -358,7 +358,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             already_exists[latest_game['name']] = games[latest_game['name']]
         elif latest_game: 
             # Request the cover image urls
-            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['credentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
+            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['IGDBCredentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
             results = db_json.json()
 
             # Formats the cover URL
