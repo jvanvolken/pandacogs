@@ -343,17 +343,26 @@ async def AddGames(guild: discord.Guild, game_list: list):
     already_exists = {}
     failed_to_find = {}
     for game in game_list:
+        # Debug log the difference before and after the strip_accents function call
         Log(game, LogType.Debug)
-        game = strip_accents(game)#string.capwords(strip_accents(game))
+        game = strip_accents(game) # Add string.capwords() if word caps are desired
         Log(game, LogType.Debug)
 
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
-            # Request all game titles that match the game name
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+            if game.isnumeric():
+                # Request the game title with the provided game id
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id == {int(game)};'})
+            else:
+                # Request all game titles that match the game name
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         else:
-            # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-            db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
+            if game.isnumeric():
+                # Request the game title with the provided game id
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id == {int(game)}; where themes != (42);'})
+            else:
+                # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
 
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
