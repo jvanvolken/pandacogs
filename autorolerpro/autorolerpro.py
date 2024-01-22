@@ -180,11 +180,31 @@ def GetRoles(game_list: list):
     # Joins the role mentions together in a string, separating each with a comma
     return f"{', '.join(roles)}"
 
+# Returns the cover art URL for the provided game_id
+def GetCoverUrl(game_id):
+    # Request the cover image urls
+    db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['IGDBCredentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {game_id};'})
+    results = db_json.json()
+
+    if len(results) > 0:
+        # Formats the cover URL
+        url = f"https:{results[0]['url']}"
+        url = url.replace("t_thumb", "t_cover_big")
+
+        return url
+    else:
+        return None
+    
 # Returns a list of image files
 async def GetImages(game_list: dict):
     images = []
     for game in game_list.values():
         # Request the http content of the game's cover url
+        if 'cover_url' not in game:
+            url = GetCoverUrl(game['id'])
+            games[game['name']]['cover_url'] = url
+            game['cover_url'] = url
+
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
@@ -360,14 +380,9 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
 
             already_exists[latest_game['name']] = games[latest_game['name']]
-        elif latest_game: 
-            # Request the cover image urls
-            db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['IGDBCredentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {latest_game["id"]};'})
-            results = db_json.json()
-
-            # Formats the cover URL
-            url = f"https:{results[0]['url']}"
-            url = url.replace("t_thumb", "t_cover_big")
+        elif latest_game:
+            # Get cover url from game id
+            url = GetCoverUrl(latest_game["id"])
 
             # Stores the formatted URL in the latest game dictionary
             latest_game['cover_url'] = url
