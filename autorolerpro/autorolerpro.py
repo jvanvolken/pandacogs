@@ -352,14 +352,14 @@ async def AddGames(guild: discord.Guild, game_list: list):
         if config['AllowEroticTitles']:
             if game.isnumeric():
                 # Request the game title with the provided game id
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id == {int(game)};'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game)};'})
             else:
                 # Request all game titles that match the game name
                 db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
         else:
             if game.isnumeric():
                 # Request the game title with the provided game id
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id == {int(game)}; where themes != (42);'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game)}; where themes != (42);'})
             else:
                 # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
                 db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null; where themes != (42);'})
