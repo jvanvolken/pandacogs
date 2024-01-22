@@ -337,7 +337,9 @@ async def AddGames(guild: discord.Guild, game_list: list):
     already_exists = {}
     failed_to_find = {}
     for game in game_list:
-        game = string.capwords(game)
+        Log(game, LogType.Debug)
+        game = string.capwords(game).encode().decode('ascii','ignore')
+        Log(game, LogType.Debug)
 
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
@@ -1031,7 +1033,6 @@ class AutoRolerPro(commands.Cog):
                     original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                     view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
                     view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
-
                 elif len(already_exists) > 0:
                     game = list(already_exists.values())[0]
                 else:
