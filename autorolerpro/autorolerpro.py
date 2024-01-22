@@ -1,4 +1,5 @@
 
+import unicodedata
 import requests
 import discord
 import difflib
@@ -137,6 +138,11 @@ else:
 # Returns a string formatted datetime of now
 def GetTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+# Normalizes and strips accents from string
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s)
+                  if unicodedata.category(c) != 'Mn')
 
 # Updates the specified flag to queue for the backup routine
 def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
@@ -338,7 +344,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
     failed_to_find = {}
     for game in game_list:
         Log(game, LogType.Debug)
-        game = string.capwords(game).encode().decode('ascii','ignore')
+        game = string.capwords(strip_accents(game))
         Log(game, LogType.Debug)
 
         # Check if erotic titles are allowed in the config
