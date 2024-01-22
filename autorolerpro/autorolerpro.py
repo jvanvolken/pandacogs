@@ -732,11 +732,12 @@ class DirectMessageView(discord.ui.View):
                 raise Exception(error)
 
     async def on_timeout(self):
-        #TODO Make this edit dynamic based on what the user selected (or didn't)
+        # TODO: Make this edit dynamic based on what the user selected (or didn't)
         await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({config['Links']['GeneralChannel']})!*", view = None)
 
 # Create a class called ListView that subclasses discord.ui.View
 class ListView(discord.ui.View):
+    # TODO: Replace multiple messages with a < PAGE > view
     def __init__(self, original_message: str, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
 
