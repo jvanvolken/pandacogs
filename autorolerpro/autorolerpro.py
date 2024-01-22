@@ -828,12 +828,18 @@ class PlaytimeView(discord.ui.View):
 
         async def callback(self, interaction):
             try:
+                # Initialize the playtime message and game refernces for the games played
                 playtime_message = ""
-                for game, time in GetPlaytime(games, 30, 5).items():
-                    hours, minutes = divmod(time*60, 60)
-                    playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
+                game_refs = {}
+                for game_name, time in GetPlaytime(games, 30, 5).items():
+                    # Store a reference of the game data in game_refs
+                    game_refs[game_name] = games[game_name]
 
-                await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}")
+                    # Calculate hours and minutes from time and add to playtime_message
+                    hours, minutes = divmod(time*60, 60)
+                    playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
+
+                await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}", files = GetImages(game_refs))
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
                 Log(error, LogType.Error)
@@ -850,13 +856,18 @@ class PlaytimeView(discord.ui.View):
                 # Get the list of the top # of games
                 playtime_list = GetPlaytime(games, 30, 5, self.member)
                 if playtime_list:
-                    # Initialize the playtime message for the games played
+                    # Initialize the playtime message and game refernces for the games played
                     playtime_message = ""
-                    for game, time in playtime_list.items():
-                        hours, minutes = divmod(time*60, 60)
-                        playtime_message += f"- **{game}** *({int(hours)}h:{int(minutes)}m)*\n"
+                    game_refs = {}
+                    for game_name, time in playtime_list.items():
+                        # Store a reference of the game data in game_refs
+                        game_refs[game_name] = games[game_name]
 
-                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True)
+                        # Calculate hours and minutes from time and add to playtime_message
+                        hours, minutes = divmod(time*60, 60)
+                        playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
+
+                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = GetImages(game_refs))
                 else:
                     await interaction.response.send_message(f"Hey, {self.member.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
 
