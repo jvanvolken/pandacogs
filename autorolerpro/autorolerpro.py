@@ -346,7 +346,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Debug log the difference before and after the strip_accents function call
         Log(game, LogType.Debug)
         game = strip_accents(game) # Add string.capwords() if word caps are desired
-        Log(int(game), LogType.Debug)
+        Log(game, LogType.Debug)
 
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
