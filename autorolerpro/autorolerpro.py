@@ -1136,14 +1136,15 @@ class AutoRolerPro(commands.Cog):
             else:
                 # Loop through sets and send a message per
                 set_count = 0
-                while set_count < len(list_sets):
+                list_count = len(list_sets)
+                while set_count < list_count:
                     if set_count == 0:
                         original_message = f"Here's your game list, {member.mention}!"
                         view = ListView(original_message, ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"{original_message}\n*Please select the games that you're interested in playing:*", view = view)
+                        view.message = await ctx.reply(f"{original_message}\n*`(1/{list_count + 1})` Please select the games that you're interested in playing:*", view = view)
                     else:
                         view = ListView("", ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"", view = view)
+                        view.message = await ctx.reply(f"*`({set_count + 1}/{list_count + 1})` Continued...*", view = view)
                     set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
