@@ -839,7 +839,7 @@ class PlaytimeView(discord.ui.View):
                     hours, minutes = divmod(time*60, 60)
                     playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
 
-                await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}", files = GetImages(game_refs))
+                await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}", files = await GetImages(game_refs))
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
                 Log(error, LogType.Error)
@@ -867,7 +867,7 @@ class PlaytimeView(discord.ui.View):
                         hours, minutes = divmod(time*60, 60)
                         playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
 
-                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = GetImages(game_refs))
+                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
                 else:
                     await interaction.response.send_message(f"Hey, {self.member.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
 
