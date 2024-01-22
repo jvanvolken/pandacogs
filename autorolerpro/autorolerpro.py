@@ -1144,7 +1144,8 @@ class AutoRolerPro(commands.Cog):
         guild: discord.Guild = ctx.message.guild
 
         # Exits if the member is not an admin
-        role = guild.get_role(config['AdminRole'])
+        role: discord.Role = guild.get_role(config['AdminRole'])
+        await ctx.reply(f"Role: {role}\nName: {role.name}\nID: {role.id}\nMention: {role.mention}")
         if role and role.name != "deleted-role":
             if role not in member.roles:
                 await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
