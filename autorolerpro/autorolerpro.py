@@ -205,6 +205,8 @@ async def GetImages(game_list: dict):
             games[game['name']]['cover_url'] = url
             game['cover_url'] = url
 
+            UpdateFlag(Flags.Games, True, f"Added a missing cover url to {game['name']}.")
+
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
 
