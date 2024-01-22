@@ -1141,10 +1141,10 @@ class AutoRolerPro(commands.Cog):
                     if set_count == 0:
                         original_message = f"Here's your game list, {member.mention}!"
                         view = ListView(original_message, ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"{original_message}\n*`(1/{list_count + 1})` Please select the games that you're interested in playing:*", view = view)
+                        view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {list_count + 1})` Please select the games that you're interested in playing:*", view = view)
                     else:
                         view = ListView("", ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"*`({set_count + 1}/{list_count + 1})` Continued...*", view = view)
+                        view.message = await ctx.reply(f"*`(Message {set_count + 1} of {list_count + 1})` Continued...*", view = view)
                     set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -1223,13 +1223,14 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 set_count = 0
-                while set_count < len(list_sets):
+                list_count = len(list_sets)
+                while set_count < list_count:
                     if set_count == 0:
-                        original_message = f"Here you go, {member.mention}. Please select the game(s) you'd like to remove..."
+                        original_message = f"Here you go, {member.mention}.\n*`(Message 1 of {list_count + 1})` Please select the game(s) you'd like to remove...*"
                         view = ListView(original_message, ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
                         view.message = await ctx.reply(original_message, view = view) 
                     else:
-                        view = ListView("", ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
+                        view = ListView(f"*`(Message {set_count + 1} of {list_count + 1})` Continued...*", ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
                         view.message = await ctx.reply(view = view)
                     set_count += 1
         else:
