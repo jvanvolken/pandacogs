@@ -371,6 +371,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
         if 'cause' in results:
             Log(str(results), LogType.Error)
             return
+        else:
+            Log(str(results), LogType.Debug)
 
         # Collect the game names
         game_names = [details['name'] for details in results]
