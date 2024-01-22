@@ -102,11 +102,11 @@ if os.path.isfile(config_file):
     # Saves the updated config file if necessary
     if update_flags[Flags.Config]['status']:
         with open(config_file, "w") as fp:
-            json.dump(config, fp, indent = 2, default = str)
+            json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
 else:
     config = default_config
     with open(config_file, "w") as fp:
-        json.dump(config, fp, indent = 2, default = str)
+        json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
 
 # Initializes the games list
 if os.path.isfile(games_file):
@@ -115,7 +115,7 @@ if os.path.isfile(games_file):
 else:
     games = {}
     with open(games_file, "w") as fp:
-        json.dump(games, fp, indent = 2, default = str)
+        json.dump(games, fp, indent = 2, default = str, ensure_ascii = False)
 
 # Initializes the members list
 if os.path.isfile(members_file):
@@ -124,7 +124,7 @@ if os.path.isfile(members_file):
 else:
     members = {}
     with open(members_file, "w") as fp:
-        json.dump(members, fp, indent = 2, default = str)
+        json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
 
 # Initializes the aliases list
 if os.path.isfile(aliases_file):
@@ -133,7 +133,7 @@ if os.path.isfile(aliases_file):
 else:
     aliases = {}
     with open(aliases_file, "w") as fp:
-        json.dump(aliases, fp, indent = 2, default = str)
+        json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
 
 # Returns a string formatted datetime of now
 def GetTime():
