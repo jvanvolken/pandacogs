@@ -379,8 +379,12 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Collect the game names
         game_names = [details['name'] for details in results]
 
-        # Get the top match for the provided name
-        matches = difflib.get_close_matches(game, game_names, 1)
+        # Check if game is numeric, if so, don't worry about finding matches
+        if game.isnumeric():
+            matches = [game_names[0]]
+        else:
+            # Get the top match for the provided name
+            matches = difflib.get_close_matches(game, game_names, 1)
 
         # Compares the list of games to the matches, from there sort by release year
         latest_game = None
