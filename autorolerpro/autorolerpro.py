@@ -342,8 +342,10 @@ async def AddGames(guild: discord.Guild, game_list: list):
     new_games      = {}
     already_exists = {}
     failed_to_find = {}
+
+    # Loops through the provided list of game names
     for game_name in game_list:
-        # Checks if game already exists
+        # Checks if game already exists to avoid unnecessary API calls
         if game_name in games or game_name in aliases:
             if "role" not in games[game_name]:
                 # Looks for an existing role for the game
@@ -414,20 +416,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 elif game_name.isnumeric() or game_details['name'] in matches:
                     latest_game = game_details
 
-            # # Sort the games by alreadying existing, new games, and failed to find
-            # if latest_game and latest_game['name'] in games:
-            #     if "role" not in games[latest_game['name']]:
-            #         # Looks for an existing role for the game
-            #         role = discord.utils.get(guild.roles, name = latest_game['name'])
-            #         if role:
-            #             # Stores the role for future use
-            #             games[latest_game['name']]['role'] = role.id
-
-            #             # Toggles the updated flag for games
-            #             UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
-
-            #     already_exists[latest_game['name']] = games[latest_game['name']]
-                    
             if latest_game:
                 # Get cover url from game id
                 url = GetCoverUrl(latest_game["id"])
