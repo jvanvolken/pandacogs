@@ -1204,7 +1204,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}`, preventing me from verifying your admin rights!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -1223,7 +1223,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}`, preventing me from verifying your admin rights!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         if len(aliases) > 0:
