@@ -342,104 +342,122 @@ async def AddGames(guild: discord.Guild, game_list: list):
     new_games      = {}
     already_exists = {}
     failed_to_find = {}
-    for game in game_list:
-        # Debug log the difference before and after the strip_accents function call
-        Log(game, LogType.Debug)
-        game = strip_accents(game) # Add string.capwords() if word caps are desired
-        Log(game, LogType.Debug)
+    for game_name in game_list:
+        # Checks if game already exists
+        if game_name in games or game_name in aliases:
+            if "role" not in games[game_name]:
+                # Looks for an existing role for the game
+                role = discord.utils.get(guild.roles, name = game_name)
+                if role:
+                    # Stores the role for future use
+                    games[game_name]['role'] = role.id
 
-        # Check if erotic titles are allowed in the config
-        if config['AllowEroticTitles']:
-            if game.isnumeric():
-                # Request the game title with the provided game id
-                Log(f"Looking for game id {game}", LogType.Debug)
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game)};'})
+                    # Toggles the updated flag for games
+                    UpdateFlag(Flags.Games, True, f"Added missing role entry for the {game_name} game!")
+
+            if game_name in aliases:
+                already_exists[aliases[game_name]] = games[aliases[game_name]]
             else:
-                # Request all game titles that match the game name
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+                already_exists[game_name] = games[game_name]
         else:
-            if game.isnumeric():
-                # Request the game title with the provided game id
-                Log(f"Looking for game id {game}", LogType.Debug)
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game)} & themes != (42);'})
+            # Debug log the difference before and after the strip_accents function call
+            Log(game_name, LogType.Debug)
+            game_name = strip_accents(game_name) # Add string.capwords() if word caps are desired
+            Log(game_name, LogType.Debug)
+
+            # Check if erotic titles are allowed in the config
+            if config['AllowEroticTitles']:
+                if game_name.isnumeric():
+                    # Request the game title with the provided game id
+                    Log(f"Looking for game id {game_name}", LogType.Debug)
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game_name)};'})
+                else:
+                    # Request all game titles that match the game name
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
             else:
-                # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game}"; fields name,summary,first_release_date; limit 500; where summary != null & themes != (42);'})
+                if game_name.isnumeric():
+                    # Request the game title with the provided game id
+                    Log(f"Looking for game id {game_name}", LogType.Debug)
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game_name)} & themes != (42);'})
+                else:
+                    # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date; limit 500; where summary != null & themes != (42);'})
 
-        # Converts the json database response to a usable dictionary results variable
-        results = db_json.json()
+            # Converts the json database response to a usable dictionary results variable
+            results = db_json.json()
 
-        # Exits if 'cause' exists in results, this is indicative of an error
-        if 'cause' in results:
-            Log(str(results), LogType.Error)
-            return
-        else:
-            Log(str(results), LogType.Debug)
+            # Exits if 'cause' exists in results, this is indicative of an error
+            if 'cause' in results:
+                Log(str(results), LogType.Error)
+                return
+            else:
+                Log(str(results), LogType.Debug)
 
-        # Collect the game names
-        game_names = [details['name'] for details in results]
+            # Collect the game names
+            game_names = [details['name'] for details in results]
 
-        # Check if game is numeric, skip looking for matches
-        if game.isnumeric():
-            matches = None
-        else:
-            # Get the top match for the provided name
-            matches = difflib.get_close_matches(game, game_names, 1)
+            # Check if game is numeric, skip looking for matches
+            if game_name.isnumeric():
+                matches = None
+            else:
+                # Get the top match for the provided name
+                matches = difflib.get_close_matches(game_name, game_names, 1)
 
-        # Compares the list of games to the matches, from there sort by release year
-        latest_game = None
-        for game_details in results:
-            if latest_game and (game.isnumeric() or game_details['name'] in matches):
-                latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
-                release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
-                if release_year > latest_year:
+            # Compares the list of games to the matches, from there sort by release year
+            latest_game = None
+            for game_details in results:
+                if latest_game and (game_name.isnumeric() or game_details['name'] in matches):
+                    latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
+                    release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
+                    if release_year > latest_year:
+                        latest_game = game_details
+                elif game_name.isnumeric() or game_details['name'] in matches:
                     latest_game = game_details
-            elif game.isnumeric() or game_details['name'] in matches:
-                latest_game = game_details
 
-        # Sort the games by alreadying existing, new games, and failed to find
-        if latest_game and latest_game['name'] in games:
-            if "role" not in games[latest_game['name']]:
+            # # Sort the games by alreadying existing, new games, and failed to find
+            # if latest_game and latest_game['name'] in games:
+            #     if "role" not in games[latest_game['name']]:
+            #         # Looks for an existing role for the game
+            #         role = discord.utils.get(guild.roles, name = latest_game['name'])
+            #         if role:
+            #             # Stores the role for future use
+            #             games[latest_game['name']]['role'] = role.id
+
+            #             # Toggles the updated flag for games
+            #             UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
+
+            #     already_exists[latest_game['name']] = games[latest_game['name']]
+                    
+            if latest_game:
+                # Get cover url from game id
+                url = GetCoverUrl(latest_game["id"])
+
+                # Stores the formatted URL in the latest game dictionary
+                latest_game['cover_url'] = url
+                
+                # Create the Role and give it the dominant color of the cover art
+                color = GetDominantColor(url)
+                
                 # Looks for an existing role for the game
                 role = discord.utils.get(guild.roles, name = latest_game['name'])
                 if role:
-                    # Stores the role for future use
-                    games[latest_game['name']]['role'] = role.id
+                    await role.edit(colour = discord.Colour(int(color, 16)))
+                else:
+                    role = await guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
 
-                    # Toggles the updated flag for games
-                    UpdateFlag(Flags.Games, True, f"Added missing role entry for the {latest_game['name']} game!")
+                # Stores the role for future use
+                latest_game['role'] = role.id
 
-            already_exists[latest_game['name']] = games[latest_game['name']]
-        elif latest_game:
-            # Get cover url from game id
-            url = GetCoverUrl(latest_game["id"])
+                # Adds the latest_game to the new_games list to return
+                new_games[latest_game['name']] = latest_game
 
-            # Stores the formatted URL in the latest game dictionary
-            latest_game['cover_url'] = url
-            
-            # Create the Role and give it the dominant color of the cover art
-            color = GetDominantColor(url)
-            
-            # Looks for an existing role for the game
-            role = discord.utils.get(guild.roles, name = latest_game['name'])
-            if role:
-                await role.edit(colour = discord.Colour(int(color, 16)))
+                # Add game to game list and saves file
+                games[latest_game['name']] = latest_game
+
+                # Toggles the updated flag for games
+                UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
             else:
-                role = await guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
-
-            # Stores the role for future use
-            latest_game['role'] = role.id
-
-            # Adds the latest_game to the new_games list to return
-            new_games[latest_game['name']] = latest_game
-
-            # Add game to game list and saves file
-            games[latest_game['name']] = latest_game
-
-            # Toggles the updated flag for games
-            UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
-        else:
-            failed_to_find[game] = {'name' : game, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
+                failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
     return new_games, already_exists, failed_to_find
 
