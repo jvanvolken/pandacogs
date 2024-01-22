@@ -344,7 +344,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
     failed_to_find = {}
     for game in game_list:
         Log(game, LogType.Debug)
-        game = string.capwords(strip_accents(game))
+        game = strip_accents(game)#string.capwords(strip_accents(game))
         Log(game, LogType.Debug)
 
         # Check if erotic titles are allowed in the config
@@ -358,7 +358,10 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
-        Log(str(results), LogType.Debug)
+        # Exits if 'cause' exists in results, this is indicative of an error
+        if 'cause' in results:
+            Log(str(results), LogType.Error)
+            return
 
         # Collect the game names
         game_names = [details['name'] for details in results]
