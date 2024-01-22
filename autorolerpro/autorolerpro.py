@@ -945,7 +945,7 @@ class AutoRolerPro(commands.Cog):
         game_flag = update_flags[Flags.Games]
         if game_flag['status']:
             with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str) 
+                json.dump(games, fp, indent = 2, default = str, ensure_ascii = False) 
 
             # Adds games file update to log message
             log_message += f"\n  Successfully saved to {games_file} {game_flag['comment']}"
@@ -960,7 +960,7 @@ class AutoRolerPro(commands.Cog):
         game_flag = update_flags[Flags.Members]
         if game_flag['status']:
             with open(members_file, "w") as fp:
-                json.dump(members, fp, indent = 2, default = str)
+                json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
             
             # Adds members file update to log message
             log_message += f"\n  Successfully saved to {members_file}! {game_flag['comment']}"
@@ -975,7 +975,7 @@ class AutoRolerPro(commands.Cog):
         game_flag = update_flags[Flags.Aliases]
         if game_flag['status']:
             with open(aliases_file, "w") as fp:
-                json.dump(aliases, fp, indent = 2, default = str)
+                json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
             
             # Adds aliases file update to log message
             log_message += f"\n  Successfully saved to {aliases_file}! {game_flag['comment']}"
@@ -990,7 +990,7 @@ class AutoRolerPro(commands.Cog):
         game_flag = update_flags[Flags.Config]
         if game_flag['status']:
             with open(config_file, "w") as fp:
-                json.dump(config, fp, indent = 2, default = str)
+                json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
             
             # Adds aliases file update to log message
             log_message += f"\n  Successfully saved to {config_file}! {game_flag['comment']}"
