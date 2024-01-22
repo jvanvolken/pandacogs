@@ -79,7 +79,7 @@ default_config = {
     },
     'WhitelistEnabled': True,
     'WhitelistMembers': ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue", "explainablechaos", "deadinside6207", "camille26"],
-    'AdminRole': 644687492569759791,
+    'AdminRole': 6446874925697597916,
     'ActivityBlacklist': ["Spotify"],
     'DebugMode': True,
     'AliasMaxAttempts': 5,
