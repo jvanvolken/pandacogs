@@ -72,10 +72,14 @@ default_config = {
         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
     },
     'ChannelIDs' : {
+        'General': 633799810700410882,
         'Bot': 634197647787556864,
         'Admin': 1013251079418421248,
         'Test': 665572348350693406
     },
+    'WhitelistEnabled': True,
+    'WhitelistMembers': ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue", "explainablechaos", "deadinside6207", "camille26"],
+    'AdminRole': 644687492569759791,
     'ActivityBlacklist': ["Spotify"],
     'DebugMode': True,
     'AliasMaxAttempts': 5,
@@ -404,7 +408,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     if member:
         original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
     else:
-        original_message = await test_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
+        original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
 
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
@@ -948,6 +952,7 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous: discord.Member, current: discord.Member):
         # Get important information about the context of the event
+        general_channel = current.guild.get_channel(config['ChannelIDs']['General'])
         bot_channel = current.guild.get_channel(config['ChannelIDs']['Bot'])
         admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
@@ -956,7 +961,7 @@ class AutoRolerPro(commands.Cog):
         member_display_name = current.display_name.encode().decode('ascii','ignore')
 
         # Exits if the member is a bot or isn't whitelisted
-        if current.bot or current.name not in ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue", "explainablechaos", "deadinside6207", "camille26"]:
+        if config['WhitelistEnabled'] and current.bot or current.name not in config['WhitelistMembers']:
             return
         
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
@@ -972,7 +977,7 @@ class AutoRolerPro(commands.Cog):
         member = members[current.name]
 
         # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
-        if previous.activity and previous.activity.name == current.activity.name:
+        if previous.activity and current.activity and previous.activity.name == current.activity.name:
             return
         
         # Continues if there's a current activity and if it's not in the blacklist
@@ -997,7 +1002,7 @@ class AutoRolerPro(commands.Cog):
 
                     original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                     view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
-                    view.message = await bot_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                    view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
 
                 elif len(already_exists) > 0:
                     game = list(already_exists.values())[0]
@@ -1135,10 +1140,17 @@ class AutoRolerPro(commands.Cog):
     async def remove_games(self, ctx, *, arg = None):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
-        member = ctx.message.author
+        member: discord.Member = ctx.message.author
+        guild: discord.Guild = ctx.message.guild
 
-        # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20"]:
+        # Exits if the member is not an admin
+        role = guild.get_role(config['AdminRole'])
+        if role:
+            if role not in member.roles:
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                return
+        else:
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}`, preventing me from verifying your admin rights!")
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -1182,10 +1194,17 @@ class AutoRolerPro(commands.Cog):
     async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
         # Get member that sent the command
-        member = ctx.message.author
+        member: discord.Member = ctx.message.author
+        guild: discord.Guild = ctx.message.guild
 
-        # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20"]:
+        # Exits if the member is not an admin
+        role = guild.get_role(config['AdminRole'])
+        if role:
+            if role not in member.roles:
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                return
+        else:
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}`, preventing me from verifying your admin rights!")
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -1194,10 +1213,17 @@ class AutoRolerPro(commands.Cog):
     async def remove_aliases(self, ctx, *, filter):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
-        member = ctx.message.author
+        member: discord.Member = ctx.message.author
+        guild: discord.Guild = ctx.message.guild
 
-        # Exits if the member is a bot or isn't whitelisted
-        if member.name not in ["sad.panda.", "agvv20"]:
+        # Exits if the member is not an admin
+        role = guild.get_role(config['AdminRole'])
+        if role:
+            if role not in member.roles:
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                return
+        else:
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}`, preventing me from verifying your admin rights!")
             return
         
         if len(aliases) > 0:
