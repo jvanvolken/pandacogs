@@ -1029,7 +1029,10 @@ class PageView(discord.ui.View):
             self.sort = sort
 
             # Grabs role from guild
-            self.role = self.guild.get_role(self.details['role'])
+            if list_type is ListType.Remove_Alias:
+                self.role = None
+            else:
+                self.role = self.guild.get_role(self.details['role'])
 
             # Check if member has the role and set button color accordingly
             if self.member:
@@ -1051,7 +1054,7 @@ class PageView(discord.ui.View):
                 return
 
             # Should not be missing role by this stage, log error if missing
-            if not self.role:
+            if self.list_type != ListType.Remove_Alias and self.role == None:
                 error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
                 
                 # Log error and message user about failure
