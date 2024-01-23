@@ -671,7 +671,10 @@ def StopPlayingGame(member: discord.Member, game_name: str):
                 if member.name in date and 'last_played' in date[member.name]:
                     # Log the last_played and then delete the entry
                     Log(f"Found {member.name}'s last_played datetime for {game_name}: {date[member.name]['last_played']}", LogType.Log)
-                    del date[member.name]['last_played']
+                    del games[game_name]['history'][date][member.name]['last_played']
+
+                    # Toggles the updated flag for games
+                    UpdateFlag(FlagType.Games, True, f"Removed {member.name}'s old play history from {game_name}.")
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.Member = None):
