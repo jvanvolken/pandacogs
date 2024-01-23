@@ -930,7 +930,7 @@ class PageView(discord.ui.View):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
         self.original_message = original_message
         self.member = member
-
+    
         # Populate the navigation buttons
         for nav_type in NavigationType:
             self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
@@ -1370,7 +1370,7 @@ class AutoRolerPro(commands.Cog):
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
 
     @commands.command()
-    async def list_games(self, ctx, *, arg = None):
+    async def list_games_legacy(self, ctx, *, arg = None):
         """Returns a list of games from the server."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1399,7 +1399,7 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
-    async def list_pages(self, ctx, *, list_filter = None):
+    async def list_games(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1439,32 +1439,38 @@ class AutoRolerPro(commands.Cog):
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"I already have all of these recorded! {member.mention}, how about you do a little more research before asking questions."
-            view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            #view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
-            view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            # view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
-            view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+            #view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+           # view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
-            view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            #view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            #view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
