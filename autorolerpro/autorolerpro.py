@@ -806,129 +806,129 @@ class DirectMessageView(discord.ui.View):
         await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({config['Links']['GeneralChannel']})!*", view = None)
 
 # Create a class called ListView that subclasses discord.ui.View
-class ListView(discord.ui.View):
-    # TODO: Replace multiple messages with a < PAGE > view
-    def __init__(self, original_message: str, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
-        super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
+# class ListView(discord.ui.View):
+#     # TODO: Replace multiple messages with a < PAGE > view
+#     def __init__(self, original_message: str, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
+#         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
 
-        self.original_message = original_message
-        self.list_type = list_type
-        self.list_items = list_items
-        self.guild = guild
-        self.member = member
+#         self.original_message = original_message
+#         self.list_type = list_type
+#         self.list_items = list_items
+#         self.guild = guild
+#         self.member = member
 
-        for name, details in self.list_items.items():
-            self.add_item(self.ListButton(self.original_message, name, details, self.list_type, self.list_items, self.guild, self.member))
+#         for name, details in self.list_items.items():
+#             self.add_item(self.ListButton(self.original_message, name, details, self.list_type, self.list_items, self.guild, self.member))
 
-    # Create a class called ListButton that subclasses discord.ui.Button
-    class ListButton(discord.ui.Button):
-        def __init__(self, original_message: str, name: str, details: dict, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
-            # Set object variables
-            self.name = name
-            self.details = details
-            self.list_type = list_type
-            self.list_items = list_items
-            self.original_message = original_message
-            self.guild = guild
-            self.member = member
-            self.role = self.guild.get_role(self.details['role'])
+#     # Create a class called ListButton that subclasses discord.ui.Button
+#     class ListButton(discord.ui.Button):
+#         def __init__(self, original_message: str, name: str, details: dict, list_type: ListType, list_items: dict, guild: discord.Guild, member: discord.Member = None):
+#             # Set object variables
+#             self.name = name
+#             self.details = details
+#             self.list_type = list_type
+#             self.list_items = list_items
+#             self.original_message = original_message
+#             self.guild = guild
+#             self.member = member
+#             self.role = self.guild.get_role(self.details['role'])
             
-            # Check if message author has the role and change button color accordingly
-            if self.member:
-                if self.role in self.member.roles:
-                    button_style = discord.ButtonStyle.success
-                else:
-                    button_style = discord.ButtonStyle.secondary
-            else:
-                button_style = discord.ButtonStyle.primary
+#             # Check if message author has the role and change button color accordingly
+#             if self.member:
+#                 if self.role in self.member.roles:
+#                     button_style = discord.ButtonStyle.success
+#                 else:
+#                     button_style = discord.ButtonStyle.secondary
+#             else:
+#                 button_style = discord.ButtonStyle.primary
 
-            # Get all server emojis
-            emojis = self.guild.emojis
+#             # Get all server emojis
+#             emojis = self.guild.emojis
 
-            # Get the closest matching emoji to game name
-            emoji_names = [emoji.name for emoji in emojis]
-            match = difflib.get_close_matches(self.name.lower(), emoji_names, 1)
+#             # Get the closest matching emoji to game name
+#             emoji_names = [emoji.name for emoji in emojis]
+#             match = difflib.get_close_matches(self.name.lower(), emoji_names, 1)
 
-            # Return the actual emoji from name
-            emoji = None
-            if match:
-                for option in emojis:
-                    if option.name == match[0]:
-                        emoji = option
-                        break
+#             # Return the actual emoji from name
+#             emoji = None
+#             if match:
+#                 for option in emojis:
+#                     if option.name == match[0]:
+#                         emoji = option
+#                         break
 
-            # Setup buttom
-            super().__init__(label = self.name, style = button_style, emoji = emoji)
+#             # Setup buttom
+#             super().__init__(label = self.name, style = button_style, emoji = emoji)
 
-        async def callback(self, interaction):
-            if self.member and self.member != interaction.user:
-                extra_comment = ""
-                if self.list_type is ListType.Select_Game:
-                    extra_comment = "Please use !list_games to interact!"
+#         async def callback(self, interaction):
+#             if self.member and self.member != interaction.user:
+#                 extra_comment = ""
+#                 if self.list_type is ListType.Select_Game:
+#                     extra_comment = "Please use !list_games to interact!"
                 
-                await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
-                return
+#                 await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
+#                 return
             
-            if self.list_type == ListType.Select_Game:
-                # Looks for the role with the same name as the game
-                if self.role:
-                    if self.role in interaction.user.roles:
-                        # Assign role to member
-                        member = interaction.user
-                        await member.remove_roles(self.role)
+#             if self.list_type == ListType.Select_Game:
+#                 # Looks for the role with the same name as the game
+#                 if self.role:
+#                     if self.role in interaction.user.roles:
+#                         # Assign role to member
+#                         member = interaction.user
+#                         await member.remove_roles(self.role)
 
-                        # Updates member details
-                        update = {'games' : {self.name : {'tracked' : False}}}
-                        UpdateMember(member, update)
+#                         # Updates member details
+#                         update = {'games' : {self.name : {'tracked' : False}}}
+#                         UpdateMember(member, update)
 
-                        view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
-                        view.message = await interaction.message.edit(view = view)
+#                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
+#                         view.message = await interaction.message.edit(view = view)
 
-                        await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
-                    else:
-                        # Assign role to member
-                        member = interaction.user
-                        await member.add_roles(self.role)
+#                         await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
+#                     else:
+#                         # Assign role to member
+#                         member = interaction.user
+#                         await member.add_roles(self.role)
 
-                        # Updates member details
-                        update = {'games' : {self.name : {'tracked' : True}}}
-                        UpdateMember(member, update)
+#                         # Updates member details
+#                         update = {'games' : {self.name : {'tracked' : True}}}
+#                         UpdateMember(member, update)
 
-                        view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
-                        view.message = await interaction.message.edit(view = view)
+#                         view = ListView(self.original_message, ListType.Select_Game, self.list_items, self.guild, self.member)
+#                         view.message = await interaction.message.edit(view = view)
 
-                        # Informs the user that the role has been assigned to them
-                        await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
-                else:
-                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
+#                         # Informs the user that the role has been assigned to them
+#                         await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
+#                 else:
+#                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
 
-            elif self.list_type == ListType.Remove_Game:
-                # Tries to remove the game, returns false if it fails
-                if await RemoveGame(self.role, self.name):
-                    del self.list_items[self.name]
+#             elif self.list_type == ListType.Remove_Game:
+#                 # Tries to remove the game, returns false if it fails
+#                 if await RemoveGame(self.role, self.name):
+#                     del self.list_items[self.name]
                     
-                    view = ListView(self.original_message, ListType.Remove_Game, self.list_items, self.guild, self.member)
-                    view.message = await interaction.message.edit(view = view)
+#                     view = ListView(self.original_message, ListType.Remove_Game, self.list_items, self.guild, self.member)
+#                     view.message = await interaction.message.edit(view = view)
 
-                    await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
-                else:
-                    await interaction.response.send_message(f"I couldn't removed {self.name} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
+#                     await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
+#                 else:
+#                     await interaction.response.send_message(f"I couldn't removed {self.name} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
 
-            elif self.list_type == ListType.Remove_Alias:
-                # Tries to remove the alias, returns false if it fails
-                if RemoveAlias(self.name):
-                    await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
-                else:
-                    await interaction.response.send_message(f"Unable to remove `{self.name}` - I could not find it in the list of aliases!")
+#             elif self.list_type == ListType.Remove_Alias:
+#                 # Tries to remove the alias, returns false if it fails
+#                 if RemoveAlias(self.name):
+#                     await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
+#                 else:
+#                     await interaction.response.send_message(f"Unable to remove `{self.name}` - I could not find it in the list of aliases!")
 
-    async def on_timeout(self):
-        if not self.original_message:
-            await self.message.delete()
-        else:
-            if self.member:
-                await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
-            else:
-                await self.message.edit(content = f"{self.original_message}", view = None)
+#     async def on_timeout(self):
+#         if not self.original_message:
+#             await self.message.delete()
+#         else:
+#             if self.member:
+#                 await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
+#             else:
+#                 await self.message.edit(content = f"{self.original_message}", view = None)
 
 # Create a class called PageView that subclasses discord.ui.View
 class PageView(discord.ui.View):
@@ -1343,7 +1343,8 @@ class AutoRolerPro(commands.Cog):
                     game = list(new_games.values())[0]
 
                     original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
-                    view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
+                    view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild, member)
+                    # view = ListView(original_message, ListType.Select_Game, new_games, current.guild)
                     view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
                 elif len(already_exists) > 0:
                     game = list(already_exists.values())[0]
@@ -1400,34 +1401,34 @@ class AutoRolerPro(commands.Cog):
         UpdateMember(member, update)
         await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
 
-    @commands.command()
-    async def list_games_legacy(self, ctx, *, arg = None):
-        """Returns a list of games from the server."""
-        # Get member that sent the command
-        member = ctx.message.author
+    # @commands.command()
+    # async def list_games_legacy(self, ctx, *, arg = None):
+    #     """Returns a list of games from the server."""
+    #     # Get member that sent the command
+    #     member = ctx.message.author
 
-        # List the games if there are more than zero. Otherwise reply with a passive agressive comment
-        if len(games) > 0:
-            # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 25, arg)
+    #     # List the games if there are more than zero. Otherwise reply with a passive agressive comment
+    #     if len(games) > 0:
+    #         # Convert a long list of games into sets of 25 or less
+    #         list_sets = GetListSets(games, 25, arg)
 
-            if not list_sets:
-                await ctx.reply(f"Could not find any games similar to `{arg}`")
-            else:
-                # Loop through sets and send a message per
-                set_count = 0
-                list_count = len(list_sets)
-                while set_count < list_count:
-                    if set_count == 0:
-                        original_message = f"Here's your game list, {member.mention}!"
-                        view = ListView(original_message, ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {list_count})` Please select the games that you're interested in playing:*", view = view)
-                    else:
-                        view = ListView("", ListType.Select_Game, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(f"*`(Message {set_count + 1} of {list_count})` Continued...*", view = view)
-                    set_count += 1
-        else:
-            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+    #         if not list_sets:
+    #             await ctx.reply(f"Could not find any games similar to `{arg}`")
+    #         else:
+    #             # Loop through sets and send a message per
+    #             set_count = 0
+    #             list_count = len(list_sets)
+    #             while set_count < list_count:
+    #                 if set_count == 0:
+    #                     original_message = f"Here's your game list, {member.mention}!"
+    #                     view = ListView(original_message, ListType.Select_Game, list_sets[set_count], ctx.guild, member)
+    #                     view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {list_count})` Please select the games that you're interested in playing:*", view = view)
+    #                 else:
+    #                     view = ListView("", ListType.Select_Game, list_sets[set_count], ctx.guild, member)
+    #                     view.message = await ctx.reply(f"*`(Message {set_count + 1} of {list_count})` Continued...*", view = view)
+    #                 set_count += 1
+    #     else:
+    #         await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
     async def list_games(self, ctx, *, list_filter = None):
@@ -1471,37 +1472,31 @@ class AutoRolerPro(commands.Cog):
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"I already have all of these recorded! {member.mention}, how about you do a little more research before asking questions."
             view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
-            #view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
             view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
-            # view = ListView(original_message, ListType.Select_Game, already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
-            #view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
-           # view = ListView(original_message, ListType.Select_Game, new_games, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
-            #view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
-            #view = ListView(original_message, ListType.Select_Game, new_games | already_exists, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
@@ -1598,22 +1593,6 @@ class AutoRolerPro(commands.Cog):
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
-
-            # list_sets = GetListSets(aliases, 25, filter)
-
-            # if not filter:
-            #     await ctx.reply(f"Could not find any aliases similar to `{filter}`")
-            # else:
-            #     set_count = 0
-            #     while set_count < len(list_sets):
-            #         if set_count == 0:
-            #             original_message = f"Here you go, {member.mention}. Please select the aliases you'd like to remove..."
-            #             view = ListView(original_message, ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-            #             view.message = await ctx.reply(original_message, view = view) 
-            #         else:
-            #             view = ListView("", ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-            #             view.message = await ctx.reply(view = view)
-            #         set_count += 1
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
 
