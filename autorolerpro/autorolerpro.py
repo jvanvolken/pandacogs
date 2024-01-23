@@ -1005,8 +1005,14 @@ class PageView(discord.ui.View):
                 self.page_count = len(self.list_sets)
 
             # Repopulate message based on the last interaction
-            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member, self.sort)
-            view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
+            view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.goto, self.guild, self.member, self.sort)
+            if self.list_type is ListType.Select_Game:
+                view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
+            if self.list_type is ListType.Remove_Game:
+                view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the game(s) you'd like to remove...*", view = view)
+            if self.list_type is ListType.Remove_Alias:
+                view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the aliases you'd like to remove...*", view = view)
+                
             
     class ItemButton(discord.ui.Button):
         def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
