@@ -53,7 +53,7 @@ class LogType(Enum):
 class NavigationType(Enum):
     First    = "First"
     Previous = "Previous"
-    Sort     = "Sort"
+    Sort     = "Sort Type"
     Next     = "Next"
     Last     = "Last"
 
@@ -910,7 +910,7 @@ class ListView(discord.ui.View):
 
 class PageView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
-        super().__init__(timeout = 30)
+        super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
         self.original_message = original_message
         self.member = member
 
@@ -939,7 +939,7 @@ class PageView(discord.ui.View):
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "◀️")
                 self.goto = page - 1
             elif self.nav_type == NavigationType.Sort:
-                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⚙️") #📄
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "📄") #📄⚙️
                 self.goto = 1
             elif self.nav_type == NavigationType.Next:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "▶️")
