@@ -1105,7 +1105,7 @@ class PageView(discord.ui.View):
                         self.page = self.page_count
                     
                     view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                    view.message = await interaction.message.edit(view = view)
+                    view.message = await interaction.message.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the game(s) you'd like to remove...*", view = view)
 
                     await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
                 else:
