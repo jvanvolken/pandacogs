@@ -877,29 +877,41 @@ class PageView(discord.ui.View):
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
         
         for nav_type in NavigationType:
-            self.add_item(self.NavigateButton(nav_type, page, len(list_sets)))
+            self.add_item(self.NavigateButton(nav_type, list_sets, page))
 
     class NavigateButton(discord.ui.Button):
-        def __init__(self, nav_type: NavigationType, page: int, page_count: int):
+        def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
             self.nav_type = nav_type
+            self.original_message = original_message
+            self.list_type = list_type
+            self.guild = guild
+            self.member = member
 
-            if nav_type == NavigationType.First:
+            if self.nav_type == NavigationType.First:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏮️")
-            elif nav_type == NavigationType.Previous:
+                self.goto = 1
+            elif self.nav_type == NavigationType.Previous:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "◀️")
-            elif nav_type == NavigationType.Next:
+                self.goto = page - 1
+            elif self.nav_type == NavigationType.Next:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "▶️")
-            elif nav_type == NavigationType.Last:
+                self.goto = page + 1
+            elif self.nav_type == NavigationType.Last:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏭️")
+                self.goto = len(list_sets)
 
             if page == 1 and (nav_type == NavigationType.First or nav_type == NavigationType.Previous):
                 self.disabled = True
             elif page == 2 and nav_type == NavigationType.First:
                 self.disabled = True
-            elif page == (page_count - 1) and nav_type == NavigationType.Last:
+            elif page == (len(self.list_sets) - 1) and nav_type == NavigationType.Last:
                 self.disabled = True
-            elif page == page_count and (nav_type == NavigationType.Last or nav_type == NavigationType.Next):
+            elif page == len(self.list_sets) and (nav_type == NavigationType.Last or nav_type == NavigationType.Next):
                 self.disabled = True
+
+        async def callback(self, interaction):
+            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.goto, self.guild, self.member)
+            view.message = await interaction.message.edit(f"{self.original_message}\n*`(Page {self.goto} of {len(self.list_sets)})` Please select the games that you're interested in playing:*", view = view)
             
 
     class ItemButton(discord.ui.Button):
