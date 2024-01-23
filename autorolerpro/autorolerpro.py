@@ -937,9 +937,10 @@ class PageView(discord.ui.View):
         self.original_message = original_message
         self.member = member
     
-        # Populate the navigation buttons
-        for nav_type in NavigationType:
-            self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
+        if len(list_sets) > 1:
+            # Populate the navigation buttons
+            for nav_type in NavigationType:
+                self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
 
         # Populate the game buttons
         for name, details in list_sets[page - 1].items():
