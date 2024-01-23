@@ -252,6 +252,9 @@ def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort:
         game_list = {i: game_list[i] for i in listKeys}
 
     elif sort == SortType.Popularity:
+        
+        Log(f"top_games: {str(game_list)}", LogType.Debug)
+        
         # Get a list of keys sorted by playtime
         listKeys = list(GetPlaytime(game_list, 30).keys())
 
@@ -689,8 +692,8 @@ def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.M
         # Sort the entire list by highest hours played
         sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)
     
-    Log(str(top_games), LogType.Debug)
-    Log(str(sorted_list), LogType.Debug)
+    Log(f"top_games: {str(top_games)}", LogType.Debug)
+    Log(f"sorted_list: {str(sorted_list)}", LogType.Debug)
 
     return dict(sorted_list)
 
