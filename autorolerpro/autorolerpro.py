@@ -1593,7 +1593,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any aliases similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
-                view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
+                view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
 
             # list_sets = GetListSets(aliases, 25, filter)
