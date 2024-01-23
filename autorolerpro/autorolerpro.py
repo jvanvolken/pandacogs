@@ -608,7 +608,8 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
         # Remove last_played when it's accounted for
-        del games[game_name]['history'][date][member.name]['last_played']
+        if 'last_played' in games[game_name]['history'][date][member.name]:
+            del games[game_name]['history'][date][member.name]['last_played']
 
         # Toggles the updated flag for games
         UpdateFlag(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
