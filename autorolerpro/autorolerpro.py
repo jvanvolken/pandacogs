@@ -591,7 +591,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     if game_name in aliases:
         game_name = aliases[game_name]
     elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Error)
+        Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Warning)
         return
 
     # Checks if game has history, log error if missing
@@ -614,7 +614,8 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         UpdateFlag(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
     
     # Grabs the current YYYY-MM-DD from the current datetime
-    today = datetime.now().strftime('%Y-%m-%d')
+    today     = datetime.now().strftime('%Y-%m-%d')
+    yesterday = (datetime.now() - timedelta(days = 1)).strftime('%Y-%m-%d')
 
     if today in games[game_name]['history']:
         # Verifies that member has history for today, logs error if not
@@ -631,10 +632,9 @@ def StopPlayingGame(member: discord.Member, game_name: str):
 
         # Add playtime for today
         AddPlaytime(today, hours)
-    else:
+
+    elif yesterday in games[game_name]['history']:
         Log(f"Sombody played overnight, splitting time across two days!", LogType.Log)
-        # Get yesterday's date
-        yesterday = (datetime.now() - timedelta(days = 1)).strftime('%Y-%m-%d')
 
         # Check if there's a last_played in yesterday's history
         if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
@@ -658,6 +658,16 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         else:
             Log(f"Could not find last_played for {game_name} after {member.name} stopped playing!", LogType.Error)
 
+    else:
+        Log(f"Could not determine {member.name}'s play session for {game_name}! Maybe it spanned more than 2 days?", LogType.Warning)
+
+        # Loop through all of the dates in the game's history
+        for date in games[game_name]['history']:
+            if member.name in date and 'last_played' in date[member.name]:
+                # Log the last_played and then delete the entry
+                Log(f"Found {member.name}'s last_played datetime for {game_name}: {date[member.name]['last_played']}", LogType.Log)
+                del date[member.name]['last_played']
+
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.Member = None):
     top_games = {}
@@ -677,10 +687,7 @@ def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.M
                     if (member == None or name == member.name) and 'playtime' in details:
                         top_games[game_name] += details['playtime']
         
-        # Delete game_name from top_games if it's zero
-        # if top_games[game_name] == 0:
-        #     del top_games[game_name]
-        # else:
+        # Rounds the game playtime to 2 decimal places
         top_games[game_name] = round(top_games[game_name], 2)
 
     if count:
