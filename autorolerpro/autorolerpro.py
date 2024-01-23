@@ -613,7 +613,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         # Toggles the updated flag for games
         UpdateFlag(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
     
-    # Grabs the current YYYY-MM-DD from the current datetime
+    # Grabs today and yesterday's YYYY-MM-DD from the current datetime
     today     = datetime.now().strftime('%Y-%m-%d')
     yesterday = (datetime.now() - timedelta(days = 1)).strftime('%Y-%m-%d')
 
@@ -652,6 +652,14 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             # Convert delta_time to hours and round to 2 decimal places
             delta_time = datetime.now() - midnight
             hours = round(delta_time.total_seconds()/3600, 2)
+
+            # Adds the current date to the game's history if missing
+            if today not in games[game_name]['history']:
+                games[game_name]['history'][today] = {}
+
+            # Adds the member to the current date if missing
+            if member.name not in games[game_name]['history'][today]:
+                games[game_name]['history'][today][member.name] = {}
 
             # Add playtime for today
             AddPlaytime(today, hours)
