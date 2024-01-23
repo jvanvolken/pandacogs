@@ -860,6 +860,15 @@ class ListView(discord.ui.View):
             else:
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
+class PageView(discord.ui.View):
+    def __init__(self, original_message: str, list_type: ListType, pages: list):
+        super().__init__(timeout = 10)
+        self.original_message = original_message
+
+    @discord.ui.button(label = "Button", style = discord.ButtonStyle.gray)
+    async def gray_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.edit_message(content = f"{self.original_message} This is an edited button response!")
+
 # Create a class called PlaytimeView that subclasses discord.ui.View
 class PlaytimeView(discord.ui.View):
     def __init__(self, original_message: str, member: discord.Member = None):
@@ -1150,6 +1159,26 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
+    @commands.command()
+    async def list_pages(self, ctx, *, arg = None):
+        """Returns a list of game pages from the server."""
+        # Get member that sent the command
+        member = ctx.message.author
+
+        # List the games if there are more than zero. Otherwise reply with a passive agressive comment
+        if len(games) > 0:
+            # Convert a long list of games into sets of 25 or less
+            list_sets = GetListSets(games, 25, arg)
+            if not list_sets:
+                await ctx.reply(f"Could not find any games similar to `{arg}`")
+            else:
+                original_message = "This message has buttons!"
+                view = PageView(original_message, None, None)
+                await ctx.reply(original_message, view = view)
+        else:
+            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+
+
     @commands.command()
     async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
