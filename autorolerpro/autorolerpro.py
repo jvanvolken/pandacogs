@@ -1569,7 +1569,7 @@ class AutoRolerPro(commands.Cog):
         await AddAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
-    async def remove_aliases(self, ctx, *, list_filter):
+    async def remove_aliases(self, ctx, *, list_filter = None):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member: discord.Member = ctx.message.author
