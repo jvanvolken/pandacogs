@@ -866,7 +866,7 @@ class PageView(discord.ui.View):
         self.original_message = original_message
 
     @discord.ui.button(label = "Button", style = discord.ButtonStyle.gray)
-    async def gray_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(content = f"{self.original_message} This is an edited button response!")
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
