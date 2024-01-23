@@ -915,9 +915,11 @@ class PageView(discord.ui.View):
         self.original_message = original_message
         self.member = member
 
+        # Populate the navigation buttons
         for nav_type in NavigationType:
             self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
 
+        # Populate the game buttons
         for name, details in list_sets[page - 1].items():
             self.add_item(self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
         
@@ -959,6 +961,15 @@ class PageView(discord.ui.View):
                 self.disabled = True
 
         async def callback(self, interaction):
+            # Prevent other people from messing with your page buttons
+            if self.member and self.member != interaction.user:
+                if self.list_type is ListType.Select_Game:
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `!list_pages` to interact!*", ephemeral = True, delete_after = 10)
+                else:
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
+                return
+            
+            # If the sort button is pressed, update message with the next sort type
             if self.nav_type == NavigationType.Sort:
                 if self.sort == SortType.Alphabetical:
                     self.sort = SortType.Popularity
@@ -969,6 +980,7 @@ class PageView(discord.ui.View):
 
                 self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
 
+            # Repopulate message based on the last interaction
             view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member, self.sort)
             view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
             
