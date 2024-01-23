@@ -28,15 +28,14 @@ class ListType(Enum):
     Remove_Game  = 2
     Remove_Alias = 3
 
-# Navigation types
-class NavigationType(Enum):
-    First    = "First"
-    Previous = "Previous"
-    Next     = "Next"
-    Last     = "Last"
+# Sort types
+class SortType(Enum):
+    Alphabetical  = "Alphabetical"
+    Popularity    = "Popularity"
+    RecentlyAdded = "Recently Added"
 
 # Flag types
-class Flags(Enum):
+class FlagType(Enum):
     Games    = 1
     Members  = 2
     Aliases  = 3
@@ -50,6 +49,14 @@ class LogType(Enum):
     Error   = "ERROR"
     Fatal   = "FATAL"
 
+# Navigation types
+class NavigationType(Enum):
+    First    = "First"
+    Previous = "Previous"
+    Sort     = "Sort"
+    Next     = "Next"
+    Last     = "Last"
+
 # Cog Directory in Appdata
 docker_cog_path  = "/data/cogs/AutoRolerPro"
 games_file       = f"{docker_cog_path}/games.json"
@@ -60,10 +67,10 @@ log_file         = f"{docker_cog_path}/log.txt"
 
 # Dictionary of updated file flags
 update_flags = {
-    Flags.Games:   {'status': False, 'comment': ""}, 
-    Flags.Members: {'status': False, 'comment': ""}, 
-    Flags.Aliases: {'status': False, 'comment': ""}, 
-    Flags.Config:  {'status': False, 'comment': ""}
+    FlagType.Games:   {'status': False, 'comment': ""}, 
+    FlagType.Members: {'status': False, 'comment': ""}, 
+    FlagType.Aliases: {'status': False, 'comment': ""}, 
+    FlagType.Config:  {'status': False, 'comment': ""}
 }
 
 # Create the docker_cog_path if it doesn't already exist
@@ -104,10 +111,10 @@ if os.path.isfile(config_file):
     for entry, value in default_config.items():
         if entry not in config:
             config[entry] = value
-            update_flags[Flags.Config] = {'status': True, 'comment': ""}
+            update_flags[FlagType.Config] = {'status': True, 'comment': ""}
 
     # Saves the updated config file if necessary
-    if update_flags[Flags.Config]['status']:
+    if update_flags[FlagType.Config]['status']:
         with open(config_file, "w") as fp:
             json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
 else:
@@ -152,7 +159,7 @@ def strip_accents(s):
                   if unicodedata.category(c) != 'Mn')
 
 # Updates the specified flag to queue for the backup routine
-def UpdateFlag(flag: Flags, status: bool = False, comment: str = ""):
+def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
     if not status:
         update_flags[flag] = {'status': False, 'comment': ""}
     else:
@@ -218,7 +225,7 @@ async def GetImages(game_list: dict):
             games[game['name']]['cover_url'] = url
             game['cover_url'] = url
 
-            UpdateFlag(Flags.Games, True, f"Added missing cover url to {game['name']}.")
+            UpdateFlag(FlagType.Games, True, f"Added missing cover url to {game['name']}.")
 
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
@@ -235,20 +242,45 @@ async def GetImages(game_list: dict):
     return images
 
 # Return a list of game sets containing a max of 25 games per set
-def GetListSets(game_list: dict, set_amount: int, filter: str = None):
+def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort: SortType = SortType.Alphabetical):
+    if sort == SortType.Alphabetical:
+        # Get a list of keys and sort them
+        listKeys = list(game_list.keys())
+        listKeys.sort()
+
+        # Rebuild game_list using the sorted list of keys
+        game_list = {i: game_list[i] for i in listKeys}
+
+    elif sort == SortType.Popularity:
+        game_list = GetPlaytime(game_list, 30)
+
+    elif sort == SortType.RecentlyAdded:
+        listKeys = list(games.keys())
+        listKeys.reverse()
+
+        new_list = {}
+        # Loop through games and rebuild game_list 
+        for game_name in listKeys:
+            if game_name in game_list:
+                new_list[game_name] = games[game_name]
+
+        # Rebuild game_list using the sorted list of keys
+        game_list = new_list
+
+
     list_sets = []
     item_count = 0
     for name, details in game_list.items():
 
-        # Check eligability if there's a filter
-        if filter:
-            filter = filter.strip().lower()
+        # Check eligability if there's a list_filter
+        if list_filter:
+            list_filter = list_filter.strip().lower()
             test_name = name.lower()
-            similarity = SequenceMatcher(None, test_name, filter).ratio()
-            Log(f"Similarity Score for {filter} and {test_name} is ({similarity}).", LogType.Debug)
+            similarity = SequenceMatcher(None, test_name, list_filter).ratio()
+            Log(f"Similarity Score for {list_filter} and {test_name} is ({similarity}).", LogType.Debug)
 
-            # If the filter is not in the name and similarity score is below 0.45, skip this game
-            if filter not in test_name and similarity < 0.45:
+            # If the list_filter is not in the name and similarity score is below 0.45, skip this game
+            if list_filter not in test_name and similarity < 0.45:
                 Log(f"Skipping {test_name}!", LogType.Debug)
                 continue
 
@@ -300,7 +332,7 @@ def AddMember(member: discord.Member):
     members[member_details['name']] = member_details
 
     # Toggles the updated flag for members
-    UpdateFlag(Flags.Members, True, f"Added a new member, {member.name}")
+    UpdateFlag(FlagType.Members, True, f"Added a new member, {member.name}")
 
 # Update first dict with second recursively
 def MergeDictionaries(d1: dict, d2: dict):
@@ -323,7 +355,7 @@ def UpdateMember(member: discord.Member, new_details: dict):
     MergeDictionaries(members[member.name], new_details)
     
     # Toggles the updated flag for members
-    UpdateFlag(Flags.Members, True, f"Updated member information, {member.name}")
+    UpdateFlag(FlagType.Members, True, f"Updated member information, {member.name}")
 
 # Removes game from games list and saves to file
 async def RemoveGame(role: discord.Role, game_name: str):
@@ -337,7 +369,7 @@ async def RemoveGame(role: discord.Role, game_name: str):
         del games[game_name]
 
         # Toggles the updated flag for games
-        UpdateFlag(Flags.Games, True, f"Removed a game, {game_name}")
+        UpdateFlag(FlagType.Games, True, f"Removed a game, {game_name}")
         
         return True
     else:
@@ -362,7 +394,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     games[game_name]['role'] = role.id
 
                     # Toggles the updated flag for games
-                    UpdateFlag(Flags.Games, True, f"Added missing role entry for the {game_name} game!")
+                    UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
 
             if game_name in aliases:
                 already_exists[aliases[game_name]] = games[aliases[game_name]]
@@ -450,7 +482,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 games[latest_game['name']] = latest_game
 
                 # Toggles the updated flag for games
-                UpdateFlag(Flags.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
+                UpdateFlag(FlagType.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
             else:
                 failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
@@ -500,7 +532,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         aliases[alias] = game['name']
 
         # Toggles the updated flag for aliases
-        UpdateFlag(Flags.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
+        UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
 
         # Once a game is found, it sets the alias and exits
         await msg.reply(f"Thanks, {msg.author.mention}! I've given <@&{game['role']}> an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
@@ -513,7 +545,7 @@ def RemoveAlias(alias_name: str):
         del aliases[alias_name]
 
         # Toggles the updated flag for aliases
-        UpdateFlag(Flags.Aliases, True, f"Removed the {alias_name} alias.")
+        UpdateFlag(FlagType.Aliases, True, f"Removed the {alias_name} alias.")
 
         return True 
     else:
@@ -547,7 +579,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     games[game_name]['history'][date][member.name]['last_played'] = GetTime()
 
     # Toggles the updated flag for games
-    UpdateFlag(Flags.Games, True, f"{member.name} started playing {game_name}")
+    UpdateFlag(FlagType.Games, True, f"{member.name} started playing {game_name}")
 
 # Records number of hours played since member started playing game and tallies for the day
 def StopPlayingGame(member: discord.Member, game_name: str):
@@ -575,7 +607,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         del games[game_name]['history'][date][member.name]['last_played']
 
         # Toggles the updated flag for games
-        UpdateFlag(Flags.Games, True, f"{member.name} stopped playing {game_name}")
+        UpdateFlag(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
     
     # Grabs the current YYYY-MM-DD from the current datetime
     today = datetime.now().strftime('%Y-%m-%d')
@@ -623,7 +655,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             Log(f"Could not find last_played for {game_name} after {member.name} stopped playing!", LogType.Error)
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
-def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member = None):
+def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.Member = None):
     top_games = {}
     for game_name, game_value in game_list.items():
         # Skips game if there's not history
@@ -646,8 +678,13 @@ def GetPlaytime(game_list: dict, days: int, count: int, member: discord.Member =
         else:
             top_games[game_name] = round(top_games[game_name], 2)
 
-    # Sort the list by highest hours played and shrink to count
-    sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
+    if count:
+        # Sort the list by highest hours played and shrink to count
+        sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)[:count]
+    else: 
+        # Sort the entire list by highest hours played
+        sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)
+
     return dict(sorted_list)
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
@@ -868,26 +905,27 @@ class ListView(discord.ui.View):
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
 class PageView(discord.ui.View):
-    def __init__(self, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
+    def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
         super().__init__(timeout = 30)
         self.original_message = original_message
         self.member = member
 
         for nav_type in NavigationType:
-            self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, page, guild, member))
-            
+            self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
+
         for name, details in list_sets[page - 1].items():
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
         
-
     class NavigateButton(discord.ui.Button):
-        def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
+        def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
             self.nav_type = nav_type
             self.original_message = original_message
             self.list_type = list_type
             self.list_sets = list_sets
+            self.list_filter = list_filter
             self.guild = guild
             self.member = member
+            self.sort = sort
             self.page_count = len(self.list_sets)
 
             if self.nav_type == NavigationType.First:
@@ -896,6 +934,9 @@ class PageView(discord.ui.View):
             elif self.nav_type == NavigationType.Previous:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "◀️")
                 self.goto = page - 1
+            elif self.nav_type == NavigationType.Sort:
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⚙️") #📄
+                self.goto = 1
             elif self.nav_type == NavigationType.Next:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "▶️")
                 self.goto = page + 1
@@ -913,10 +954,19 @@ class PageView(discord.ui.View):
                 self.disabled = True
 
         async def callback(self, interaction):
-            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.goto, self.guild, self.member)
-            view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`(Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
-            
+            if self.nav_type == NavigationType.Sort:
+                if self.sort == SortType.Alphabetical:
+                    self.sort = SortType.Popularity
+                elif self.sort == SortType.Popularity:
+                    self.sort = SortType.RecentlyAdded
+                elif self.sort == SortType.RecentlyAdded:
+                    self.sort = SortType.Alphabetical
 
+                self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
+
+            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.goto, self.guild, self.member)
+            view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
+            
     class ItemButton(discord.ui.Button):
         def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, guild: discord.Guild, member: discord.Member):
             # Instantiate button variables
@@ -971,7 +1021,7 @@ class PageView(discord.ui.View):
         if not self.original_message:
             await self.message.delete()
         else:
-            if self.member:
+            if self.member and self.message:
                 await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
             else:
                 await self.message.edit(content = f"{self.original_message}", view = None)
@@ -1065,7 +1115,7 @@ class AutoRolerPro(commands.Cog):
         log_message = f"Initiating routine data backup sequence ------------------------------"
 
         # Returns true if games flag is updated
-        game_flag = update_flags[Flags.Games]
+        game_flag = update_flags[FlagType.Games]
         if game_flag['status']:
             with open(games_file, "w") as fp:
                 json.dump(games, fp, indent = 2, default = str, ensure_ascii = False) 
@@ -1074,13 +1124,13 @@ class AutoRolerPro(commands.Cog):
             log_message += f"\n  Successfully saved to {games_file} {game_flag['comment']}"
 
             # Resets flag
-            UpdateFlag(Flags.Games)
+            UpdateFlag(FlagType.Games)
         else:
             # Adds aliases file update to log message
             Log("Games file not updated, no changes.", LogType.Debug)
 
         # Returns true if members flag is updated
-        game_flag = update_flags[Flags.Members]
+        game_flag = update_flags[FlagType.Members]
         if game_flag['status']:
             with open(members_file, "w") as fp:
                 json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
@@ -1089,13 +1139,13 @@ class AutoRolerPro(commands.Cog):
             log_message += f"\n  Successfully saved to {members_file}! {game_flag['comment']}"
 
             # Resets flag
-            UpdateFlag(Flags.Members)
+            UpdateFlag(FlagType.Members)
         else:
             # Adds aliases file update to log message
             Log("Members file not updated, no changes.", LogType.Debug)
 
         # Returns true if aliases flag is updated
-        game_flag = update_flags[Flags.Aliases]
+        game_flag = update_flags[FlagType.Aliases]
         if game_flag['status']:
             with open(aliases_file, "w") as fp:
                 json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
@@ -1104,13 +1154,13 @@ class AutoRolerPro(commands.Cog):
             log_message += f"\n  Successfully saved to {aliases_file}! {game_flag['comment']}"
 
             # Resets flag
-            UpdateFlag(Flags.Aliases)
+            UpdateFlag(FlagType.Aliases)
         else:
             # Adds aliases file update to log message
             Log("Aliases file not updated, no changes.", LogType.Debug)
 
         # Returns true if aliases flag is updated
-        game_flag = update_flags[Flags.Config]
+        game_flag = update_flags[FlagType.Config]
         if game_flag['status']:
             with open(config_file, "w") as fp:
                 json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
@@ -1119,7 +1169,7 @@ class AutoRolerPro(commands.Cog):
             log_message += f"\n  Successfully saved to {config_file}! {game_flag['comment']}"
 
             # Resets flag
-            UpdateFlag(Flags.Config)
+            UpdateFlag(FlagType.Config)
         else:
             # Adds aliases file update to log message
             Log("Config file not updated, no changes.", LogType.Debug)
@@ -1267,7 +1317,7 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
         
     @commands.command()
-    async def list_pages(self, ctx, *, arg = None):
+    async def list_pages(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1276,12 +1326,12 @@ class AutoRolerPro(commands.Cog):
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 20, arg)
+            list_sets = GetListSets(games, 20, list_filter)
             if not list_sets:
-                await ctx.reply(f"Could not find any games similar to `{arg}`")
+                await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
-                view = PageView(original_message, ListType.Select_Game, list_sets, 1, guild, member)
+                view = PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`(Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
