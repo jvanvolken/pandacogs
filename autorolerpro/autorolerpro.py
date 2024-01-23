@@ -964,7 +964,7 @@ class PageView(discord.ui.View):
 
                 self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
 
-            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member)
+            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member, self.sort)
             view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
             
     class ItemButton(discord.ui.Button):
