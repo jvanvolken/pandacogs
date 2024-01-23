@@ -1118,7 +1118,7 @@ class PlaytimeView(discord.ui.View):
         self.member = member
 
         self.add_item(self.ServerButton(self.original_message, self.member))
-        self.add_item(self.SelfButton(self.original_message, self.member))
+        self.add_item(self.SelfButton(self.original_message))
 
     # Create a class called YesButton that subclasses discord.ui.Button
     class ServerButton(discord.ui.Button):
@@ -1147,10 +1147,9 @@ class PlaytimeView(discord.ui.View):
                 raise Exception(error)
 
     class SelfButton(discord.ui.Button):
-        def __init__(self, original_message: str, member: discord.Member):
+        def __init__(self, original_message: str):
             super().__init__(label = "Self", style = discord.ButtonStyle.secondary, emoji = "😁")
             self.original_message = original_message
-            self.member = member
 
         async def callback(self, interaction):
             try:            
