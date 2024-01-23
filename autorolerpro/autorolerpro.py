@@ -863,10 +863,10 @@ class ListView(discord.ui.View):
 class PageView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_sets: list, guild: discord.Guild, member: discord.Member = None):
         super().__init__(timeout = 10)
+        self.original_message = original_message
 
         for name, details in list_sets[0].items():
-            button = self.ItemButton(original_message, list_type, name, details, guild, member)
-            self.add_item(button)
+            self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
 
     class ItemButton(discord.ui.Button):
         def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, guild: discord.Guild, member: discord.Member):
@@ -903,8 +903,13 @@ class PageView(discord.ui.View):
             # Should not be missing role by this stage, log error if missing
             if not self.role:
                 error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
+                
+                # Log error and message user about failure
                 Log(error_message, LogType.Error)
                 await interaction.response.send_message(error_message, ephemeral = True)
+
+                # Do not continue if role is missing
+                return
 
             if self.list_type is ListType.Select_Game:
                 await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
@@ -913,6 +918,14 @@ class PageView(discord.ui.View):
             elif self.list_type is ListType.Remove_Alias:
                 await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
 
+    async def on_timeout(self):
+        if not self.original_message:
+            await self.message.delete()
+        else:
+            if self.member:
+                await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
+            else:
+                await self.message.edit(content = f"{self.original_message}", view = None)
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
 class PlaytimeView(discord.ui.View):
@@ -1219,7 +1232,7 @@ class AutoRolerPro(commands.Cog):
             else:
                 original_message = "This message has buttons!"
                 view = PageView(original_message, ListType.Select_Game, list_sets, member)
-                await ctx.reply(original_message, view = view)
+                view.message = await ctx.reply(original_message, view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
