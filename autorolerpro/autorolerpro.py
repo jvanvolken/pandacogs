@@ -861,14 +861,22 @@ class ListView(discord.ui.View):
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
 class PageView(discord.ui.View):
-    def __init__(self, original_message: str, list_type: ListType, pages: list):
+    def __init__(self, original_message: str, list_type: ListType, list_sets: list):
         super().__init__(timeout = 10)
         self.original_message = original_message
 
-    for i in range(1, 10):
-        @discord.ui.button(label = f"Button {i}", style = discord.ButtonStyle.gray)
-        async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-            await interaction.response.edit_message(content = f"{self.original_message} You clicked button {i}!")
+        for items in list_sets[0]:
+            self.add_item(self.ItemButton(items))
+
+    class ItemButton(discord.ui.Button):
+        def __init__(self, item):
+            self.item = item
+            
+            super().__init__(label = self.item['name'], style = discord.ButtonStyle.gray)
+
+        async def callback(self, interaction):
+            await interaction.response.send_message(f"You clicked {self.item['name']}", ephemeral = True)
+
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
 class PlaytimeView(discord.ui.View):
@@ -1174,7 +1182,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 original_message = "This message has buttons!"
-                view = PageView(original_message, None, None)
+                view = PageView(original_message, None, list_sets)
                 await ctx.reply(original_message, view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
