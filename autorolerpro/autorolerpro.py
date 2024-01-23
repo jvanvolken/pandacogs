@@ -640,7 +640,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
             # Get yesterday's last_played time and midnight
             last_played  = games[game_name]['history'][yesterday][member.name]['last_played']
-            midnight = (last_played + timedelta(days=1)).replace(hour=0, minute=0, microsecond=0, second=0)
+            midnight = (datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f') + timedelta(days=1)).replace(hour=0, minute=0, microsecond=0, second=0)
             
             # Convert delta_time to hours and round to 2 decimal places
             delta_time = midnight - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
