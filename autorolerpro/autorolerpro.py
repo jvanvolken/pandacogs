@@ -670,7 +670,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             for date in games[game_name]['history']: 
                 if member.name in games[game_name]['history'][date] and 'last_played' in games[game_name]['history'][date][member.name]:
                     # Log the last_played and then delete the entry
-                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {date[member.name]['last_played']}", LogType.Warning)
+                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {games[game_name]['history'][date][member.name]['last_played']}", LogType.Warning)
                     del games[game_name]['history'][date][member.name]['last_played']
 
                     # Toggles the updated flag for games
