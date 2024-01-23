@@ -861,24 +861,57 @@ class ListView(discord.ui.View):
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
 class PageView(discord.ui.View):
-    def __init__(self, original_message: str, list_type: ListType, list_sets: list):
+    def __init__(self, original_message: str, list_type: ListType, list_sets: list, guild: discord.Guild, member: discord.Member = None):
         super().__init__(timeout = 10)
-        self.original_message = original_message
 
-        for item in list_sets[0].values():
-            button = self.ItemButton(item)
-            button.original_message = original_message
+        for name, details in list_sets[0].items():
+            button = self.ItemButton(original_message, list_type, name, details, guild, member)
             self.add_item(button)
 
     class ItemButton(discord.ui.Button):
-        def __init__(self, item):
-            self.item = item
+        def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, guild: discord.Guild, member: discord.Member):
+            # Instantiate button variables
+            self.original_message = original_message
+            self.list_type = list_type
+            self.name = name
+            self.details = details
+            self.guild = guild
+            self.member = member
 
-            super().__init__(label = self.item['name'], style = discord.ButtonStyle.gray)
+            # Grabs role from guild
+            self.role = self.guild.get_role(self.item['role'])
+
+            # Check if member has the role and set button color accordingly
+            if self.member:
+                if self.role in self.member.roles:
+                    button_style = discord.ButtonStyle.success
+                else:
+                    button_style = discord.ButtonStyle.secondary
+            else:
+                button_style = discord.ButtonStyle.primary
+
+            super().__init__(label = self.name, style = button_style)
 
         async def callback(self, interaction):
-            #await interaction.response.edit_message(f"{self.original_message} You clicked {self.item['name']}")
-            await interaction.response.send_message(f"{self.original_message} You clicked {self.item['name']}", ephemeral = True)
+            if self.member and self.member != interaction.user:
+                if self.list_type is ListType.Select_Game:
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `!list_games` to interact!*", ephemeral = True, delete_after = 10)
+                else:
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
+                return
+
+            # Should not be missing role by this stage, log error if missing
+            if not self.role:
+                error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
+                Log(error_message, LogType.Error)
+                await interaction.response.send_message(error_message, ephemeral = True)
+
+            if self.list_type is ListType.Select_Game:
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
+            elif self.list_type is ListType.Remove_Game:
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
+            elif self.list_type is ListType.Remove_Alias:
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
 
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
@@ -1185,7 +1218,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 original_message = "This message has buttons!"
-                view = PageView(original_message, None, list_sets)
+                view = PageView(original_message, ListType.Select_Game, list_sets, member)
                 await ctx.reply(original_message, view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
