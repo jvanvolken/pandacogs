@@ -864,6 +864,7 @@ class PageView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_sets: list, guild: discord.Guild, member: discord.Member = None):
         super().__init__(timeout = 10)
         self.original_message = original_message
+        self.member = member
 
         for name, details in list_sets[0].items():
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
@@ -1222,6 +1223,7 @@ class AutoRolerPro(commands.Cog):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
         member = ctx.message.author
+        guild  = ctx.guild
 
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
@@ -1231,7 +1233,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 original_message = "This message has buttons!"
-                view = PageView(original_message, ListType.Select_Game, list_sets, member)
+                view = PageView(original_message, ListType.Select_Game, list_sets, guild, member)
                 view.message = await ctx.reply(original_message, view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
