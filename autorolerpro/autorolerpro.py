@@ -677,10 +677,10 @@ def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.M
                         top_games[game_name] += details['playtime']
         
         # Delete game_name from top_games if it's zero
-        if top_games[game_name] == 0:
-            del top_games[game_name]
-        else:
-            top_games[game_name] = round(top_games[game_name], 2)
+        # if top_games[game_name] == 0:
+        #     del top_games[game_name]
+        # else:
+        top_games[game_name] = round(top_games[game_name], 2)
 
     if count:
         # Sort the list by highest hours played and shrink to count
