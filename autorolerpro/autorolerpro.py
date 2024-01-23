@@ -667,9 +667,8 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             Log(f"Could not determine {member.name}'s play session for {game_name}! Maybe it spanned more than 2 days?", LogType.Warning)
 
             # Loop through all of the dates in the game's history
-            for date in games[game_name]['history']:
-                Log(f"Looking in {str(date)}", LogType.Debug) 
-                if member.name in date and 'last_played' in date[member.name]:
+            for date in games[game_name]['history']: 
+                if member.name in games[game_name]['history'][date] and 'last_played' in games[game_name]['history'][date][member.name]:
                     # Log the last_played and then delete the entry
                     Log(f"Found {member.name}'s last_played datetime for {game_name}: {date[member.name]['last_played']}", LogType.Warning)
                     del games[game_name]['history'][date][member.name]['last_played']
