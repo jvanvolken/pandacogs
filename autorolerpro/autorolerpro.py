@@ -1075,7 +1075,7 @@ class PlaytimeView(discord.ui.View):
                             hours, minutes = divmod(time*60, 60)
                             playtime_message += f"- **{game_name}** *({int(hours)}h:{math.ceil(minutes)}m)*\n"
 
-                    await interaction.response.send_message(f"Here you go, {interaction.user.mention}! Here are your top games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
+                    await interaction.response.send_message(f"Here you go, {interaction.user.mention}! These are your top games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
                 else:
                     await interaction.response.send_message(f"Hey, {interaction.user.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
 
