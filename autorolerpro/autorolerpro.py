@@ -28,6 +28,13 @@ class ListType(Enum):
     Remove_Game  = 2
     Remove_Alias = 3
 
+# Navigation types
+class NavigationType(Enum):
+    First    = "First"
+    Previous = "Previous"
+    Next     = "Next"
+    Last     = "Last"
+
 # Flag types
 class Flags(Enum):
     Games    = 1
@@ -799,7 +806,7 @@ class ListView(discord.ui.View):
                 await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*{extra_comment}*", ephemeral = True, delete_after = 10)
                 return
             
-            if self.list_type is ListType.Select_Game:
+            if self.list_type == ListType.Select_Game:
                 # Looks for the role with the same name as the game
                 if self.role:
                     if self.role in interaction.user.roles:
@@ -832,7 +839,7 @@ class ListView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
 
-            elif self.list_type is ListType.Remove_Game:
+            elif self.list_type == ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
                 if await RemoveGame(self.role, self.name):
                     del self.list_items[self.name]
@@ -844,7 +851,7 @@ class ListView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"I couldn't removed {self.name} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
 
-            elif self.list_type is ListType.Remove_Alias:
+            elif self.list_type == ListType.Remove_Alias:
                 # Tries to remove the alias, returns false if it fails
                 if RemoveAlias(self.name):
                     await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
@@ -868,6 +875,23 @@ class PageView(discord.ui.View):
 
         for name, details in list_sets[0].items():
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
+        
+        for nav_type in NavigationType:
+            self.add_item(self.NavigateButton(nav_type))
+
+    class NavigateButton(discord.ui.Button):
+        def __init__(self, nav_type: NavigationType):
+            self.nav_type = nav_type
+
+            if nav_type == NavigationType.First:
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏮️")
+            elif nav_type == NavigationType.Previous:
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "◀️")
+            elif nav_type == NavigationType.Next:
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "▶️")
+            elif nav_type == NavigationType.Last:
+                super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏭️")
+            
 
     class ItemButton(discord.ui.Button):
         def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, guild: discord.Guild, member: discord.Member):
@@ -912,11 +936,11 @@ class PageView(discord.ui.View):
                 # Do not continue if role is missing
                 return
 
-            if self.list_type is ListType.Select_Game:
+            if self.list_type == ListType.Select_Game:
                 await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
-            elif self.list_type is ListType.Remove_Game:
+            elif self.list_type == ListType.Remove_Game:
                 await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
-            elif self.list_type is ListType.Remove_Alias:
+            elif self.list_type == ListType.Remove_Alias:
                 await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
 
     async def on_timeout(self):
@@ -1228,7 +1252,7 @@ class AutoRolerPro(commands.Cog):
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 25, arg)
+            list_sets = GetListSets(games, 20, arg)
             if not list_sets:
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
