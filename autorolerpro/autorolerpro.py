@@ -1098,6 +1098,11 @@ class PageView(discord.ui.View):
                 # Tries to remove the game, returns false if it fails
                 if await RemoveGame(self.role, self.name):
                     self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
+                    self.page_count = len(self.list_sets)
+
+                    # Check if deleted last item on the page, if so, set page to last page
+                    if self.page > self.page_count:
+                        self.page = self.page_count
                     
                     view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
                     view.message = await interaction.message.edit(view = view)
