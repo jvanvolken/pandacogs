@@ -868,19 +868,19 @@ class ListView(discord.ui.View):
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
 class PageView(discord.ui.View):
-    def __init__(self, original_message: str, list_type: ListType, list_sets: list, guild: discord.Guild, member: discord.Member = None):
+    def __init__(self, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
         super().__init__(timeout = 10)
         self.original_message = original_message
         self.member = member
 
-        for name, details in list_sets[0].items():
+        for name, details in list_sets[page].items():
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
         
         for nav_type in NavigationType:
-            self.add_item(self.NavigateButton(nav_type))
+            self.add_item(self.NavigateButton(nav_type, page, len(list_sets)))
 
     class NavigateButton(discord.ui.Button):
-        def __init__(self, nav_type: NavigationType):
+        def __init__(self, nav_type: NavigationType, page: int, page_count: int):
             self.nav_type = nav_type
 
             if nav_type == NavigationType.First:
@@ -891,6 +891,15 @@ class PageView(discord.ui.View):
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "▶️")
             elif nav_type == NavigationType.Last:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏭️")
+
+            if page == 1 and (nav_type == NavigationType.First or nav_type == NavigationType.Previous):
+                self.disabled = True
+            elif page == 2 and nav_type == NavigationType.First:
+                self.disabled = True
+            elif page == (page_count - 1) and nav_type == NavigationType.Last:
+                self.disabled = True
+            elif page == page_count and (nav_type == NavigationType.Last or nav_type == NavigationType.Next):
+                self.disabled = True
             
 
     class ItemButton(discord.ui.Button):
@@ -1257,7 +1266,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
-                view = PageView(original_message, ListType.Select_Game, list_sets, guild, member)
+                view = PageView(original_message, ListType.Select_Game, list_sets, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
