@@ -866,7 +866,9 @@ class PageView(discord.ui.View):
         self.original_message = original_message
 
         for item in list_sets[0].values():
-            self.add_item(self.ItemButton(item))
+            button = self.ItemButton(item)
+            button.original_message = original_message
+            self.add_item(button)
 
     class ItemButton(discord.ui.Button):
         def __init__(self, item):
