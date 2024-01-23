@@ -635,7 +635,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         AddPlaytime(today, hours)
 
     elif yesterday in games[game_name]['history']:
-        Log(f"Sombody played overnight, splitting time across two days!", LogType.Log)
+        Log(f"{member.name} played {game_name} overnight, splitting time across two days!", LogType.Log)
 
         # Check if there's a last_played in yesterday's history
         if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
