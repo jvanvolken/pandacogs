@@ -908,6 +908,7 @@ class ListView(discord.ui.View):
             else:
                 await self.message.edit(content = f"{self.original_message}", view = None)
 
+# Create a class called PageView that subclasses discord.ui.View
 class PageView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
@@ -918,7 +919,7 @@ class PageView(discord.ui.View):
             self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, list_filter, page, guild, member, sort))
 
         for name, details in list_sets[page - 1].items():
-            self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
+            self.add_item(self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
         
     class NavigateButton(discord.ui.Button):
         def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
@@ -972,14 +973,18 @@ class PageView(discord.ui.View):
             view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
             
     class ItemButton(discord.ui.Button):
-        def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, guild: discord.Guild, member: discord.Member):
+        def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
             # Instantiate button variables
             self.original_message = original_message
             self.list_type = list_type
             self.name = name
             self.details = details
+            self.list_sets = list_sets
+            self.list_filter = list_filter
+            self.page = page
             self.guild = guild
             self.member = member
+            self.sort = sort
 
             # Grabs role from guild
             self.role = self.guild.get_role(self.details['role'])
@@ -1013,13 +1018,58 @@ class PageView(discord.ui.View):
 
                 # Do not continue if role is missing
                 return
-
+            
             if self.list_type == ListType.Select_Game:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
+                # Looks for the role with the same name as the game
+                if self.role:
+                    if self.role in interaction.user.roles:
+                        # Assign role to member
+                        member = interaction.user
+                        await member.remove_roles(self.role)
+
+                        # Updates member details
+                        update = {'games' : {self.name : {'tracked' : False}}}
+                        UpdateMember(member, update)
+
+                        view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                        view.message = await interaction.message.edit(view = view)
+
+                        await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
+                    else:
+                        # Assign role to member
+                        member = interaction.user
+                        await member.add_roles(self.role)
+
+                        # Updates member details
+                        update = {'games' : {self.name : {'tracked' : True}}}
+                        UpdateMember(member, update)
+
+                        view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                        view.message = await interaction.message.edit(view = view)
+
+                        # Informs the user that the role has been assigned to them
+                        await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
+                else:
+                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
+
             elif self.list_type == ListType.Remove_Game:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
+                # Tries to remove the game, returns false if it fails
+                if await RemoveGame(self.role, self.name):
+                    del self.list_items[self.name]
+                    
+                    view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                    view.message = await interaction.message.edit(view = view)
+
+                    await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
+                else:
+                    await interaction.response.send_message(f"I couldn't removed {self.name} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
+
             elif self.list_type == ListType.Remove_Alias:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
+                # Tries to remove the alias, returns false if it fails
+                if RemoveAlias(self.name):
+                    await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
+                else:
+                    await interaction.response.send_message(f"Unable to remove `{self.name}` - I could not find it in the list of aliases!")
 
     async def on_timeout(self):
         if not self.original_message:
@@ -1339,7 +1389,6 @@ class AutoRolerPro(commands.Cog):
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
-
 
     @commands.command()
     async def add_games(self, ctx, *, arg):
