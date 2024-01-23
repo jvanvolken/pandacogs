@@ -254,6 +254,7 @@ def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort:
     elif sort == SortType.Popularity:
         # Get a list of keys sorted by playtime
         listKeys = list(GetPlaytime(game_list, 30).keys())
+        Log(str(listKeys), LogType.Debug)
 
         # Rebuild game_list using the sorted list of keys
         game_list = {i: game_list[i] for i in listKeys}
