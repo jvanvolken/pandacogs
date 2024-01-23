@@ -1066,12 +1066,14 @@ class PlaytimeView(discord.ui.View):
                     playtime_message = ""
                     game_refs = {}
                     for game_name, time in playtime_list.items():
-                        # Store a reference of the game data in game_refs
-                        game_refs[game_name] = games[game_name]
-
-                        # Calculate hours and minutes from time and add to playtime_message
-                        hours, minutes = divmod(time*60, 60)
-                        playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
+                        # Only list games with more than 0 time
+                        if time > 0:
+                            # Store a reference of the game data in game_refs
+                            game_refs[game_name] = games[game_name]
+                            
+                            # Calculate hours and minutes from time and add to playtime_message
+                            hours, minutes = divmod(time*60, 60)
+                            playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
 
                     await interaction.response.send_message(f"Here you go, {interaction.user.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
                 else:
