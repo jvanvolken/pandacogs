@@ -913,7 +913,7 @@ class PageView(discord.ui.View):
 
         async def callback(self, interaction):
             view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.goto, self.guild, self.member)
-            view.message = await interaction.message.edit(content = f"{self.original_message}\n*`(Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
+            view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`(Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
             
 
     class ItemButton(discord.ui.Button):
