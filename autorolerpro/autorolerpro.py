@@ -884,6 +884,7 @@ class PageView(discord.ui.View):
             self.nav_type = nav_type
             self.original_message = original_message
             self.list_type = list_type
+            self.list_sets = list_sets
             self.guild = guild
             self.member = member
 
@@ -898,7 +899,7 @@ class PageView(discord.ui.View):
                 self.goto = page + 1
             elif self.nav_type == NavigationType.Last:
                 super().__init__(label = nav_type.value, style = discord.ButtonStyle.primary, emoji = "⏭️")
-                self.goto = len(list_sets)
+                self.goto = len(self.list_sets)
 
             if page == 1 and (nav_type == NavigationType.First or nav_type == NavigationType.Previous):
                 self.disabled = True
