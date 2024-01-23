@@ -386,24 +386,27 @@ async def AddGames(guild: discord.Guild, game_list: list):
     already_exists = {}
     failed_to_find = {}
 
+    def AlreadyExists(game_name):
+        if "role" not in games[game_name]:
+            # Looks for an existing role for the game
+            role = discord.utils.get(guild.roles, name = game_name)
+            if role:
+                # Stores the role for future use
+                games[game_name]['role'] = role.id
+
+                # Toggles the updated flag for games
+                UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
+
+        if game_name in aliases:
+            already_exists[aliases[game_name]] = games[aliases[game_name]]
+        else:
+            already_exists[game_name] = games[game_name]
+
     # Loops through the provided list of game names
     for game_name in game_list:
         # Checks if game already exists to avoid unnecessary API calls
         if game_name in games or game_name in aliases:
-            if "role" not in games[game_name]:
-                # Looks for an existing role for the game
-                role = discord.utils.get(guild.roles, name = game_name)
-                if role:
-                    # Stores the role for future use
-                    games[game_name]['role'] = role.id
-
-                    # Toggles the updated flag for games
-                    UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
-
-            if game_name in aliases:
-                already_exists[aliases[game_name]] = games[aliases[game_name]]
-            else:
-                already_exists[game_name] = games[game_name]
+            AlreadyExists(game_name)
         else:
             # Debug log the difference before and after the strip_accents function call
             Log(game_name, LogType.Debug)
@@ -459,7 +462,10 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 elif game_name.isnumeric() or game_details['name'] in matches:
                     latest_game = game_details
 
-            if latest_game:
+            # Checks if game already exists again with the nearly found game name
+            if latest_game and (latest_game['name'] in games or latest_game['name'] in aliases):
+                AlreadyExists(latest_game['name'])
+            elif latest_game:
                 # Get cover url from game id
                 url = GetCoverUrl(latest_game["id"])
 
