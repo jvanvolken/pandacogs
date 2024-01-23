@@ -1267,7 +1267,7 @@ class AutoRolerPro(commands.Cog):
             else:
                 original_message = f"Here's your game list, {member.mention}!"
                 view = PageView(original_message, ListType.Select_Game, list_sets, 1, guild, member)
-                view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
+                view.message = await ctx.reply(f"{original_message}\n*`(Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
