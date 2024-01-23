@@ -1097,9 +1097,9 @@ class PageView(discord.ui.View):
             elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
                 if await RemoveGame(self.role, self.name):
-                    del self.list_items[self.name]
+                    self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
                     
-                    view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                    view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
                     view.message = await interaction.message.edit(view = view)
 
                     await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
