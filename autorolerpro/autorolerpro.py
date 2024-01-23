@@ -964,7 +964,7 @@ class PageView(discord.ui.View):
 
                 self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
 
-            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.goto, self.guild, self.member)
+            view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member)
             view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the games that you're interested in playing:*", view = view)
             
     class ItemButton(discord.ui.Button):
@@ -1326,13 +1326,13 @@ class AutoRolerPro(commands.Cog):
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 20, list_filter)
+            list_sets = GetListSets(games, 20, list_filter, SortType.Alphabetical)
             if not list_sets:
                 await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
                 view = PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
-                view.message = await ctx.reply(f"{original_message}\n*`(Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
+                view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
