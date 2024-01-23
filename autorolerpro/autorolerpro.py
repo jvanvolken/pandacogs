@@ -1153,9 +1153,9 @@ class PlaytimeView(discord.ui.View):
             self.member = member
 
         async def callback(self, interaction):
-            try:
+            try:            
                 # Get the list of the top # of games
-                playtime_list = GetPlaytime(games, 30, 5, self.member)
+                playtime_list = GetPlaytime(games, 30, 5, interaction.user)
                 if playtime_list:
                     # Initialize the playtime message and game refernces for the games played
                     playtime_message = ""
@@ -1168,9 +1168,9 @@ class PlaytimeView(discord.ui.View):
                         hours, minutes = divmod(time*60, 60)
                         playtime_message += f"- **{game_name}** *({int(hours)}h:{int(minutes)}m)*\n"
 
-                    await interaction.response.send_message(f"Here you go, {self.member.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
+                    await interaction.response.send_message(f"Here you go, {interaction.user.mention}! These are your top 5 games this month!\n{playtime_message}", ephemeral = True, files = await GetImages(game_refs))
                 else:
-                    await interaction.response.send_message(f"Hey, {self.member.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
+                    await interaction.response.send_message(f"Hey, {interaction.user.mention}! Looks like I haven't tracked you playing any games for the last 30 days!", ephemeral = True)
 
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
