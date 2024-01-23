@@ -877,8 +877,8 @@ class PageView(discord.ui.View):
             super().__init__(label = self.item['name'], style = discord.ButtonStyle.gray)
 
         async def callback(self, interaction):
-            await interaction.response.edit_message(f"{self.original_message} You clicked {self.item['name']}")
-            # await interaction.response.send_message(f"You clicked {self.item['name']}", ephemeral = True)
+            #await interaction.response.edit_message(f"{self.original_message} You clicked {self.item['name']}")
+            await interaction.response.send_message(f"{self.original_message} You clicked {self.item['name']}", ephemeral = True)
 
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
