@@ -865,13 +865,13 @@ class PageView(discord.ui.View):
         super().__init__(timeout = 10)
         self.original_message = original_message
 
-        for items in list_sets[0]:
-            self.add_item(self.ItemButton(items))
+        for item in list_sets[0].values():
+            self.add_item(self.ItemButton(item))
 
     class ItemButton(discord.ui.Button):
         def __init__(self, item):
             self.item = item
-            
+
             super().__init__(label = self.item['name'], style = discord.ButtonStyle.gray)
 
         async def callback(self, interaction):
