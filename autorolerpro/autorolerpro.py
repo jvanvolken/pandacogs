@@ -979,6 +979,7 @@ class PageView(discord.ui.View):
                     self.sort = SortType.Alphabetical
 
                 self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
+                self.page_count = len(self.list_sets)
 
             # Repopulate message based on the last interaction
             view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.goto, self.guild, self.member, self.sort)
