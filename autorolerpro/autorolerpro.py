@@ -865,9 +865,10 @@ class PageView(discord.ui.View):
         super().__init__(timeout = 10)
         self.original_message = original_message
 
-    @discord.ui.button(label = "Button", style = discord.ButtonStyle.gray)
-    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content = f"{self.original_message} This is an edited button response!")
+    for i in range(1, 10):
+        @discord.ui.button(label = f"Button {i}", style = discord.ButtonStyle.gray)
+        async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await interaction.response.edit_message(content = f"{self.original_message} You clicked button {i}!")
 
 # Create a class called PlaytimeView that subclasses discord.ui.View
 class PlaytimeView(discord.ui.View):
