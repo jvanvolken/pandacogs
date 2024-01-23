@@ -869,7 +869,7 @@ class ListView(discord.ui.View):
 
 class PageView(discord.ui.View):
     def __init__(self, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
-        super().__init__(timeout = 10)
+        super().__init__(timeout = 30)
         self.original_message = original_message
         self.member = member
 
