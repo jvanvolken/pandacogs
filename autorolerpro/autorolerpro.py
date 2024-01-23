@@ -1114,6 +1114,16 @@ class PageView(discord.ui.View):
             elif self.list_type is ListType.Remove_Alias:
                 # Tries to remove the alias, returns false if it fails
                 if RemoveAlias(self.name):
+                    self.list_sets = GetListSets(aliases, 20, self.list_filter, self.sort)
+                    self.page_count = len(self.list_sets)
+
+                    # Check if deleted last item on the page, if so, set page to last page
+                    if self.page > self.page_count:
+                        self.page = self.page_count
+
+                    view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                    view.message = await interaction.message.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the aliases you'd like to remove...*", view = view)
+
                     await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
                 else:
                     await interaction.response.send_message(f"Unable to remove `{self.name}` - I could not find it in the list of aliases!")
@@ -1519,23 +1529,6 @@ class AutoRolerPro(commands.Cog):
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
-
-            # list_sets = GetListSets(games, 25, arg)
-
-            # if not list_sets:
-            #     await ctx.reply(f"Could not find any games similar to `{arg}`")
-            # else:
-            #     set_count = 0
-            #     list_count = len(list_sets)
-            #     while set_count < list_count:
-            #         if set_count == 0:
-            #             original_message = f"Here you go, {member.mention}.\n*`(Message 1 of {list_count})` Please select the game(s) you'd like to remove...*"
-            #             view = ListView(original_message, ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
-            #             view.message = await ctx.reply(original_message, view = view) 
-            #         else:
-            #             view = ListView(f"*`(Message {set_count + 1} of {list_count})` Continued...*", ListType.Remove_Game, list_sets[set_count], ctx.guild, member)
-            #             view.message = await ctx.reply(view = view)
-            #         set_count += 1
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
@@ -1576,7 +1569,7 @@ class AutoRolerPro(commands.Cog):
         await AddAlias(self.bot, ctx.guild, arg)
 
     @commands.command()
-    async def remove_aliases(self, ctx, *, filter):
+    async def remove_aliases(self, ctx, *, list_filter):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member: discord.Member = ctx.message.author
@@ -1593,21 +1586,31 @@ class AutoRolerPro(commands.Cog):
             return
         
         if len(aliases) > 0:
-            list_sets = GetListSets(aliases, 25, filter)
-
-            if not filter:
-                await ctx.reply(f"Could not find any aliases similar to `{filter}`")
+            # Convert a long list of games into sets of 25 or less
+            list_sets = GetListSets(aliases, 20, list_filter, SortType.Alphabetical)
+            
+            if not list_sets:
+                await ctx.reply(f"Could not find any aliases similar to `{list_filter}`")
             else:
-                set_count = 0
-                while set_count < len(list_sets):
-                    if set_count == 0:
-                        original_message = f"Here you go, {member.mention}. Please select the aliases you'd like to remove..."
-                        view = ListView(original_message, ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(original_message, view = view) 
-                    else:
-                        view = ListView("", ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
-                        view.message = await ctx.reply(view = view)
-                    set_count += 1
+                original_message = f"Here you go, {member.mention}!"
+                view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
+                view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
+
+            # list_sets = GetListSets(aliases, 25, filter)
+
+            # if not filter:
+            #     await ctx.reply(f"Could not find any aliases similar to `{filter}`")
+            # else:
+            #     set_count = 0
+            #     while set_count < len(list_sets):
+            #         if set_count == 0:
+            #             original_message = f"Here you go, {member.mention}. Please select the aliases you'd like to remove..."
+            #             view = ListView(original_message, ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
+            #             view.message = await ctx.reply(original_message, view = view) 
+            #         else:
+            #             view = ListView("", ListType.Remove_Alias, list_sets[set_count], ctx.guild, member)
+            #             view.message = await ctx.reply(view = view)
+            #         set_count += 1
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
 
