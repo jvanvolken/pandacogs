@@ -877,7 +877,7 @@ class PageView(discord.ui.View):
             self.add_item(self.ItemButton(original_message, list_type, name, details, guild, member))
         
         for nav_type in NavigationType:
-            self.add_item(self.NavigateButton(nav_type, list_sets, page))
+            self.add_item(self.NavigateButton(nav_type, original_message, list_type, list_sets, page, guild, member))
 
     class NavigateButton(discord.ui.Button):
         def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, page: int, guild: discord.Guild, member: discord.Member = None):
