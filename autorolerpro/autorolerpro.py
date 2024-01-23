@@ -1055,7 +1055,7 @@ class PageView(discord.ui.View):
                 # Do not continue if role is missing
                 return
             
-            if self.list_type == ListType.Select_Game:
+            if self.list_type is ListType.Select_Game:
                 # Looks for the role with the same name as the game
                 if self.role:
                     if self.role in interaction.user.roles:
@@ -1088,7 +1088,7 @@ class PageView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
 
-            elif self.list_type == ListType.Remove_Game:
+            elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
                 if await RemoveGame(self.role, self.name):
                     del self.list_items[self.name]
@@ -1100,7 +1100,7 @@ class PageView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"I couldn't removed {self.name} from the list!\n*Check out the log for more details!*", ephemeral = True, delete_after = 10)
 
-            elif self.list_type == ListType.Remove_Alias:
+            elif self.list_type is ListType.Remove_Alias:
                 # Tries to remove the alias, returns false if it fails
                 if RemoveAlias(self.name):
                     await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
