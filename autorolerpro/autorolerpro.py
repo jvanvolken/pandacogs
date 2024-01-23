@@ -913,11 +913,11 @@ class PageView(discord.ui.View):
                 return
 
             if self.list_type is ListType.Select_Game:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
             elif self.list_type is ListType.Remove_Game:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
             elif self.list_type is ListType.Remove_Alias:
-                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True)
+                await interaction.response.send_message(f"{self.original_message} You clicked {self.name}", ephemeral = True, delete_after = 10)
 
     async def on_timeout(self):
         if not self.original_message:
@@ -1232,9 +1232,9 @@ class AutoRolerPro(commands.Cog):
             if not list_sets:
                 await ctx.reply(f"Could not find any games similar to `{arg}`")
             else:
-                original_message = "This message has buttons!"
+                original_message = f"Here's your game list, {member.mention}!"
                 view = PageView(original_message, ListType.Select_Game, list_sets, guild, member)
-                view.message = await ctx.reply(original_message, view = view)
+                view.message = await ctx.reply(f"{original_message}\n*`(Message 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
