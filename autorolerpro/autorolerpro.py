@@ -879,7 +879,7 @@ class PageView(discord.ui.View):
             self.member = member
 
             # Grabs role from guild
-            self.role = self.guild.get_role(self.item['role'])
+            self.role = self.guild.get_role(self.details['role'])
 
             # Check if member has the role and set button color accordingly
             if self.member:
