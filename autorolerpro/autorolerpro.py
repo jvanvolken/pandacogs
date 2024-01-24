@@ -1176,6 +1176,15 @@ class AutoRolerPro(commands.Cog):
         admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
+        if previous.name == "stefanxzx" or current.name == "stefanxzx":
+            for activity in previous.activities:
+                if activity.type == discord.ActivityType.playing:
+                    Log(f"{current.name} is playing {activity.name}", LogType.Debug)
+
+            for activity in current.activities:
+                if activity.type == discord.ActivityType.playing:
+                    Log(f"{current.name} is playing {activity.name}", LogType.Debug)
+
         # Gather member information
         member_display_name = current.display_name.encode().decode('ascii','ignore')
 
