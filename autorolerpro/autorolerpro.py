@@ -1196,10 +1196,17 @@ class AutoRolerPro(commands.Cog):
         if current.name not in members:
             AddMember(current)
 
-        # Detect if someone stopped playing a game
-        if previous.activity and previous.activity.name not in config['ActivityBlacklist'] and (current.activity is None or current.activity.name != previous.activity.name):
+        # If there's a previous activity and it exists in games, someone stopped playing the game
+        if previous.activity and previous.activity.name in games:
             StopPlayingGame(current, previous.activity.name)
-            return
+            
+            # Exit if there's no new activity or if the new activity is in the blacklist
+            if current.activity is None or current.activity.name in config['ActivityBlacklist']:
+                return
+
+        # # Detect if someone stopped playing a game
+        # if previous.activity and previous.activity.name not in config['ActivityBlacklist'] and (current.activity is None or current.activity.name != previous.activity.name):
+        #     return
         
         # Assigns member with current.name
         member = members[current.name]
