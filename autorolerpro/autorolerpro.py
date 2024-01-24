@@ -1179,7 +1179,7 @@ class AutoRolerPro(commands.Cog):
         if previous.name == "stefanxzx" or current.name == "stefanxzx":
             for activity in previous.activities:
                 if activity.type == discord.ActivityType.playing:
-                    Log(f"{current.name} is playing {activity.name}", LogType.Debug)
+                    Log(f"{previous.name} stopped playing {activity.name}", LogType.Debug)
 
             for activity in current.activities:
                 if activity.type == discord.ActivityType.playing:
