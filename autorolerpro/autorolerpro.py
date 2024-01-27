@@ -1176,14 +1176,10 @@ class AutoRolerPro(commands.Cog):
         admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
-        if previous.name == "stefanxzx" or current.name == "stefanxzx":
-            for activity in previous.activities:
-                if activity.type == discord.ActivityType.playing:
-                    Log(f"{previous.name} stopped playing {activity.name}", LogType.Debug)
-
-            for activity in current.activities:
-                if activity.type == discord.ActivityType.playing:
-                    Log(f"{current.name} is playing {activity.name}", LogType.Debug)
+        # Do not continue if neither previous or current activity type is playing
+        if previous.activity and previous.activity.type != discord.ActivityType.playing:
+            if current.activity and current.activity.type != discord.ActivityType.playing:
+                return
 
         # Gather member information
         member_display_name = current.display_name.encode().decode('ascii','ignore')
@@ -1197,7 +1193,7 @@ class AutoRolerPro(commands.Cog):
             AddMember(current)
 
         # If there's a previous activity and it exists in games, someone stopped playing the game
-        if previous.activity and previous.activity.name in games:
+        if previous.activity and (previous.activity.name in games or previous.activity.name in aliases):
             StopPlayingGame(current, previous.activity.name)
 
             # Exit if there's no new activity or if the new activity is in the blacklist
