@@ -1177,7 +1177,10 @@ class AutoRolerPro(commands.Cog):
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
         if current.name == "sad.panda.":
-            await test_channel.send(f"{current.mention}'s activities: {str(current.activities)}")
+            for activity in previous.activities:
+                await test_channel.send(f"{current.mention}'s activities: {str(activity)}")
+            for activity in current.activities:
+                await test_channel.send(f"{current.mention}'s activities: {str(activity)}")
 
         # Do not continue if neither previous or current activity type is playing
         if previous.activity and previous.activity.type != discord.ActivityType.playing:
