@@ -1177,6 +1177,17 @@ class AutoRolerPro(commands.Cog):
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
         if current.name == "sad.panda.":
+            # Exits if the WhitelistEnabled is true and member isn't whitelisted
+            if config['WhitelistEnabled'] and current.name not in config['WhitelistMembers']:
+                return
+
+            # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
+            if current.name not in members:
+                AddMember(current)
+
+            # Assigns member with current.name
+            member = members[current.name]
+            
             # Collect the activity names
             previous_names = [activity.name for activity in previous.activities]
             current_names = [activity.name for activity in current.activities]
@@ -1184,99 +1195,161 @@ class AutoRolerPro(commands.Cog):
             # Loops through previous activities and check if they don't exist in current names
             for activity in previous.activities:
                 if activity.name not in current_names and activity.type == discord.ActivityType.playing:
-                    await test_channel.send(f"{current.mention} stopped playing {str(activity.name)}")
+                    # Exit if game is blacklisted
+                    if activity.name in config['ActivityBlacklist']:
+                        return
+                    
+                    await admin_channel.send(f"`{member['display_name']}` stopped playing {str(activity.name)}")
+                    StopPlayingGame(current, activity.name)
 
             # Loops through previous activities and check if they don't exist in previous names
             for activity in current.activities:
                 if activity.name not in previous_names and activity.type == discord.ActivityType.playing:
-                    await test_channel.send(f"{current.mention} started playing {str(activity.name)}")
+                    # Exit if game is blacklisted
+                    if activity.name in config['ActivityBlacklist']:
+                        return
 
-        # Do not continue if neither previous or current activity type is playing
-        if previous.activity and previous.activity.type != discord.ActivityType.playing:
-            if current.activity and current.activity.type != discord.ActivityType.playing:
-                return
+                    await admin_channel.send(f"`{member['display_name']}` started playing {str(activity.name)}")
+                    
+                    # Checks of the activity is an alias first to avoid a potentially unnecessary API call
+                    if current.activity.name in aliases:
+                        game_name = aliases[current.activity.name]
+                        if game_name in games:
+                            game = games[game_name]
+                        else:
+                            await admin_channel.send(f"`{member['display_name']}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                            return
+                    else:
+                        # If there isn't a game recorded for the current activity already, add it
+                        new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                        if len(new_games) > 0:
+                            game = list(new_games.values())[0]
 
-        # Gather member information
-        member_display_name = current.display_name.encode().decode('ascii','ignore')
+                            original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
+                            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
+                            view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                        elif len(already_exists) > 0:
+                            game = list(already_exists.values())[0]
+                        else:
+                            await AddAlias(self.bot, current.guild, current.activity.name, current)
+                            return
+                        
+                    # Log game activity for server stats
+                    StartPlayingGame(current, game['name'])
 
-        # Exits if the member is a bot or isn't whitelisted
-        if config['WhitelistEnabled'] and current.bot or current.name not in config['WhitelistMembers']:
-            return
+                    # Exits if member opted out of getting notifications
+                    if member['opt_out']:
+                        return
+
+                    # Exit if the member doesn't want to be bothered about this game
+                    if game['name'] in member['games'] and member['games'][role.name]['tracked'] == False:
+                        return
+                    
+                    # Get the role associated with the current activity name (game name)
+                    role = current.guild.get_role(game['role'])
+                    
+                    # When somebody starts playing a game and if they are part of the role
+                    if role in current.roles and game['name'] in member['games']: 
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}`!")
+                    else:
+                        # Informs the admin channel that the member is playing a game without it's role assigned
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
+
+                        # Get the direct message channel from the member
+                        dm_channel = await current.create_dm()
+
+                        # Setup original message
+                        original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
+                        
+                        # Populate view and send direct message
+                        view = DirectMessageView(original_message, role, current, game)
+                        view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
         
-        # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
-        if current.name not in members:
-            AddMember(current)
+        else:
+            # Do not continue if neither previous or current activity type is playing
+            if previous.activity and previous.activity.type != discord.ActivityType.playing:
+                if current.activity and current.activity.type != discord.ActivityType.playing:
+                    return
 
-        # If there's a previous activity and it exists in games, someone stopped playing the game
-        if previous.activity and (previous.activity.name in games or previous.activity.name in aliases):
-            StopPlayingGame(current, previous.activity.name)
+            # Gather member information
+            member_display_name = current.display_name.encode().decode('ascii','ignore')
 
-            # Exit if there's no new activity or if the new activity is in the blacklist
-            if current.activity is None or current.activity.name in config['ActivityBlacklist']:
-                return
-        
-        # Assigns member with current.name
-        member = members[current.name]
-
-        # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
-        if previous.activity and current.activity and previous.activity.name == current.activity.name:
-            return
-        
-        # Continues if there's a current activity and if it's not in the blacklist
-        if current.activity and current.activity.name not in config['ActivityBlacklist']:            
-            # Exit if the member has opted out of the autoroler
-            if member['opt_out']:
+            # Exits if the member is a bot or isn't whitelisted
+            if config['WhitelistEnabled'] and current.bot or current.name not in config['WhitelistMembers']:
                 return
             
-            # Checks of the activity is an alias first to avoid a potentially unnecessary API call
-            if current.activity.name in aliases:
-                game_name = aliases[current.activity.name]
-                if game_name in games:
-                    game = games[game_name]
-                else:
-                    await admin_channel.send(f"`{member_display_name}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
-                    return
-            else:     
-                # If there isn't a game recorded for the current activity already, add it
-                new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
-                if len(new_games) > 0:
-                    game = list(new_games.values())[0]
+            # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
+            if current.name not in members:
+                AddMember(current)
 
-                    original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
-                    view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-                    view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
-                elif len(already_exists) > 0:
-                    game = list(already_exists.values())[0]
-                else:
-                    await AddAlias(self.bot, current.guild, current.activity.name, current)
+            # If there's a previous activity and it exists in games, someone stopped playing the game
+            if previous.activity and (previous.activity.name in games or previous.activity.name in aliases):
+                StopPlayingGame(current, previous.activity.name)
+
+                # Exit if there's no new activity or if the new activity is in the blacklist
+                if current.activity is None or current.activity.name in config['ActivityBlacklist']:
+                    return
+            
+
+            # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
+            if previous.activity and current.activity and previous.activity.name == current.activity.name:
+                return
+            
+            # Continues if there's a current activity and if it's not in the blacklist
+            if current.activity and current.activity.name not in config['ActivityBlacklist']:            
+                # Exit if the member has opted out of the autoroler
+                if member['opt_out']:
                     return
                 
-            # Log game activity for server stats
-            StartPlayingGame(current, game['name'])
+                # Checks of the activity is an alias first to avoid a potentially unnecessary API call
+                if current.activity.name in aliases:
+                    game_name = aliases[current.activity.name]
+                    if game_name in games:
+                        game = games[game_name]
+                    else:
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                        return
+                else:
+                    # If there isn't a game recorded for the current activity already, add it
+                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                    if len(new_games) > 0:
+                        game = list(new_games.values())[0]
 
-            # Get the role associated with the current activity name (game name)
-            role = current.guild.get_role(game['role'])
-            
-            # Exit if the member doesn't want to be bothered about this game
-            if role.name in member['games'] and not member['games'][role.name]['tracked']:
-                return
-            
-            # When somebody starts playing a game and if they are part of the role
-            if role in current.roles and role.name in member['games']: 
-                await admin_channel.send(f"`{member_display_name}` started playing `{game['name']}`!")
-            else:
-                # Informs the test channel that the member is playing a game without it's role assigned
-                await admin_channel.send(f"`{member_display_name}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
+                        original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
+                        view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
+                        view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                    elif len(already_exists) > 0:
+                        game = list(already_exists.values())[0]
+                    else:
+                        await AddAlias(self.bot, current.guild, current.activity.name, current)
+                        return
+                    
+                # Log game activity for server stats
+                StartPlayingGame(current, game['name'])
 
-                # Get the direct message channel from the member
-                dm_channel = await current.create_dm()
-
-                # Setup original message
-                original_message = f"Hey, `{member_display_name}`! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
+                # Get the role associated with the current activity name (game name)
+                role = current.guild.get_role(game['role'])
                 
-                # Populate view and send direct message
-                view = DirectMessageView(original_message, role, current, game)
-                view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
+                # Exit if the member doesn't want to be bothered about this game
+                if role.name in member['games'] and not member['games'][role.name]['tracked']:
+                    return
+                
+                # When somebody starts playing a game and if they are part of the role
+                if role in current.roles and role.name in member['games']: 
+                    await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}`!")
+                else:
+                    # Informs the test channel that the member is playing a game without it's role assigned
+                    await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
+
+                    # Get the direct message channel from the member
+                    dm_channel = await current.create_dm()
+
+                    # Setup original message
+                    original_message = f"Hey, `{member['display_name']}`! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
+                    
+                    # Populate view and send direct message
+                    view = DirectMessageView(original_message, role, current, game)
+                    view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
     
     @commands.command()
     async def opt_in(self, ctx):
