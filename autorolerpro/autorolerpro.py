@@ -1217,8 +1217,6 @@ class AutoRolerPro(commands.Cog):
                 # Exit if game is blacklisted
                 if activity.name in config['ActivityBlacklist']:
                     return
-
-                await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`")
                 
                 # Checks of the activity is an alias first to avoid a potentially unnecessary API call
                 if activity.name in aliases:
@@ -1260,16 +1258,16 @@ class AutoRolerPro(commands.Cog):
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
-                    await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}`!")
+                    await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
                 else:
                     # Informs the admin channel that the member is playing a game without it's role assigned
-                    await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
+                    await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and/or does not have the role or is not being tracked!")
 
                     # Get the direct message channel from the member
                     dm_channel = await current.create_dm()
 
                     # Setup original message
-                    original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
+                    original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{activity.name}` and don't have the role assigned!"
                     
                     # Populate view and send direct message
                     view = DirectMessageView(original_message, role, current, game)
