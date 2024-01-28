@@ -566,9 +566,12 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     # Checks of game_name is an alias; if not and game_name is also not in games, return and log failure
     if game_name in aliases:
         game_name = aliases[game_name]
-    elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member} started playing!", LogType.Error)
-        return
+    else:
+        try:
+            game_name = [game for game in games if game.lower() == game_name.lower()][0]
+        except:
+            Log(f"Could not find {game_name} in the game list or aliases when {member.name} started playing!", LogType.Warning)
+            return
             
     # Grabs the current YYYY-MM-DD from the current datetime
     date = datetime.now().strftime('%Y-%m-%d')
@@ -596,9 +599,12 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     # Checks if game_name is an alias; if not and game_name is also not in games, return and log failure
     if game_name in aliases:
         game_name = aliases[game_name]
-    elif game_name not in games:
-        Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Warning)
-        return
+    else:
+        try:
+            game_name = [game for game in games if game.lower() == game_name.lower()][0]
+        except:
+            Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Warning)
+            return
 
     # Checks if game has history, log error if missing
     if 'history' not in games[game_name]:
@@ -1215,16 +1221,16 @@ class AutoRolerPro(commands.Cog):
                 await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`")
                 
                 # Checks of the activity is an alias first to avoid a potentially unnecessary API call
-                if current.activity.name in aliases:
+                if activity.name in aliases:
                     game_name = aliases[current.activity.name]
                     if game_name in games:
                         game = games[game_name]
                     else:
-                        await admin_channel.send(f"`{member['display_name']}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
                         return
                 else:
                     # If there isn't a game recorded for the current activity already, add it
-                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
+                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [activity.name])
                     if len(new_games) > 0:
                         game = list(new_games.values())[0]
 
@@ -1235,7 +1241,7 @@ class AutoRolerPro(commands.Cog):
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
-                        await AddAlias(self.bot, current.guild, current.activity.name, current)
+                        await AddAlias(self.bot, current.guild, activity.name, current)
                         return
                     
                 # Log game activity for server stats
