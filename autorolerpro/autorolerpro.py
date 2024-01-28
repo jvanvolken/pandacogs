@@ -1248,10 +1248,6 @@ class AutoRolerPro(commands.Cog):
                 # Exits if member opted out of getting notifications
                 if member['opt_out']:
                     return
-
-                # Exit if the member doesn't want to be bothered about this game
-                if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
-                    return
                 
                 # Get the role associated with the current activity name (game name)
                 role = current.guild.get_role(game['role'])
@@ -1260,9 +1256,15 @@ class AutoRolerPro(commands.Cog):
                 if role in current.roles and game['name'] in member['games']: 
                     await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
                 else:
-                    # Informs the admin channel that the member is playing a game without it's role assigned
-                    await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and/or does not have the role or is not being tracked!")
-
+                    # Exit if the member doesn't want to be bothered about this game
+                    if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
+                        # Informs the admin channel that the member is playing a game without it's role assigned
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have the role and do not want to be asked to be added to it!")
+                        return
+                    else:
+                        # Informs the admin channel that the member is playing a game without it's role assigned
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!")
+                
                     # Get the direct message channel from the member
                     dm_channel = await current.create_dm()
 
