@@ -1259,7 +1259,7 @@ class AutoRolerPro(commands.Cog):
                     # Exit if the member doesn't want to be bothered about this game
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have the role and do not want to be asked to be added to it!")
+                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.")
                         return
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
