@@ -1181,17 +1181,14 @@ class AutoRolerPro(commands.Cog):
             previous_names = [activity.name for activity in previous.activities]
             current_names = [activity.name for activity in current.activities]
 
-            # await test_channel.send(f"{current.mention}'s previous activity: {', '.join(previous_names)}")
-            # await test_channel.send(f"{current.mention}'s current activity: {', '.join(current_names)}")
-
             # Loops through previous activities and check if they don't exist in current names
             for activity in previous.activities:
-                if activity.name not in current_names:
+                if activity.name not in current_names and activity.type == discord.ActivityType.playing:
                     await test_channel.send(f"{current.mention} stopped playing {str(activity.name)}")
 
             # Loops through previous activities and check if they don't exist in previous names
             for activity in current.activities:
-                if activity.name not in previous_names:
+                if activity.name not in previous_names and activity.type == discord.ActivityType.playing:
                     await test_channel.send(f"{current.mention} started playing {str(activity.name)}")
 
         # Do not continue if neither previous or current activity type is playing
