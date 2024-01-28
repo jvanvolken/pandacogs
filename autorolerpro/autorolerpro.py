@@ -1182,10 +1182,6 @@ class AutoRolerPro(commands.Cog):
         admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
-        # Exits if not SadPanda for DEBUGGING
-        if current.name != "sad.panda.":
-            return
-
         # Exits if the WhitelistEnabled is true and member isn't whitelisted
         if config['WhitelistEnabled'] and current.name not in config['WhitelistMembers']:
             return
@@ -1234,8 +1230,7 @@ class AutoRolerPro(commands.Cog):
 
                         original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                         view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-                        # TODO: CHANGE test_channel to general_channel
-                        view.message = await test_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                        view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
@@ -1275,94 +1270,6 @@ class AutoRolerPro(commands.Cog):
                     view = DirectMessageView(original_message, role, current, game)
                     view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
         
-        # else:
-        #     # Do not continue if neither previous or current activity type is playing
-        #     if previous.activity and previous.activity.type != discord.ActivityType.playing:
-        #         if current.activity and current.activity.type != discord.ActivityType.playing:
-        #             return
-
-        #     # Gather member information
-        #     member_display_name = current.display_name.encode().decode('ascii','ignore')
-
-        #     # Exits if the member is a bot or isn't whitelisted
-        #     if config['WhitelistEnabled'] and current.bot or current.name not in config['WhitelistMembers']:
-        #         return
-            
-        #     # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
-        #     if current.name not in members:
-        #         AddMember(current)
-
-        #     # Assigns member with current.name
-        #     member = members[current.name]
-
-        #     # If there's a previous activity and it exists in games, someone stopped playing the game
-        #     if previous.activity and (previous.activity.name in games or previous.activity.name in aliases):
-        #         StopPlayingGame(current, previous.activity.name)
-
-        #         # Exit if there's no new activity or if the new activity is in the blacklist
-        #         if current.activity is None or current.activity.name in config['ActivityBlacklist']:
-        #             return
-            
-        #     # Exits if there's a previous activity and it's the same as the current activity (prevents duplicate checks)
-        #     if previous.activity and current.activity and previous.activity.name == current.activity.name:
-        #         return
-            
-        #     # Continues if there's a current activity and if it's not in the blacklist
-        #     if current.activity and current.activity.name not in config['ActivityBlacklist']:            
-        #         # Exit if the member has opted out of the autoroler
-        #         if member['opt_out']:
-        #             return
-                
-        #         # Checks of the activity is an alias first to avoid a potentially unnecessary API call
-        #         if current.activity.name in aliases:
-        #             game_name = aliases[current.activity.name]
-        #             if game_name in games:
-        #                 game = games[game_name]
-        #             else:
-        #                 await admin_channel.send(f"`{member['display_name']}` started playing `{current.activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
-        #                 return
-        #         else:
-        #             # If there isn't a game recorded for the current activity already, add it
-        #             new_games, already_exists, failed_to_find = await AddGames(current.guild, [current.activity.name])
-        #             if len(new_games) > 0:
-        #                 game = list(new_games.values())[0]
-
-        #                 original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
-        #                 view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-        #                 view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
-        #             elif len(already_exists) > 0:
-        #                 game = list(already_exists.values())[0]
-        #             else:
-        #                 await AddAlias(self.bot, current.guild, current.activity.name, current)
-        #                 return
-                    
-        #         # Log game activity for server stats
-        #         StartPlayingGame(current, game['name'])
-
-        #         # Get the role associated with the current activity name (game name)
-        #         role = current.guild.get_role(game['role'])
-                
-        #         # Exit if the member doesn't want to be bothered about this game
-        #         if role.name in member['games'] and not member['games'][role.name]['tracked']:
-        #             return
-                
-        #         # When somebody starts playing a game and if they are part of the role
-        #         if role in current.roles and role.name in member['games']: 
-        #             await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}`!")
-        #         else:
-        #             # Informs the test channel that the member is playing a game without it's role assigned
-        #             await admin_channel.send(f"`{member['display_name']}` started playing `{game['name']}` and/or does not have the role or is not being tracked!")
-
-        #             # Get the direct message channel from the member
-        #             dm_channel = await current.create_dm()
-
-        #             # Setup original message
-        #             original_message = f"Hey, `{member['display_name']}`! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{game['name']}` and don't have the role assigned!"
-                    
-        #             # Populate view and send direct message
-        #             view = DirectMessageView(original_message, role, current, game)
-        #             view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
-    
     @commands.command()
     async def opt_in(self, ctx):
         """Allows a member to opt back in to tracking their activity"""
