@@ -1181,8 +1181,8 @@ class AutoRolerPro(commands.Cog):
             previous_names = [activity.name for activity in previous.activities]
             current_names = [activity.name for activity in current.activities]
 
-            await test_channel.send(f"{current.mention}'s previous activity: {GetNames(previous_names)}")
-            await test_channel.send(f"{current.mention}'s current activity: {GetNames(current_names)}")
+            await test_channel.send(f"{current.mention}'s previous activity: {', '.join(previous_names)}")
+            await test_channel.send(f"{current.mention}'s current activity: {', '.join(current_names)}")
 
 
             for activity in previous.activities:
