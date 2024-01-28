@@ -957,7 +957,7 @@ class PageView(discord.ui.View):
                         update = {'games' : {self.name : {'tracked' : False}}}
                         UpdateMember(member, update)
 
-                        view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                        view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
                         view.message = await interaction.message.edit(view = view)
 
                         await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
@@ -970,7 +970,7 @@ class PageView(discord.ui.View):
                         update = {'games' : {self.name : {'tracked' : True}}}
                         UpdateMember(member, update)
 
-                        view = PageView(self.original_message, ListType.Select_Game, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                        view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
                         view.message = await interaction.message.edit(view = view)
 
                         # Informs the user that the role has been assigned to them
