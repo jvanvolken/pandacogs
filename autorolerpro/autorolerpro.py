@@ -92,8 +92,8 @@ default_config = {
         'Admin': 1013251079418421248,
         'Test': 665572348350693406
     },
-    'WhitelistEnabled': True,
-    'WhitelistMembers': ["sad.panda.", "agvv20", "ashlore.", "malicant999", "goldifish", "bad_ash85", "jucyblue", "explainablechaos", "deadinside6207", "camille26"],
+    'WhitelistEnabled': False,
+    'WhitelistMembers': [],
     'AdminRole': 644687492569759791,
     'ActivityBlacklist': ["Spotify"],
     'DebugMode': True,
@@ -1173,6 +1173,10 @@ class AutoRolerPro(commands.Cog):
         # Logs the events of the backup routine
         Log(log_message, LogType.Log)
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        Log(f"{member.name} has joined the server!")
+
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous: discord.Member, current: discord.Member):
@@ -1204,7 +1208,7 @@ class AutoRolerPro(commands.Cog):
                 if activity.name in config['ActivityBlacklist']:
                     return
                 
-                await admin_channel.send(f"`{member['display_name']}` stopped playing `{activity.name}`")
+                await test_channel.send(f"`{member['display_name']}` stopped playing `{activity.name}`")
                 StopPlayingGame(current, activity.name)
 
         # Loops through previous activities and check if they don't exist in previous names
@@ -1220,7 +1224,7 @@ class AutoRolerPro(commands.Cog):
                     if game_name in games:
                         game = games[game_name]
                     else:
-                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
                         return
                 else:
                     # If there isn't a game recorded for the current activity already, add it
@@ -1249,16 +1253,16 @@ class AutoRolerPro(commands.Cog):
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
-                    await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
+                    await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
                 else:
                     # Exit if the member doesn't want to be bothered about this game
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.")
                         return
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await admin_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!")
                 
                     # Get the direct message channel from the member
                     dm_channel = await current.create_dm()
