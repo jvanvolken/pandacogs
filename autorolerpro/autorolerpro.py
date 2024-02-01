@@ -437,7 +437,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             # Exits if 'cause' exists in results, this is indicative of an error
             if 'cause' in results[0]:
                 Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
-                return
+                continue
             else:
                 Log(str(results), LogType.Debug)
 
