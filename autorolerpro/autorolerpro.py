@@ -415,7 +415,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             # Check if erotic titles are allowed in the config
             if config['AllowEroticTitles']:
-                if game_name.isnumeric():
+                if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
                     # Request the game title with the provided game id
                     Log(f"Looking for game id {game_name}", LogType.Debug)
                     db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game_name)};'})
@@ -435,8 +435,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
             results = db_json.json()
 
             # Exits if 'cause' exists in results, this is indicative of an error
-            if 'cause' in results:
-                Log(str(results), LogType.Error)
+            if 'cause' in results[0]:
+                Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
                 return
             else:
                 Log(str(results), LogType.Debug)
@@ -608,7 +608,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
 
     # Checks if game has history, log error if missing
     if 'history' not in games[game_name]:
-        Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.Error)
+        Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.Warning)
         return
     
     def AddPlaytime(date, hours):
@@ -633,7 +633,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     if today in games[game_name]['history']:
         # Verifies that member has history for today, logs error if not
         if member.name not in games[game_name]['history'][today]:
-            Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.Error)
+            Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.Warning)
             return
         
         # Get the difference in time between last_played and now
@@ -755,7 +755,8 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please check the logs for further details.")
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Thank you for your understanding while we sort through these early Beta Bugs!")
+                Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role ID: {str(self.role)}", LogType.Error)
                 Log(error, LogType.Error)
                 raise Exception(error)
                 
@@ -781,7 +782,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
+                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
                 Log(error, LogType.Error)
                 raise Exception(error)
               
@@ -803,7 +804,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Please check the logs for further details.")
+                await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
                 Log(error, LogType.Error)
                 raise Exception(error)
 
@@ -1121,9 +1122,6 @@ class AutoRolerPro(commands.Cog):
 
             # Resets flag
             UpdateFlag(FlagType.Games)
-        else:
-            # Adds aliases file update to log message
-            Log("Games file not updated, no changes.", LogType.Debug)
 
         # Returns true if members flag is updated
         game_flag = update_flags[FlagType.Members]
@@ -1136,9 +1134,6 @@ class AutoRolerPro(commands.Cog):
 
             # Resets flag
             UpdateFlag(FlagType.Members)
-        else:
-            # Adds aliases file update to log message
-            Log("Members file not updated, no changes.", LogType.Debug)
 
         # Returns true if aliases flag is updated
         game_flag = update_flags[FlagType.Aliases]
@@ -1151,9 +1146,6 @@ class AutoRolerPro(commands.Cog):
 
             # Resets flag
             UpdateFlag(FlagType.Aliases)
-        else:
-            # Adds aliases file update to log message
-            Log("Aliases file not updated, no changes.", LogType.Debug)
 
         # Returns true if aliases flag is updated
         game_flag = update_flags[FlagType.Config]
@@ -1166,9 +1158,6 @@ class AutoRolerPro(commands.Cog):
 
             # Resets flag
             UpdateFlag(FlagType.Config)
-        else:
-            # Adds aliases file update to log message
-            Log("Config file not updated, no changes.", LogType.Debug)
 
         # Logs the events of the backup routine
         Log(log_message, LogType.Log)
@@ -1220,7 +1209,7 @@ class AutoRolerPro(commands.Cog):
                 
                 # Checks of the activity is an alias first to avoid a potentially unnecessary API call
                 if activity.name in aliases:
-                    game_name = aliases[current.activity.name]
+                    game_name = aliases[activity.name]
                     if game_name in games:
                         game = games[game_name]
                     else:
@@ -1243,10 +1232,6 @@ class AutoRolerPro(commands.Cog):
                     
                 # Log game activity for server stats
                 StartPlayingGame(current, game['name'])
-
-                # Exits if member opted out of getting notifications
-                if member['opt_out']:
-                    return
                 
                 # Get the role associated with the current activity name (game name)
                 role = current.guild.get_role(game['role'])
@@ -1255,24 +1240,33 @@ class AutoRolerPro(commands.Cog):
                 if role in current.roles and game['name'] in member['games']: 
                     await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
                 else:
+                    # Exits if member opted out of getting notifications
+                    if member['opt_out']:
+                        return
+                
                     # Exit if the member doesn't want to be bothered about this game
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
                         await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.")
-                        return
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
                         await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!")
+                        Log(f"Sent {member['display_name']} a direct message!", LogType.Log)
                 
-                    # Get the direct message channel from the member
-                    dm_channel = await current.create_dm()
+                        try:
+                            # Get the direct message channel from the member
+                            dm_channel = await current.create_dm()
 
-                    # Setup original message
-                    original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{activity.name}` and don't have the role assigned!"
-                    
-                    # Populate view and send direct message
-                    view = DirectMessageView(original_message, role, current, game)
-                    view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
+                            # Setup original message
+                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{activity.name}` and don't have the role assigned!"
+                            
+                            # Populate view and send direct message
+                            view = DirectMessageView(original_message, role, current, game)
+                            view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
+                            
+                        except discord.errors.Forbidden:
+                            await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!")
+                            Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
         
     @commands.command()
     async def opt_in(self, ctx):
