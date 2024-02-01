@@ -1234,7 +1234,7 @@ class AutoRolerPro(commands.Cog):
 
                         original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                         view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-                        view.message = await general_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                        view.message = await bot_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
