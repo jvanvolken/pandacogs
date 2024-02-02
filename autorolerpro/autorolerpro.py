@@ -457,7 +457,10 @@ async def AddGames(guild: discord.Guild, game_list: list):
             for game_candidate in results:
                 if game_name.isnumeric() or game_candidate['name'] in matches:
                     score = 0
-                    Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+                    if 'name' in top_game:
+                        Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+                    else:
+                        Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
 
                     # Score name similarity and give a high weight to the winner
                     top_game_similarity = SequenceMatcher(None, game_name, top_game['name']).ratio()
