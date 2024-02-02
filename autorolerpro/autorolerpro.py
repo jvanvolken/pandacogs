@@ -455,7 +455,11 @@ async def AddGames(guild: discord.Guild, game_list: list):
             top_game = None
             top_score = 0
             for game_candidate in results:
-                if game_candidate != top_game and (game_name.isnumeric() or game_candidate['name'] in matches):
+                # Skip comparing to self
+                if top_game and top_game['name'] == game_candidate['name']:
+                    continue
+
+                if game_name.isnumeric() or game_candidate['name'] in matches:
                     score = 0
                     if top_game:
                         Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
@@ -527,9 +531,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
                         top_game = game_candidate
                     else:
                         Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
-
-                # elif game_name.isnumeric() or game_candidate['name'] in matches:
-                #     top_game = game_candidate
 
             # Checks if game already exists again with the nearly found game name
             if top_game and (top_game['name'] in games or top_game['name'] in aliases):
