@@ -455,7 +455,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             top_game = None
             top_score = 0
             for game_candidate in results:
-                if game_candidate['name'] is not top_game and (game_name.isnumeric() or game_candidate['name'] in matches):
+                if game_candidate != top_game and (game_name.isnumeric() or game_candidate['name'] in matches):
                     score = 0
                     if top_game:
                         Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
@@ -466,7 +466,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
 
                     if candidate_similarity:
-                        score += (candidate_similarity * 5)
+                        score += (candidate_similarity * 10)
 
                     # Compare release dates, favor newer games
                     top_game_year = None
