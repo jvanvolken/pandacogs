@@ -466,7 +466,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
 
                     if candidate_similarity:
-                        score += (candidate_similarity * 10)
+                        score += ((candidate_similarity**2) * 10)
 
                     # Compare release dates, favor newer games
                     top_game_year = None
