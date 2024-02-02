@@ -471,7 +471,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     # Compare release dates, favor newer games
                     top_game_year = None
                     candidate_year = None
-                    if 'first_release_date' in top_game:
+                    if top_game and 'first_release_date' in top_game:
                         top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
                     if 'first_release_date' in game_candidate:
                         candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
@@ -486,7 +486,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     # Compare aggregated ratings, favor higher ratings
                     top_rating = None
                     candidate_rating = None
-                    if 'aggregated_rating' in top_game:
+                    if top_game and 'aggregated_rating' in top_game:
                         top_rating = top_game['aggregated_rating']
                     if 'aggregated_rating' in game_candidate:
                         candidate_rating = game_candidate['aggregated_rating']
@@ -501,7 +501,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     # Compare dlcs, favor higher number of dlcs
                     top_dlcs = None
                     candidate_dlcs = None
-                    if 'dlcs' in top_game:
+                    if top_game and 'dlcs' in top_game:
                         top_dlcs = top_game['dlcs']
                     if 'dlcs' in game_candidate:
                         candidate_dlcs = game_candidate['dlcs']
@@ -515,7 +515,11 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
                     # Compare new score with top score and set candidate as top game if higher
                     if score > top_score:
-                        Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                        if top_game:
+                            Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                        else:
+                            Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
+                            
                         top_score = score
                         top_game = game_candidate
                     else:
