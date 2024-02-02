@@ -468,6 +468,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
                             score += 5
 
                     # Compare release dates, favor newer games
+                    top_game_year = None
+                    candidate_year = None
                     if 'first_release_date' in top_game:
                         top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
                     if 'first_release_date' in game_candidate:
@@ -481,6 +483,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
                             score -= 1
 
                     # Compare aggregated ratings, favor higher ratings
+                    top_rating = None
+                    candidate_rating = None
                     if 'aggregated_rating' in top_game:
                         top_rating = top_game['aggregated_rating']
                     if 'aggregated_rating' in game_candidate:
@@ -492,16 +496,18 @@ async def AddGames(guild: discord.Guild, game_list: list):
                             score += 1
                         else:
                             score -= 1
-
+            
                     # Compare dlcs, favor higher number of dlcs
+                    top_dlcs = None
+                    candidate_dlcs = None
                     if 'dlcs' in top_game:
                         top_dlcs = top_game['dlcs']
                     if 'dlcs' in game_candidate:
-                        candidate_rating_dlcs = game_candidate['dlcs']
+                        candidate_dlcs = game_candidate['dlcs']
                         score += 1
 
-                    if top_dlcs and candidate_rating_dlcs:
-                        if len(top_dlcs) > len(candidate_rating_dlcs):
+                    if top_dlcs and candidate_dlcs:
+                        if len(top_dlcs) > len(candidate_dlcs):
                             score += 1
                         else:
                             score -= 1
