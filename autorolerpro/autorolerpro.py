@@ -471,6 +471,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
                     if candidate_similarity:
                         score += ((candidate_similarity**2) * 10)
+                        Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
 
                     # Compare release dates, favor newer games
                     top_game_year = None
