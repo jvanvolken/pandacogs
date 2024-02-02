@@ -418,18 +418,18 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
                     # Request the game title with the provided game id
                     Log(f"Looking for game id {game_name}", LogType.Debug)
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game_name)};'})
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
                 else:
                     # Request all game titles that match the game name
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date; limit 500; where summary != null;'})
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null;'})
             else:
                 if game_name.isnumeric():
                     # Request the game title with the provided game id
                     Log(f"Looking for game id {game_name}", LogType.Debug)
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date; limit 1; where id = {int(game_name)} & themes != (42);'})
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
                 else:
                     # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date; limit 500; where summary != null & themes != (42);'})
+                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null & themes != (42);'})
 
             # Converts the json database response to a usable dictionary results variable
             results = db_json.json()
@@ -448,51 +448,106 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if game_name.isnumeric():
                 matches = None
             else:
-                # Get the top match for the provided name
-                matches = difflib.get_close_matches(game_name, game_names, 1)
+                # Get the top two matches for the provided name
+                matches = difflib.get_close_matches(game_name, game_names, 5)
 
-            # Compares the list of games to the matches, from there sort by release year
-            latest_game = None
-            for game_details in results:
-                if latest_game and (game_name.isnumeric() or game_details['name'] in matches):
-                    latest_year = datetime.utcfromtimestamp(latest_game['first_release_date']).strftime('%Y')
-                    release_year = datetime.utcfromtimestamp(game_details['first_release_date']).strftime('%Y')
-                    if release_year > latest_year:
-                        latest_game = game_details
-                elif game_name.isnumeric() or game_details['name'] in matches:
-                    latest_game = game_details
+            # Compares the list of games to the matches, from there score by different features of the game
+            top_game = None
+            top_score = 0
+            for game_candidate in results:
+                if top_game and (game_name.isnumeric() or game_candidate['name'] in matches):
+                    score = 0
+                    Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+
+                    # Score name similarity and give a high weight to the winner
+                    top_game_similarity = SequenceMatcher(None, game_name, top_game['name']).ratio()
+                    candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
+
+                    if top_game_similarity and candidate_similarity:
+                        if candidate_similarity > top_game_similarity:
+                            score += 5
+
+                    # Compare release dates, favor newer games
+                    if 'first_release_date' in top_game:
+                        top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
+                    if 'first_release_date' in game_candidate:
+                        candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
+                        score += 1
+                    
+                    if top_game_year and candidate_year:
+                        if candidate_year > top_game_year:
+                            score += 1
+                        else:
+                            score -= 1
+
+                    # Compare aggregated ratings, favor higher ratings
+                    if 'aggregated_rating' in top_game:
+                        top_rating = top_game['aggregated_rating']
+                    if 'aggregated_rating' in game_candidate:
+                        candidate_rating = game_candidate['aggregated_rating']
+                        score += 1
+
+                    if top_rating and candidate_rating:
+                        if candidate_rating > top_rating:
+                            score += 1
+                        else:
+                            score -= 1
+
+                    # Compare dlcs, favor higher number of dlcs
+                    if 'dlcs' in top_game:
+                        top_dlcs = top_game['dlcs']
+                    if 'dlcs' in game_candidate:
+                        candidate_rating_dlcs = game_candidate['dlcs']
+                        score += 1
+
+                    if top_dlcs and candidate_rating_dlcs:
+                        if len(top_dlcs) > len(candidate_rating_dlcs):
+                            score += 1
+                        else:
+                            score -= 1
+
+                    # Compare new score with top score and set candidate as top game if higher
+                    if score > top_score:
+                        Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                        top_score = score
+                        top_game = game_candidate
+                    else:
+                        Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
+
+                elif game_name.isnumeric() or game_candidate['name'] in matches:
+                    top_game = game_candidate
 
             # Checks if game already exists again with the nearly found game name
-            if latest_game and (latest_game['name'] in games or latest_game['name'] in aliases):
-                AlreadyExists(latest_game['name'])
-            elif latest_game:
+            if top_game and (top_game['name'] in games or top_game['name'] in aliases):
+                AlreadyExists(top_game['name'])
+            elif top_game:
                 # Get cover url from game id
-                url = GetCoverUrl(latest_game["id"])
+                url = GetCoverUrl(top_game["id"])
 
                 # Stores the formatted URL in the latest game dictionary
-                latest_game['cover_url'] = url
+                top_game['cover_url'] = url
                 
                 # Create the Role and give it the dominant color of the cover art
                 color = GetDominantColor(url)
                 
                 # Looks for an existing role for the game
-                role = discord.utils.get(guild.roles, name = latest_game['name'])
+                role = discord.utils.get(guild.roles, name = top_game['name'])
                 if role:
                     await role.edit(colour = discord.Colour(int(color, 16)))
                 else:
-                    role = await guild.create_role(name = latest_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+                    role = await guild.create_role(name = top_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
 
                 # Stores the role for future use
-                latest_game['role'] = role.id
+                top_game['role'] = role.id
 
                 # Adds the latest_game to the new_games list to return
-                new_games[latest_game['name']] = latest_game
+                new_games[top_game['name']] = top_game
 
                 # Add game to game list and saves file
-                games[latest_game['name']] = latest_game
+                games[top_game['name']] = top_game
 
                 # Toggles the updated flag for games
-                UpdateFlag(FlagType.Games, True, f"Added new game, {latest_game['name']}, and it's associated role to the server!")
+                UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
             else:
                 failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
