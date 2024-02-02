@@ -455,7 +455,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             top_game = None
             top_score = 0
             for game_candidate in results:
-                if game_name.isnumeric() or game_candidate['name'] in matches:
+                if game_candidate['name'] is not top_game and (game_name.isnumeric() or game_candidate['name'] in matches):
                     score = 0
                     if top_game:
                         Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
@@ -480,6 +480,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     if top_game_year and candidate_year:
                         if candidate_year > top_game_year:
                             score += 1
+                            Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                         else:
                             score -= 1
 
@@ -495,6 +496,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     if top_rating and candidate_rating:
                         if candidate_rating > top_rating:
                             score += 1
+                            Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                         else:
                             score -= 1
             
@@ -510,6 +512,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     if top_dlcs and candidate_dlcs:
                         if len(top_dlcs) > len(candidate_dlcs):
                             score += 1
+                            Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                         else:
                             score -= 1
 
@@ -519,7 +522,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                             Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                         else:
                             Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
-                            
+
                         top_score = score
                         top_game = game_candidate
                     else:
