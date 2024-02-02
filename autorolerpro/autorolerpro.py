@@ -457,7 +457,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             for game_candidate in results:
                 if game_name.isnumeric() or game_candidate['name'] in matches:
                     score = 0
-                    if 'name' in top_game:
+                    if top_game:
                         Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
                     else:
                         Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
