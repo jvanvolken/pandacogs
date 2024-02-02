@@ -462,13 +462,11 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     else:
                         Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
 
-                    # Score name similarity and give a high weight to the winner
-                    top_game_similarity = SequenceMatcher(None, game_name, top_game['name']).ratio()
+                    # Add similarity ratio to score with added weight                
                     candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
 
-                    if top_game_similarity and candidate_similarity:
-                        if candidate_similarity > top_game_similarity:
-                            score += 5
+                    if candidate_similarity:
+                        score += (candidate_similarity * 5)
 
                     # Compare release dates, favor newer games
                     top_game_year = None
