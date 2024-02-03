@@ -446,10 +446,12 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             # Check if game is numeric, skip looking for matches
             if game_name.isnumeric():
+                Log(f"{game_name} is numeric, skipping matches", LogType.Log)
                 matches = None
             else:
-                # Get the top two matches for the provided name
+                # Get the top 5 matches for the provided name
                 matches = difflib.get_close_matches(game_name, game_names, 5)
+                Log(f"Matches: {str(matches)}", LogType.Debug)
 
             # Compares the list of games to the matches, from there score by different features of the game
             top_game = None
