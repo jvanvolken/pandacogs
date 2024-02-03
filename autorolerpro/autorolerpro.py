@@ -1480,7 +1480,7 @@ class AutoRolerPro(commands.Cog):
             index = 1
             # Sets up the message to reply with
             message = "__**Here's that list of game aliases you asked for!**__\n```\n"
-            message += f"{'---- GAME '.ljust(len(longest_game_name)+4, '-')}-- {'ALIAS '.ljust(len(longest_alias), '-')}\n"
+            message += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n"
 
             for alias, game in sorted_aliases.items():
                 if game == prev_game:
