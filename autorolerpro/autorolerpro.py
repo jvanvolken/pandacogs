@@ -469,7 +469,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                     Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
 
                 # Add similarity ratio to score with added weight                
-                candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
+                candidate_similarity = SequenceMatcher(None, game_name.lower(), str(game_candidate['name']).lower()).ratio()
 
                 if candidate_similarity:
                     score += ((candidate_similarity**2) * 10)
