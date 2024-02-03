@@ -1480,9 +1480,9 @@ class AutoRolerPro(commands.Cog):
             for alias, game in aliases.items():
                 # message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
                 if game == prev_game:
-                    message += f"`{game.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
-                else:
                     message += f"`{''.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
+                else:
+                    message += f"`{game.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
 
                 prev_game = game
 
