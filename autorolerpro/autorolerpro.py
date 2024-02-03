@@ -451,7 +451,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             else:
                 # Get the top 5 matches for the provided name
                 matches = difflib.get_close_matches(game_name, game_names, 5)
-                Log(f"Found {str(matches)} mastches in {str(game_names)}", LogType.Debug)
+                Log(f"Found {str(matches)} mastches for {game_name} in {str(game_names)}", LogType.Debug)
 
             # Compares the list of games to the matches, from there score by different features of the game
             top_game = None
