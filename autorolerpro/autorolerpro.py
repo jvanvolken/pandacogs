@@ -1471,10 +1471,20 @@ class AutoRolerPro(commands.Cog):
             # Get's the longest alias for formatting
             longest_alias = max(list(aliases.keys()), key=len)
 
+            # Get's the longest alias for formatting
+            longest_game_name = max(list(aliases.values()), key=len)
+
+            prev_game = ""
             # Sets up the message to reply with
             message = "__**Here's that list of game aliases you asked for!**__\n"
             for alias, game in aliases.items():
-                message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
+                # message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
+                if game == prev_game:
+                    message += f"`{game.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
+                else:
+                    message += f"`{''.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
+
+                prev_game = game
 
             # Replies with the message
             await ctx.reply(message)
