@@ -1476,16 +1476,17 @@ class AutoRolerPro(commands.Cog):
 
             prev_game = ""
             # Sets up the message to reply with
-            message = "__**Here's that list of game aliases you asked for!**__\n"
+            message = "__**Here's that list of game aliases you asked for!**__\n```\n"
             for alias, game in aliases.items():
                 # message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
                 if game == prev_game:
-                    message += f"`{''.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
+                    message += f"{''.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
                 else:
-                    message += f"`{game.ljust(len(longest_game_name))}` : `{alias.ljust(len(longest_alias))}`\n"
+                    message += f"{game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
 
                 prev_game = game
 
+            message = "```"
             # Replies with the message
             await ctx.reply(message)
         else:
