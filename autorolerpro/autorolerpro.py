@@ -404,170 +404,171 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
     # Loops through the provided list of game names
     for game_name in game_list:
+
         # Checks if game already exists to avoid unnecessary API calls
         if game_name in games or game_name in aliases:
             AlreadyExists(game_name)
+
+            # Move onto the next game
+            continue
         else:
-            # Debug log the difference before and after the strip_accents function call
-            Log(game_name, LogType.Debug)
-            game_name = string.capwords(strip_accents(game_name))
-            Log(game_name, LogType.Debug)
+            # Try a case-insensitive search next
+            try:
+                game_name = [game for game in games if game.lower() == game_name.lower()][0]
+                AlreadyExists(game_name)
 
-            # Check if erotic titles are allowed in the config
-            if config['AllowEroticTitles']:
-                if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
-                    # Request the game title with the provided game id
-                    Log(f"Looking for game id {game_name}", LogType.Debug)
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
-                else:
-                    # Request all game titles that match the game name
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null;'})
-            else:
-                if game_name.isnumeric():
-                    # Request the game title with the provided game id
-                    Log(f"Looking for game id {game_name}", LogType.Debug)
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
-                else:
-                    # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-                    db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null & themes != (42);'})
-
-            # Converts the json database response to a usable dictionary results variable
-            results = db_json.json()
-
-            # Exits if 'cause' exists in results, this is indicative of an error
-            if 'cause' in results[0]:
-                Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
+                # Move onto the next game
                 continue
+            except:
+                Log(f"Could not find {game_name} in the game list or aliases! Must be a new game!", LogType.Log)
+
+        # Debug log the difference before and after the strip_accents function call
+        Log(f"Before accent strip: {game_name}", LogType.Debug)
+        game_name = string.capwords(strip_accents(game_name))
+        Log(f"After accent strip: {game_name}", LogType.Debug)
+
+        # Check if erotic titles are allowed in the config
+        if config['AllowEroticTitles']:
+            if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
+                # Request the game title with the provided game id
+                Log(f"Looking for game id {game_name}", LogType.Debug)
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
             else:
-                Log(str(results), LogType.Debug)
+                # Request all game titles that match the game name
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null;'})
+        else:
+            if game_name.isnumeric():
+                # Request the game title with the provided game id
+                Log(f"Looking for game id {game_name}", LogType.Debug)
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
+            else:
+                # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null & themes != (42);'})
 
-            # Collect the game names
-            # game_names = [details['name'] for details in results]
+        # Converts the json database response to a usable dictionary results variable
+        results = db_json.json()
 
-            # # Check if game is numeric, skip looking for matches
-            # if game_name.isnumeric():
-            #     Log(f"{game_name} is numeric, skipping matches", LogType.Log)
-            #     matches = None
-            # else:
-            #     # Get the top 5 matches for the provided name
-            #     matches = difflib.get_close_matches(game_name, game_names, 5)
-            #     Log(f"Found {str(matches)} matches for {game_name} in {str(game_names)}", LogType.Debug)
+        # Exits if 'cause' exists in results, this is indicative of an error
+        if 'cause' in results[0]:
+            Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
+            continue
+        else:
+            Log(str(results), LogType.Debug)
 
-            # Compares the list of games to the matches, from there score by different features of the game
-            top_game = None
-            top_score = 0
-            for game_candidate in results:
-                # Skip comparing to self
-                if top_game and top_game['name'] == game_candidate['name']:
-                    continue
+        # Compares the list of games to the matches, from there score by different features of the game
+        top_game = None
+        top_score = 0
+        for game_candidate in results:
+            # Skip comparing to self
+            if top_game and top_game['name'] == game_candidate['name']:
+                continue
 
-                # if game_name.isnumeric() or game_candidate['name'] in matches:
-                score = 0
+            score = 0
+            if top_game:
+                Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+            else:
+                Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+
+            # Add similarity ratio to score with added weight                
+            candidate_similarity = SequenceMatcher(None, game_name.lower(), str(game_candidate['name']).lower()).ratio()
+
+            if candidate_similarity:
+                score += ((candidate_similarity**2) * 10)
+                Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
+
+            # Compare release dates, favor newer games
+            top_game_year = None
+            candidate_year = None
+            if top_game and 'first_release_date' in top_game:
+                top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
+            if 'first_release_date' in game_candidate:
+                candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
+                score += 1
+            
+            if top_game_year and candidate_year:
+                if candidate_year > top_game_year:
+                    score += 1
+                    Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                else:
+                    score -= 1
+
+            # Compare aggregated ratings, favor higher ratings
+            top_rating = None
+            candidate_rating = None
+            if top_game and 'aggregated_rating' in top_game:
+                top_rating = top_game['aggregated_rating']
+            if 'aggregated_rating' in game_candidate:
+                candidate_rating = game_candidate['aggregated_rating']
+                score += 1
+
+            if top_rating and candidate_rating:
+                if candidate_rating > top_rating:
+                    score += 1
+                    Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                else:
+                    score -= 1
+    
+            # Compare dlcs, favor higher number of dlcs
+            top_dlcs = None
+            candidate_dlcs = None
+            if top_game and 'dlcs' in top_game:
+                top_dlcs = top_game['dlcs']
+            if 'dlcs' in game_candidate:
+                candidate_dlcs = game_candidate['dlcs']
+                score += 1
+
+            if top_dlcs and candidate_dlcs:
+                if len(top_dlcs) > len(candidate_dlcs):
+                    score += 1
+                    Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                else:
+                    score -= 1
+
+            # Compare new score with top score and set candidate as top game if higher
+            if score > top_score:
                 if top_game:
-                    Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+                    Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                 else:
-                    Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+                    Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
 
-                # Add similarity ratio to score with added weight                
-                candidate_similarity = SequenceMatcher(None, game_name.lower(), str(game_candidate['name']).lower()).ratio()
-
-                if candidate_similarity:
-                    score += ((candidate_similarity**2) * 10)
-                    Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
-
-                # Compare release dates, favor newer games
-                top_game_year = None
-                candidate_year = None
-                if top_game and 'first_release_date' in top_game:
-                    top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
-                if 'first_release_date' in game_candidate:
-                    candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
-                    score += 1
-                
-                if top_game_year and candidate_year:
-                    if candidate_year > top_game_year:
-                        score += 1
-                        Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                    else:
-                        score -= 1
-
-                # Compare aggregated ratings, favor higher ratings
-                top_rating = None
-                candidate_rating = None
-                if top_game and 'aggregated_rating' in top_game:
-                    top_rating = top_game['aggregated_rating']
-                if 'aggregated_rating' in game_candidate:
-                    candidate_rating = game_candidate['aggregated_rating']
-                    score += 1
-
-                if top_rating and candidate_rating:
-                    if candidate_rating > top_rating:
-                        score += 1
-                        Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                    else:
-                        score -= 1
-        
-                # Compare dlcs, favor higher number of dlcs
-                top_dlcs = None
-                candidate_dlcs = None
-                if top_game and 'dlcs' in top_game:
-                    top_dlcs = top_game['dlcs']
-                if 'dlcs' in game_candidate:
-                    candidate_dlcs = game_candidate['dlcs']
-                    score += 1
-
-                if top_dlcs and candidate_dlcs:
-                    if len(top_dlcs) > len(candidate_dlcs):
-                        score += 1
-                        Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                    else:
-                        score -= 1
-
-                # Compare new score with top score and set candidate as top game if higher
-                if score > top_score:
-                    if top_game:
-                        Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                    else:
-                        Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
-
-                    top_score = score
-                    top_game = game_candidate
-                else:
-                    Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
-
-            # Checks if game already exists again with the nearly found game name
-            if top_game and (top_game['name'] in games or top_game['name'] in aliases):
-                AlreadyExists(top_game['name'])
-            elif top_game:
-                # Get cover url from game id
-                url = GetCoverUrl(top_game["id"])
-
-                # Stores the formatted URL in the latest game dictionary
-                top_game['cover_url'] = url
-                
-                # Create the Role and give it the dominant color of the cover art
-                color = GetDominantColor(url)
-                
-                # Looks for an existing role for the game
-                role = discord.utils.get(guild.roles, name = top_game['name'])
-                if role:
-                    await role.edit(colour = discord.Colour(int(color, 16)))
-                else:
-                    role = await guild.create_role(name = top_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
-
-                # Stores the role for future use
-                top_game['role'] = role.id
-
-                # Adds the latest_game to the new_games list to return
-                new_games[top_game['name']] = top_game
-
-                # Add game to game list and saves file
-                games[top_game['name']] = top_game
-
-                # Toggles the updated flag for games
-                UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
+                top_score = score
+                top_game = game_candidate
             else:
-                failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
+                Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
+
+        # Checks if game already exists again with the nearly found game name
+        if top_game and (top_game['name'] in games or top_game['name'] in aliases):
+            AlreadyExists(top_game['name'])
+        elif top_game:
+            # Get cover url from game id
+            url = GetCoverUrl(top_game["id"])
+
+            # Stores the formatted URL in the latest game dictionary
+            top_game['cover_url'] = url
+            
+            # Create the Role and give it the dominant color of the cover art
+            color = GetDominantColor(url)
+            
+            # Looks for an existing role for the game
+            role = discord.utils.get(guild.roles, name = top_game['name'])
+            if role:
+                await role.edit(colour = discord.Colour(int(color, 16)))
+            else:
+                role = await guild.create_role(name = top_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
+
+            # Stores the role for future use
+            top_game['role'] = role.id
+
+            # Adds the latest_game to the new_games list to return
+            new_games[top_game['name']] = top_game
+
+            # Add game to game list and saves file
+            games[top_game['name']] = top_game
+
+            # Toggles the updated flag for games
+            UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
+        else:
+            failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
     return new_games, already_exists, failed_to_find
 
