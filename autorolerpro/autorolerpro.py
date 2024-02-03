@@ -442,16 +442,16 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 Log(str(results), LogType.Debug)
 
             # Collect the game names
-            game_names = [details['name'] for details in results]
+            # game_names = [details['name'] for details in results]
 
-            # Check if game is numeric, skip looking for matches
-            if game_name.isnumeric():
-                Log(f"{game_name} is numeric, skipping matches", LogType.Log)
-                matches = None
-            else:
-                # Get the top 5 matches for the provided name
-                matches = difflib.get_close_matches(game_name, game_names, 5)
-                Log(f"Found {str(matches)} mastches for {game_name} in {str(game_names)}", LogType.Debug)
+            # # Check if game is numeric, skip looking for matches
+            # if game_name.isnumeric():
+            #     Log(f"{game_name} is numeric, skipping matches", LogType.Log)
+            #     matches = None
+            # else:
+            #     # Get the top 5 matches for the provided name
+            #     matches = difflib.get_close_matches(game_name, game_names, 5)
+            #     Log(f"Found {str(matches)} matches for {game_name} in {str(game_names)}", LogType.Debug)
 
             # Compares the list of games to the matches, from there score by different features of the game
             top_game = None
@@ -461,79 +461,79 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 if top_game and top_game['name'] == game_candidate['name']:
                     continue
 
-                if game_name.isnumeric() or game_candidate['name'] in matches:
-                    score = 0
+                # if game_name.isnumeric() or game_candidate['name'] in matches:
+                score = 0
+                if top_game:
+                    Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+                else:
+                    Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+
+                # Add similarity ratio to score with added weight                
+                candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
+
+                if candidate_similarity:
+                    score += ((candidate_similarity**2) * 10)
+                    Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
+
+                # Compare release dates, favor newer games
+                top_game_year = None
+                candidate_year = None
+                if top_game and 'first_release_date' in top_game:
+                    top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
+                if 'first_release_date' in game_candidate:
+                    candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
+                    score += 1
+                
+                if top_game_year and candidate_year:
+                    if candidate_year > top_game_year:
+                        score += 1
+                        Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    else:
+                        score -= 1
+
+                # Compare aggregated ratings, favor higher ratings
+                top_rating = None
+                candidate_rating = None
+                if top_game and 'aggregated_rating' in top_game:
+                    top_rating = top_game['aggregated_rating']
+                if 'aggregated_rating' in game_candidate:
+                    candidate_rating = game_candidate['aggregated_rating']
+                    score += 1
+
+                if top_rating and candidate_rating:
+                    if candidate_rating > top_rating:
+                        score += 1
+                        Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    else:
+                        score -= 1
+        
+                # Compare dlcs, favor higher number of dlcs
+                top_dlcs = None
+                candidate_dlcs = None
+                if top_game and 'dlcs' in top_game:
+                    top_dlcs = top_game['dlcs']
+                if 'dlcs' in game_candidate:
+                    candidate_dlcs = game_candidate['dlcs']
+                    score += 1
+
+                if top_dlcs and candidate_dlcs:
+                    if len(top_dlcs) > len(candidate_dlcs):
+                        score += 1
+                        Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    else:
+                        score -= 1
+
+                # Compare new score with top score and set candidate as top game if higher
+                if score > top_score:
                     if top_game:
-                        Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+                        Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                     else:
-                        Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+                        Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
 
-                    # Add similarity ratio to score with added weight                
-                    candidate_similarity = SequenceMatcher(None, game_name, game_candidate['name']).ratio()
-
-                    if candidate_similarity:
-                        score += ((candidate_similarity**2) * 10)
-                        Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
-
-                    # Compare release dates, favor newer games
-                    top_game_year = None
-                    candidate_year = None
-                    if top_game and 'first_release_date' in top_game:
-                        top_game_year = datetime.utcfromtimestamp(top_game['first_release_date']).strftime('%Y')
-                    if 'first_release_date' in game_candidate:
-                        candidate_year = datetime.utcfromtimestamp(game_candidate['first_release_date']).strftime('%Y')
-                        score += 1
-                    
-                    if top_game_year and candidate_year:
-                        if candidate_year > top_game_year:
-                            score += 1
-                            Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                        else:
-                            score -= 1
-
-                    # Compare aggregated ratings, favor higher ratings
-                    top_rating = None
-                    candidate_rating = None
-                    if top_game and 'aggregated_rating' in top_game:
-                        top_rating = top_game['aggregated_rating']
-                    if 'aggregated_rating' in game_candidate:
-                        candidate_rating = game_candidate['aggregated_rating']
-                        score += 1
-
-                    if top_rating and candidate_rating:
-                        if candidate_rating > top_rating:
-                            score += 1
-                            Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                        else:
-                            score -= 1
-            
-                    # Compare dlcs, favor higher number of dlcs
-                    top_dlcs = None
-                    candidate_dlcs = None
-                    if top_game and 'dlcs' in top_game:
-                        top_dlcs = top_game['dlcs']
-                    if 'dlcs' in game_candidate:
-                        candidate_dlcs = game_candidate['dlcs']
-                        score += 1
-
-                    if top_dlcs and candidate_dlcs:
-                        if len(top_dlcs) > len(candidate_dlcs):
-                            score += 1
-                            Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                        else:
-                            score -= 1
-
-                    # Compare new score with top score and set candidate as top game if higher
-                    if score > top_score:
-                        if top_game:
-                            Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                        else:
-                            Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
-
-                        top_score = score
-                        top_game = game_candidate
-                    else:
-                        Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
+                    top_score = score
+                    top_game = game_candidate
+                else:
+                    Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
 
             # Checks if game already exists again with the nearly found game name
             if top_game and (top_game['name'] in games or top_game['name'] in aliases):
