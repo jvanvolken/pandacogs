@@ -1468,20 +1468,21 @@ class AutoRolerPro(commands.Cog):
     async def list_aliases(self, ctx):
         """Returns a list of aliases from the server."""
         if len(aliases) > 0:
-            # Get's the longest alias for formatting
-            longest_alias = max(list(aliases.keys()), key=len)
+            sorted_aliases = {k: v for k, v in sorted(aliases.items(), key=lambda item: item[1])}
 
             # Get's the longest alias for formatting
-            longest_game_name = max(list(aliases.values()), key=len)
+            longest_alias = max(list(sorted_aliases.keys()), key=len)
+
+            # Get's the longest alias for formatting
+            longest_game_name = max(list(sorted_aliases.values()), key=len)
 
             prev_game = ""
             index = 1
             # Sets up the message to reply with
             message = "__**Here's that list of game aliases you asked for!**__\n```\n"
-            message += f"{'     GAME'.ljust(len(longest_game_name)+5)} : ALIAS\n"
+            message += f"{'     GAME'.ljust(len(longest_game_name)+5)}   ALIAS\n"
 
-            for alias, game in aliases.items():
-                # message += f"`{alias.ljust(len(longest_alias))}` : `{game}`\n"
+            for alias, game in sorted_aliases.items():
                 if game == prev_game:
                     message += f"{''.ljust(len(longest_game_name)+5)} : {alias.ljust(len(longest_alias))}\n"
                 else:
