@@ -449,8 +449,9 @@ async def AddGames(guild: discord.Guild, game_list: list):
         results = db_json.json()
 
         # Exits if 'cause' exists in results, this is indicative of an error
-        if 'cause' in results[0]:
+        if len(results) == 0 or 'cause' in results[0]:
             Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
+            failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
             continue
         else:
             Log(str(results), LogType.Debug)
