@@ -1564,6 +1564,6 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(f"I've set the Announcements channel to <#{new_channel.id}>!")
 
             config['ChannelIDs']['Announcements'] = new_channel.id
-            update_flags[FlagType.Config] = {'status': True, 'comment': ""}
+            UpdateFlag(FlagType.Config, True, f"Updated Announcements channel ID to {new_channel.id}")
         else:
             await ctx.reply(f"Could not find the specified channel!")
