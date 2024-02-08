@@ -1562,6 +1562,9 @@ class AutoRolerPro(commands.Cog):
 
         channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
 
-        new_channel = guild.get_channel(channel_id)
+        new_channel = guild.get_channel(int(channel_id))
 
-        await ctx.reply(f"Channel: {new_channel.name}")
+        if new_channel:
+            await ctx.reply(f"Channel: {new_channel.name}")
+        else:
+            await ctx.reply(f"Could not find channel")
