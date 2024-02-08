@@ -39,7 +39,7 @@ class FlagType(Enum):
     Games    = 1
     Members  = 2
     Aliases  = 3
-    Config   = 3
+    Config   = 4
 
 # Log Types
 class LogType(Enum):
