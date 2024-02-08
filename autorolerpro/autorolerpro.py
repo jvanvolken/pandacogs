@@ -88,7 +88,7 @@ default_config = {
     },
     'ChannelIDs' : {
         'General': 633799810700410882,
-        'Bot': 634197647787556864,
+        'Announcements': 634197647787556864,
         'Admin': 1013251079418421248,
         'Test': 665572348350693406
     },
@@ -577,7 +577,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
 async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
     # Get the admin and test text channels
     admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
-    test_channel = guild.get_channel(config['ChannelIDs']['Test'])
 
     # Send the original message
     if member:
@@ -1245,9 +1244,7 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous: discord.Member, current: discord.Member):
         # Get important information about the context of the event
-        general_channel = current.guild.get_channel(config['ChannelIDs']['General'])
-        bot_channel = current.guild.get_channel(config['ChannelIDs']['Bot'])
-        admin_channel = current.guild.get_channel(config['ChannelIDs']['Admin'])
+        announcements_channel = current.guild.get_channel(config['ChannelIDs']['Announcements'])
         test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
 
         # Exits if the WhitelistEnabled is true and member isn't whitelisted
@@ -1298,7 +1295,7 @@ class AutoRolerPro(commands.Cog):
 
                         original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                         view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-                        view.message = await bot_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                        view.message = await announcements_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
@@ -1557,14 +1554,16 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def set_channel(self, ctx, arg):
-        '''Sets the channel for bot notifications and announcements'''
+        '''Sets the channel for bot announcements'''
         guild: discord.Guild  = ctx.guild
 
         channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
-
         new_channel = guild.get_channel(int(channel_id))
 
         if new_channel:
             await ctx.reply(f"Channel: {new_channel.name}")
+
+            config['ChannelIDs']['Announcements'] = new_channel.id
+            update_flags[FlagType.Config] = {'status': True, 'comment': ""}
         else:
             await ctx.reply(f"Could not find channel")
