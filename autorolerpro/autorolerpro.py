@@ -1561,9 +1561,9 @@ class AutoRolerPro(commands.Cog):
         new_channel = guild.get_channel(int(channel_id))
 
         if new_channel:
-            await ctx.reply(f"Channel: {new_channel.name}")
+            await ctx.reply(f"I've set the Announcements channel to <#{new_channel.id}>!")
 
             config['ChannelIDs']['Announcements'] = new_channel.id
             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
         else:
-            await ctx.reply(f"Could not find channel")
+            await ctx.reply(f"Could not find the specified channel!")
