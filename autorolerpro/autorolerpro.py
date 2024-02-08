@@ -1558,4 +1558,8 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def set_channel(self, ctx, arg):
         '''Sets the channel for bot notifications and announcements'''
-        await ctx.reply(f"Channel: {arg.replace('#', '').replace('<', '').replace('>', '')}")
+        channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
+
+        new_channel = ctx.guild.get_channel(channel_id)
+
+        await ctx.reply(f"Channel: {str(new_channel)}")
