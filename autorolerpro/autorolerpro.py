@@ -1170,7 +1170,7 @@ class PlaytimeView(discord.ui.View):
         await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you hadn't finished, please try again!*", view = None)
 
 class AutoRolerPro(commands.Cog):
-    """My custom cog"""
+    """AutoRolerPro"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
         Log("AutorolerPro loaded!", LogType.Log)
@@ -1554,3 +1554,8 @@ class AutoRolerPro(commands.Cog):
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
+
+    @commands.command()
+    async def set_channel(self, ctx, arg):
+        '''Sets the channel for bot notifications and announcements'''
+        await ctx.reply(f"Channel: {arg}")
