@@ -1269,7 +1269,7 @@ class AutoRolerPro(commands.Cog):
                 if activity.name in config['ActivityBlacklist']:
                     return
                 
-                await test_channel.send(f"`{member['display_name']}` stopped playing `{activity.name}`")
+                await test_channel.send(f"`{member['display_name']}` stopped playing `{activity.name}`", silent = True)
                 StopPlayingGame(current, activity.name)
 
         # Loops through previous activities and check if they don't exist in previous names
@@ -1285,7 +1285,7 @@ class AutoRolerPro(commands.Cog):
                     if game_name in games:
                         game = games[game_name]
                     else:
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!", silent = True)
                         return
                 else:
                     # If there isn't a game recorded for the current activity already, add it
@@ -1295,7 +1295,7 @@ class AutoRolerPro(commands.Cog):
 
                         original_message = f"Hey, guys! Looks like some folks have started playing a new game, <@&{game['role']}>!\n*```yaml\n{game['summary']}```*"
                         view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, current.guild)
-                        view.message = await announcements_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games))
+                        view.message = await announcements_channel.send(original_message + "\nGo ahead and click the button below to add yourself to the role!", view = view, files = await GetImages(new_games), silent = True)
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
@@ -1310,7 +1310,7 @@ class AutoRolerPro(commands.Cog):
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
-                    await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!")
+                    await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!", silent = True)
                 else:
                     # Exits if member opted out of getting notifications
                     if member['opt_out']:
@@ -1319,10 +1319,10 @@ class AutoRolerPro(commands.Cog):
                     # Exit if the member doesn't want to be bothered about this game
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.", silent = True)
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!")
+                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
                         Log(f"Sent {member['display_name']} a direct message!", LogType.Log)
                 
                         try:
@@ -1337,7 +1337,7 @@ class AutoRolerPro(commands.Cog):
                             view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
                             
                         except discord.errors.Forbidden:
-                            await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!")
+                            await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
                             Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
         
     @commands.command()
