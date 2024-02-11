@@ -422,11 +422,6 @@ async def AddGames(guild: discord.Guild, game_list: list):
             except:
                 Log(f"Could not find {game_name} in the game list or aliases! Must be a new game!", LogType.Log)
 
-        # Debug log the difference before and after the strip_accents function call
-        Log(f"Before accent strip: {game_name}", LogType.Debug)
-        game_name = string.capwords(strip_accents(game_name))
-        Log(f"After accent strip: {game_name}", LogType.Debug)
-
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
             if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
@@ -596,7 +591,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         msg = await bot.wait_for('message', check = check)
         
         # Add the msg.content as a game to the server
-        new_games, already_exists, failed_to_find = await AddGames(guild, [msg.content])
+        new_games, already_exists, failed_to_find = await AddGames(guild, [FilterName(msg.content)])
 
         # Decrement remaining_attempts by 1
         remaining_attempts = config['AliasMaxAttempts'] - attempt_count - 1
@@ -792,6 +787,20 @@ def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.M
         sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)
 
     return dict(sorted_list)
+
+def FilterName(original: str):
+    Log(f"Activity name before filtering: {original}", LogType.Debug)
+
+    # TODO: Update these replaces with case-insensitive replaces
+    filtered_name = original.replace("™", "")                           # Remove '™'
+    filtered_name = original.replace("Xbox One", "")                    # Remove 'Xbox One'
+    filtered_name = original.replace("for Xbox One", "")                # Remove 'for Xbox One'
+    filtered_name = original.replace("Demo", "")                        # Remove 'Demo'
+    filtered_name = string.capwords(strip_accents(filtered_name))       # Remove accents and capitalize each word
+    filtered_name = filtered_name.strip()                               # Remove leading and trailing whitespace
+
+    Log(f"Activity name after filtering: {filtered_name}", LogType.Debug)
+    return filtered_name
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
 class DirectMessageView(discord.ui.View):
@@ -1265,31 +1274,37 @@ class AutoRolerPro(commands.Cog):
         # Loops through previous activities and check if they don't exist in current names
         for activity in previous.activities:
             if activity.name not in current_names and activity.type == discord.ActivityType.playing:
+                # Filter out known bad items and format the activity name
+                filtered_name = FilterName(activity.name)
+
                 # Exit if game is blacklisted
-                if activity.name in config['ActivityBlacklist']:
+                if filtered_name in config['ActivityBlacklist']:
                     return
                 
-                await test_channel.send(f"`{member['display_name']}` stopped playing `{activity.name}`", silent = True)
-                StopPlayingGame(current, activity.name)
+                await test_channel.send(f"`{member['display_name']}` stopped playing `{filtered_name}`", silent = True)
+                StopPlayingGame(current, filtered_name)
 
         # Loops through previous activities and check if they don't exist in previous names
         for activity in current.activities:
             if activity.name not in previous_names and activity.type == discord.ActivityType.playing:
+                # Filter out known bad items and format the activity name
+                filtered_name = FilterName(activity.name)
+
                 # Exit if game is blacklisted
-                if activity.name in config['ActivityBlacklist']:
+                if filtered_name in config['ActivityBlacklist']:
                     return
                 
                 # Checks of the activity is an alias first to avoid a potentially unnecessary API call
-                if activity.name in aliases:
-                    game_name = aliases[activity.name]
+                if filtered_name in aliases:
+                    game_name = aliases[filtered_name]
                     if game_name in games:
                         game = games[game_name]
                     else:
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!", silent = True)
+                        await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!", silent = True)
                         return
                 else:
                     # If there isn't a game recorded for the current activity already, add it
-                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [activity.name])
+                    new_games, already_exists, failed_to_find = await AddGames(current.guild, [filtered_name])
                     if len(new_games) > 0:
                         game = list(new_games.values())[0]
 
@@ -1299,7 +1314,7 @@ class AutoRolerPro(commands.Cog):
                     elif len(already_exists) > 0:
                         game = list(already_exists.values())[0]
                     else:
-                        await AddAlias(self.bot, current.guild, activity.name, current)
+                        await AddAlias(self.bot, current.guild, filtered_name, current)
                         return
                     
                 # Log game activity for server stats
@@ -1310,7 +1325,7 @@ class AutoRolerPro(commands.Cog):
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
-                    await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`!", silent = True)
+                    await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}`!", silent = True)
                 else:
                     # Exits if member opted out of getting notifications
                     if member['opt_out']:
@@ -1319,10 +1334,10 @@ class AutoRolerPro(commands.Cog):
                     # Exit if the member doesn't want to be bothered about this game
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}`. They do not have or want the role assigned to them.", silent = True)
+                        await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}`. They do not have or want the role assigned to them.", silent = True)
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
-                        await test_channel.send(f"`{member['display_name']}` started playing `{activity.name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
+                        await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
                         Log(f"Sent {member['display_name']} a direct message!", LogType.Log)
                 
                         try:
@@ -1330,7 +1345,7 @@ class AutoRolerPro(commands.Cog):
                             dm_channel = await current.create_dm()
 
                             # Setup original message
-                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{activity.name}` and don't have the role assigned!"
+                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{filtered_name}` and don't have the role assigned!"
                             
                             # Populate view and send direct message
                             view = DirectMessageView(original_message, role, current, game)
@@ -1389,7 +1404,7 @@ class AutoRolerPro(commands.Cog):
         member = ctx.message.author
 
         # Splits the provided arg into a list of games
-        all_games = [game for game in arg.split(',')][:10]
+        all_games = [FilterName(game) for game in arg.split(',')][:10]
 
         # Attempt to add the games provided, returning new, existing, and/or failed to add games
         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, all_games)
