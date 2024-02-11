@@ -793,9 +793,9 @@ def FilterName(original: str):
 
     # TODO: Update these replaces with case-insensitive replaces
     filtered_name = original.replace("™", "")                           # Remove '™'
-    filtered_name = original.replace("Xbox One", "")                    # Remove 'Xbox One'
-    filtered_name = original.replace("for Xbox One", "")                # Remove 'for Xbox One'
-    filtered_name = original.replace("Demo", "")                        # Remove 'Demo'
+    filtered_name = filtered_name.replace("Xbox One", "")                    # Remove 'Xbox One'
+    filtered_name = filtered_name.replace("for Xbox One", "")                # Remove 'for Xbox One'
+    filtered_name = filtered_name.replace("Demo", "")                        # Remove 'Demo'
     filtered_name = string.capwords(strip_accents(filtered_name))       # Remove accents and capitalize each word
     filtered_name = filtered_name.strip()                               # Remove leading and trailing whitespace
 
