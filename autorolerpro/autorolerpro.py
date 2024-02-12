@@ -792,12 +792,13 @@ def FilterName(original: str):
     Log(f"Activity name before filtering: {original}", LogType.Debug)
 
     # TODO: Update these replaces with case-insensitive replaces
-    filtered_name = original.replace("™", "")                           # Remove '™'
-    filtered_name = original.replace("®", "")                           # Remove '™'
+    filtered_name = original.replace("™", "")                           # Remove '™' from original
+    filtered_name = filtered_name.replace("®", "")                      # Remove '®' from filtered_name
     filtered_name = filtered_name.replace("Xbox One", "")               # Remove 'Xbox One'
     filtered_name = filtered_name.replace("for Xbox One", "")           # Remove 'for Xbox One'
     filtered_name = filtered_name.replace("Demo", "")                   # Remove 'Demo'
-    filtered_name = string.capwords(strip_accents(filtered_name))       # Remove accents and capitalize each word
+    filtered_name = strip_accents(filtered_name)                        # Remove accents
+    # filtered_name = string.capwords(filtered_name)                      # Capitalizes each word
     filtered_name = filtered_name.strip()                               # Remove leading and trailing whitespace
 
     Log(f"Activity name after filtering: {filtered_name}", LogType.Debug)
