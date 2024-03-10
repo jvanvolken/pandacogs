@@ -443,15 +443,17 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
-        Log(results, LogType.Debug)
-        Log(f"results length: {len(results)}", LogType.Debug)
         # Exits if 'cause' exists in results, this is indicative of an error
-        if len(results) == 0 or (len(results) > 0 and 'cause' in results[0]):
-            Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
-            failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
-            continue
-        else:
-            Log(str(results), LogType.Debug)
+        try:
+            if len(results) == 0 or (len(results) > 0 and 'cause' in results[0]):
+                Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
+                failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
+                continue
+            else:
+                Log(str(results), LogType.Debug)
+        except:
+            Log(results, LogType.Error)
+            Log(f"Error when parsing results for new game!", LogType.Error)
 
         # Compares the list of games to the matches, from there score by different features of the game
         top_game = None
