@@ -443,6 +443,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
+        Log(results, LogType.Debug)
         Log(f"results length: {len(results)}", LogType.Debug)
         # Exits if 'cause' exists in results, this is indicative of an error
         if len(results) == 0 or (len(results) > 0 and 'cause' in results[0]):
