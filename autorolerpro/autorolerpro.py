@@ -1636,7 +1636,7 @@ class AutoRolerPro(commands.Cog):
                 score = playtime
 
             # Store a reference of the game data in game_refs
-            game_refs[game_name] = score
+            game_refs[game_name] = {"Score": score, "Last Played": last_played, "Playtime": playtime}
 
         if scores_to_return:
             # Sort the list by highest hours played and shrink to count
@@ -1647,11 +1647,11 @@ class AutoRolerPro(commands.Cog):
 
         index = 0
         playtime_message = ""
-        for game_name, score in dict(sorted_list).items():
-            playtime_message += f"**{game_name}**: *{score}*\n"
+        for game_name, details in dict(sorted_list).items():
+            playtime_message += f"**{game_name}**: (Score: {round(details["Score"],2)})(Last Played: {round(details["Last Played"],2)})(Playtime: {round(details["Playtime"],2)})\n"
 
             index += 1
-            if index >= 30:
+            if index >= 20:
                 await ctx.reply(playtime_message)
                 playtime_message = ""
                 index = 0
