@@ -1626,11 +1626,12 @@ class AutoRolerPro(commands.Cog):
             # Get number of days since last played
             last_played = GetLastPlayed(game_name)
             
-            if not days_to_score or last_played and last_played < days_to_score:
-                if days_to_score:
-                    score = playtime*(math.log(days_to_score) - math.log(last_played))
-                else:
-                    score = playtime*(math.log(last_played))
+            # if not days_to_score or last_played and last_played < days_to_score:
+            #     if days_to_score:
+            #         score = playtime*(math.log(days_to_score) - math.log(last_played))
+            #     else:
+            if last_played:
+                score = playtime*(math.log(last_played))
             else:
                 score = playtime
 
