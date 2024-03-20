@@ -1628,9 +1628,9 @@ class AutoRolerPro(commands.Cog):
             last_played = GetLastPlayed(game_name)
             
             if last_played and days_to_score and last_played < days_to_score or not days_to_score:
-                if days_to_score:
+                if days_to_score and last_played:
                     score = playtime*(math.log(days_to_score) - math.log(last_played))
-                else:
+                elif last_played:
                     score = playtime*(math.log(last_played))
             else:
                 score = playtime
