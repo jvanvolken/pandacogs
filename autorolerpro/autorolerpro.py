@@ -1633,7 +1633,7 @@ class AutoRolerPro(commands.Cog):
                 else:
                     score = playtime*(math.log(last_played))
             else:
-                score = 0
+                score = playtime
 
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
