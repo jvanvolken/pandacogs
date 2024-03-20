@@ -1653,3 +1653,4 @@ class AutoRolerPro(commands.Cog):
             if index >= 30:
                 await ctx.reply(playtime_message)
                 playtime_message = ""
+                index = 0
