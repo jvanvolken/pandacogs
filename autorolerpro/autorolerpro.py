@@ -1617,10 +1617,9 @@ class AutoRolerPro(commands.Cog):
         '''Returns the bottom 10 game scores'''
         
         days_to_score = 30
-        scores_to_return = 30
+        scores_to_return = None
 
         # Initialize the playtime message and game refernces for the games played
-        playtime_message = ""
         game_refs = {}
         for game_name, playtime in GetPlaytime(games).items():
 
@@ -1645,9 +1644,12 @@ class AutoRolerPro(commands.Cog):
             # Sort the entire list by highest hours played
             sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)
 
-        index = 1
+        index = 0
+        playtime_message = ""
         for game in sorted_list:
-            playtime_message += f"{index}) **{game[0]}**: *{game[1]}*\n"
-            index += 1
+            playtime_message += f"**{game[0]}**: *{game[1]}*\n"
 
-        await ctx.reply(f"Check out this server's top 5 games this month!\n{playtime_message}")
+            index += 1
+            if index >= 30:
+                await ctx.reply(playtime_message)
+                playtime_message = ""
