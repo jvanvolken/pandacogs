@@ -1646,7 +1646,7 @@ class AutoRolerPro(commands.Cog):
             sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)
 
         index = 1
-        for game_name, score in sorted_list.items():
+        for game_name, score in enumerate(sorted_list):
             playtime_message += f"{index}) **{game_name}**: *{score}*\n"
             index += 1
 
