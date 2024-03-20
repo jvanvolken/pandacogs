@@ -1616,24 +1616,24 @@ class AutoRolerPro(commands.Cog):
     async def get_scores(self, ctx):
         '''Returns the bottom 10 game scores'''
         
-        days_to_score = None
+        days_to_score = 30
         scores_to_return = 30
 
         # Initialize the playtime message and game refernces for the games played
         playtime_message = ""
         game_refs = {}
-        for game_name, playtime in GetPlaytime(games, days_to_score).items():
+        for game_name, playtime in GetPlaytime(games).items():
 
             # Get number of days since last played
             last_played = GetLastPlayed(game_name)
             
-            # if last_played and days_to_score and last_played < days_to_score or not days_to_score:
-            #     if days_to_score and last_played:
-            #         score = playtime*(math.log(days_to_score) - math.log(last_played))
-            #     elif last_played:
-            #         score = playtime*(math.log(last_played))
-            # else:
-            score = playtime
+            if last_played and last_played < days_to_score or not days_to_score:
+                if days_to_score:
+                    score = playtime*(math.log(days_to_score) - math.log(last_played))
+                else:
+                    score = playtime*(math.log(last_played))
+            else:
+                score = playtime
 
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
