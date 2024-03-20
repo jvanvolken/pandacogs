@@ -1640,10 +1640,10 @@ class AutoRolerPro(commands.Cog):
 
         if scores_to_return:
             # Sort the list by highest hours played and shrink to count
-            sorted_list = sorted(game_refs.items(), key = lambda x:x["Score"][1], reverse=True)[:scores_to_return]
+            sorted_list = sorted(game_refs.items(), key = lambda x:x[0][1], reverse=True)[:scores_to_return]
         else: 
             # Sort the entire list by highest hours played
-            sorted_list = sorted(game_refs.items(), key = lambda x:x["Score"][1], reverse=True)
+            sorted_list = sorted(game_refs.items(), key = lambda x:x[0][1], reverse=True)
 
         index = 0
         playtime_message = ""
