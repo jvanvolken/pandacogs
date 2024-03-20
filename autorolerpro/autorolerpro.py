@@ -1617,7 +1617,7 @@ class AutoRolerPro(commands.Cog):
         '''Returns the bottom 10 game scores'''
         
         days_to_score = None
-        scores_to_return = 50
+        scores_to_return = 30
 
         # Initialize the playtime message and game refernces for the games played
         playtime_message = ""
