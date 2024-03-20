@@ -1616,7 +1616,7 @@ class AutoRolerPro(commands.Cog):
     async def get_scores(self, ctx):
         '''Returns the bottom 10 game scores'''
         
-        days_to_score = 30
+        days_to_score = None
         scores_to_return = None
 
         # Initialize the playtime message and game refernces for the games played
