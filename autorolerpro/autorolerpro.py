@@ -793,6 +793,28 @@ def GetPlaytime(game_list: dict, days: int, count: int = None, member: discord.M
 
     return dict(sorted_list)
 
+# Returns the number of days since a game was last played
+def GetLastPlayed(game_name: str):
+    if game_name in games:
+        game = games[game_name]
+
+        # Skips game if there's not history
+        if 'history' not in game:
+            return
+        
+        last_played = None
+        for day in game['history'].keys():
+            delta = datetime.now() - datetime.strptime(day, '%Y-%m-%d')
+            days = delta.days + delta.seconds/86400
+
+            if not last_played or last_played > days:
+                last_played = days
+        
+        return last_played
+    else:
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        return False
+
 def FilterName(original: str):
     Log(f"Activity name before filtering: {original}", LogType.Debug)
 
@@ -1589,3 +1611,43 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(FlagType.Config, True, f"Updated Announcements channel ID to {new_channel.id}")
         else:
             await ctx.reply(f"Could not find the specified channel!")
+
+    @commands.command()
+    async def get_scores(self, ctx):
+        '''Returns the bottom 10 game scores'''
+        
+        days_to_score = 30
+        scores_to_return = 10
+
+        # Initialize the playtime message and game refernces for the games played
+        playtime_message = ""
+        game_refs = {}
+        for game_name, playtime in GetPlaytime(games, days_to_score).items():
+
+            # Get number of days since last played
+            last_played = GetLastPlayed(game_name)
+            
+            if last_played and last_played < days_to_score or not days_to_score:
+                if days_to_score:
+                    score = playtime*(math.log(days_to_score) - math.log(last_played))
+                else:
+                    score = playtime*(math.log(last_played))
+            else:
+                score = 0
+
+            # Store a reference of the game data in game_refs
+            game_refs[game_name] = score
+
+        if scores_to_return:
+            # Sort the list by highest hours played and shrink to count
+            sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)[:scores_to_return]
+        else: 
+            # Sort the entire list by highest hours played
+            sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)
+
+        index = 1
+        for game_name, score in sorted_list.items():
+            playtime_message += f"{index}) **{game_name}**: *{score}*\n"
+            index += 1
+
+        await ctx.reply(f"Check out this server's top 5 games this month!\n{playtime_message}")
