@@ -1646,8 +1646,8 @@ class AutoRolerPro(commands.Cog):
             sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)
 
         index = 1
-        for game_name, score in enumerate(sorted_list):
-            playtime_message += f"{index}) **{game_name}**: *{score}*\n"
+        for game in sorted_list:
+            playtime_message += f"{index}) **{game[0]}**: *{game[1]}*\n"
             index += 1
 
         await ctx.reply(f"Check out this server's top 5 games this month!\n{playtime_message}")
