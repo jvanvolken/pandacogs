@@ -1648,7 +1648,7 @@ class AutoRolerPro(commands.Cog):
         index = 0
         playtime_message = ""
         for game_name, details in dict(sorted_list).items():
-            playtime_message += f"**{game_name}**: (Score: {round(details["Score"],2)})(Last Played: {round(details["Last Played"],2)})(Playtime: {round(details["Playtime"],2)})\n"
+            playtime_message += f'**{game_name}**: (Score: {round(details["Score"],2)})(Last Played: {round(details["Last Played"],2)})(Playtime: {round(details["Playtime"],2)})\n'
 
             index += 1
             if index >= 20:
