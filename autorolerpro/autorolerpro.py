@@ -376,6 +376,67 @@ def GetRoleCount():
 
     return count
 
+# Returns the number of days since a game was last played
+def GetLastPlayed(game_name: str):
+    if game_name in games:
+        game = games[game_name]
+
+        # Skips game if there's not history
+        if 'history' not in game:
+            return
+        
+        last_played = None
+        for day in game['history'].keys():
+            delta = datetime.now() - datetime.strptime(day, '%Y-%m-%d')
+            days = delta.days + delta.seconds/86400
+
+            if not last_played or last_played > days:
+                last_played = days
+        
+        return last_played
+    else:
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        return False
+
+# Returns the number of players who play/track a given game
+def GetNumberOfPlayers(game_name: str):
+    if game_name in games:
+        count = 0
+        for member in members.values():
+            # Skips member if they don't play the game
+            if 'games' not in member:
+                continue
+
+            # Add 1 to the count if the member plays
+            if game_name in member['games']:
+                count += 1
+        
+        return count
+    else:
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        return False
+
+# Scores all games and returns the lowest
+def GetLowestScoringGame():
+    # Initialize the playtime message and game refernces for the games played
+    game_refs = {}
+    for game_name, playtime in GetPlaytime(games).items():
+
+        # Get number of days since last played and the number of players
+        last_played = GetLastPlayed(game_name)
+        num_players = GetNumberOfPlayers(game_name)
+        
+        if last_played:
+            score = (num_players + playtime)/last_played
+        else:
+            score = (num_players + playtime)
+
+        # Store a reference of the game data in game_refs
+        game_refs[game_name] = score
+
+    # Sort the entire list by highest hours played
+    return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0][0] # Get the name of the first entry with [0][0]
+
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
 async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False):
     # Search for an existing role
@@ -839,67 +900,6 @@ def GetPlaytime(game_list: dict, days: int = None, count: int = None, member: di
         sorted_list = sorted(top_games.items(), key = lambda x:x[1], reverse=True)
 
     return dict(sorted_list)
-
-# Returns the number of days since a game was last played
-def GetLastPlayed(game_name: str):
-    if game_name in games:
-        game = games[game_name]
-
-        # Skips game if there's not history
-        if 'history' not in game:
-            return
-        
-        last_played = None
-        for day in game['history'].keys():
-            delta = datetime.now() - datetime.strptime(day, '%Y-%m-%d')
-            days = delta.days + delta.seconds/86400
-
-            if not last_played or last_played > days:
-                last_played = days
-        
-        return last_played
-    else:
-        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
-        return False
-
-# Returns the number of players who play/track a given game
-def GetNumberOfPlayers(game_name: str):
-    if game_name in games:
-        count = 0
-        for member in members.values():
-            # Skips member if they don't play the game
-            if 'games' not in member:
-                continue
-
-            # Add 1 to the count if the member plays
-            if game_name in member['games']:
-                count += 1
-        
-        return count
-    else:
-        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
-        return False
-
-# Scores all games and returns the lowest
-def GetLowestScoringGame():
-    # Initialize the playtime message and game refernces for the games played
-    game_refs = {}
-    for game_name, playtime in GetPlaytime(games).items():
-
-        # Get number of days since last played and the number of players
-        last_played = GetLastPlayed(game_name)
-        num_players = GetNumberOfPlayers(game_name)
-        
-        if last_played:
-            score = (num_players + playtime)/last_played
-        else:
-            score = (num_players + playtime)
-
-        # Store a reference of the game data in game_refs
-        game_refs[game_name] = score
-
-    # Sort the entire list by highest hours played
-    return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0]
 
 # Filters game names of common bad strings and/or characters
 def FilterName(original: str):
