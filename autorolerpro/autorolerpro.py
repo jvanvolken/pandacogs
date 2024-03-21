@@ -495,20 +495,25 @@ async def AddGames(guild: discord.Guild, game_list: list):
     failed_to_find = {}
 
     def AlreadyExists(game_name):
-        if "role" not in games[game_name]:
+        # Checks if game_name is in aliases and grabs the actual name
+        if game_name in aliases:
+            actual_name = aliases[game_name]
+        else:
+            actual_name = game_name
+        
+        # Claims already existing game
+        already_exists[actual_name] = games[actual_name]
+
+        # Adds missing role id
+        if "role" not in games[actual_name] or games[actual_name]["role"] == None:
             # Looks for an existing role for the game
-            role = discord.utils.get(guild.roles, name = game_name)
+            role = GetRole(guild, game_name, True)
             if role:
                 # Stores the role for future use
                 games[game_name]['role'] = role.id
 
                 # Toggles the updated flag for games
                 UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
-
-        if game_name in aliases:
-            already_exists[aliases[game_name]] = games[aliases[game_name]]
-        else:
-            already_exists[game_name] = games[game_name]
 
     # Loops through the provided list of game names
     for game_name in game_list:
