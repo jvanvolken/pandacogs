@@ -464,7 +464,7 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
 
             # Use the role ID to delete role from server
             role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
-            role_to_remove.delete()
+            await role_to_remove.delete()
 
             # Removes role ID for this game
             games[game]['role'] = None
@@ -1768,7 +1768,7 @@ class AutoRolerPro(commands.Cog):
         seen = set()
         duplicates = [v for v in guild.roles if v in seen or seen.add(v)] 
         for role in duplicates:
-            role.delete()
+            await role.delete()
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
