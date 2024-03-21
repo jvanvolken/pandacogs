@@ -1730,6 +1730,7 @@ class AutoRolerPro(commands.Cog):
 
         added_games = 0
         cleanups = 0
+        duplicate_roles = 0
 
         # Loops through each member in the guild
         for member in guild.members:
@@ -1742,16 +1743,16 @@ class AutoRolerPro(commands.Cog):
 
             member_db = members[member.name]
 
+            # Updates member database with tracked game
             for role in member.roles:
                 if role.name in games:
                     if role.name not in member_db["games"]:
-                        # Updates member database with tracked game
                         update = {'games' : {role.name : {'tracked' : True}}}
                         UpdateMember(member, update)
                         Log(f"Adding {role.name} to {member.name}'s data!", LogType.Log)
-
                         added_games += 1
-            
+
+            # Removes known old/bad data from database
             for game, details in member_db['games'].items():
                 if "name" in details:
                     del member_db['games'][game]["name"]
@@ -1763,4 +1764,12 @@ class AutoRolerPro(commands.Cog):
                     UpdateFlag(FlagType.Members, True, f"Cleaned up game data from {game}!")
                     cleanups +=1
 
-        await ctx.reply(f"I have completed syncing member roles with the database! I found and added {added_games} missed games and cleaned up {cleanups} entries!")
+        # Collects a list of duplicate roles from the server and deletes them
+        seen = set()
+        duplicates = [v for v in guild.roles if v in seen or seen.add(v)] 
+        for role in duplicates:
+            # role.delete()
+            Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
+            duplicate_roles += 1
+
+        await ctx.reply(f"I have completed syncing member roles with the database! I found and added {added_games} missed games, cleaned up {cleanups} data entries, and removed {duplicate_roles} duplicate roles!")
