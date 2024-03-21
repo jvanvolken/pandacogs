@@ -422,6 +422,10 @@ def GetLowestScoringGame():
     game_refs = {}
     for game_name, playtime in GetPlaytime(games).items():
 
+        # Skip games without a role assigned to them
+        if games[game_name]["role"] == None:
+            continue
+
         # Get number of days since last played and the number of players
         last_played = GetLastPlayed(game_name)
         num_players = GetNumberOfPlayers(game_name)
