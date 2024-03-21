@@ -1630,8 +1630,8 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(f"Could not find the specified channel!")
 
     @commands.command()
-    async def get_scores(self, ctx):
-        '''Returns the bottom 10 game scores'''
+    async def get_lowest(self, ctx):
+        '''Returns the lowest scoring game'''
 
         # Initialize the playtime message and game refernces for the games played
         game_refs = {}
@@ -1649,20 +1649,19 @@ class AutoRolerPro(commands.Cog):
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
 
-            Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
+            # Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
 
         # Sort the entire list by highest hours played
-        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)
+        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0]
+        await ctx.reply(str(sorted_list))
 
-        # await ctx.reply(str(sorted_list))
-        
-        index = 0
-        playtime_message = ""
-        for game_name, score in dict(sorted_list).items():
-            playtime_message += f"**{game_name}**: *{score}*\n"
+        # index = 0
+        # playtime_message = ""
+        # for game_name, score in dict(sorted_list).items():
+        #     playtime_message += f"**{game_name}**: *{score}*\n"
 
-            index += 1
-            if index >= 30:
-                await ctx.reply(playtime_message)
-                playtime_message = ""
-                index = 0
+        #     index += 1
+        #     if index >= 30:
+        #         await ctx.reply(playtime_message)
+        #         playtime_message = ""
+        #         index = 0
