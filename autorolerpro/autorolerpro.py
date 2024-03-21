@@ -99,7 +99,8 @@ default_config = {
     'DebugMode': True,
     'AliasMaxAttempts': 5,
     'BackupFrequency': 1,
-    'AllowEroticTitles': False
+    'AllowEroticTitles': False,
+    'MaxRoleCount' : 200
 }
 
 # Initializes config
@@ -190,7 +191,7 @@ def GetNames(game_list: list):
     return f"`{'`, `'.join(names)}`"
 
 # Returns a string list of role mentions
-def GetRoles(game_list: list):
+def GetRoleMentions(game_list: list):
     roles = []
     # Loops through the game_list and appends to a list of role mentions
     for game in game_list.values():
@@ -359,6 +360,52 @@ def UpdateMember(member: discord.Member, new_details: dict):
     
     # Toggles the updated flag for members
     UpdateFlag(FlagType.Members, True, f"Updated member information, {member.name}")
+
+# Returns a count of how many roles are being used by games
+def GetRoleCount():
+    count = 0
+    for game, details in games.items():
+        # Role entry should be present even if it's empty
+        if 'role' not in details:
+            Log(f"{game} missing role field in database!", LogType.Error)
+            continue
+        
+        # Add 1 to the count if the game has a role
+        if details['role'] != None:
+            count += 1
+
+    return count
+
+# Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
+async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False):
+    # Search for an existing role
+    role: discord.Role = discord.utils.get(guild.roles, name = role_name)
+
+    # If no role is found and create_new is true, create a new role
+    if not role and create_new:
+        # Checks if role count has exceeded MaxRoleCount and remove a role if necessary
+        role_count = GetRoleCount()
+        if role_count >= config['MaxRoleCount']:
+            Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
+
+            # Grab the lowest ranking game from the server
+            lowest_game = games[GetLowestScoringGame()]
+
+            # Use the role ID to delete role from server
+            role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
+            role_to_remove.delete()
+
+            # Removes role ID for this game
+            games[GetLowestScoringGame()]['role'] = None
+            Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!", LogType.Log)
+        
+        # Adds a new role to the server
+        role = await guild.create_role(name = role_name, mentionable = True)
+        Log(f"Created a new role, {role_name}! ID: ({role.id})", LogType.Log)
+    else:
+        return None
+
+    return role
 
 # Removes game from games list and saves to file
 async def RemoveGame(role: discord.Role, game_name: str):
@@ -548,25 +595,26 @@ async def AddGames(guild: discord.Guild, game_list: list):
             
             # Create the Role and give it the dominant color of the cover art
             color = GetDominantColor(url)
-            
-            # Looks for an existing role for the game
-            role = discord.utils.get(guild.roles, name = top_game['name'])
+            # TODO: Shift this color towards middle tones
+
+            role: discord.Role = GetRole(guild, top_game['name'], True)
             if role:
+                # Edits the role color to match the dominant color
                 await role.edit(colour = discord.Colour(int(color, 16)))
+
+                # Stores the role for future use
+                top_game['role'] = role.id
+
+                # Adds the latest_game to the new_games list to return
+                new_games[top_game['name']] = top_game
+
+                # Add game to game list and saves file
+                games[top_game['name']] = top_game
+
+                # Toggles the updated flag for games
+                UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
             else:
-                role = await guild.create_role(name = top_game['name'], colour = discord.Colour(int(color, 16)), mentionable = True)
-
-            # Stores the role for future use
-            top_game['role'] = role.id
-
-            # Adds the latest_game to the new_games list to return
-            new_games[top_game['name']] = top_game
-
-            # Add game to game list and saves file
-            games[top_game['name']] = top_game
-
-            # Toggles the updated flag for games
-            UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
+                Log(f"Failed to add new game, {top_game['name']}! Could not create a new role to give it!", LogType.Error)
         else:
             failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
@@ -1495,22 +1543,22 @@ class AutoRolerPro(commands.Cog):
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
-            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoles(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
+            original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
