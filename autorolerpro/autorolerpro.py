@@ -1772,4 +1772,4 @@ class AutoRolerPro(commands.Cog):
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
-        await ctx.reply(f"I have completed syncing member roles with the database! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, and removed `{duplicate_roles}` duplicate roles!")
+        await ctx.reply(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, and removed `{duplicate_roles}` duplicate roles!")
