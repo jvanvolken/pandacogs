@@ -819,6 +819,11 @@ def GetNumberOfPlayers(game_name: str):
     if game_name in games:
         count = 0
         for member in members:
+            # Skips member if they don't play the game
+            if 'games' not in member:
+                continue
+
+            # Add 1 to the count if the member plays
             if game_name in member['games']:
                 count += 1
         
