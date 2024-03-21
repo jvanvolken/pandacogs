@@ -1721,9 +1721,9 @@ class AutoRolerPro(commands.Cog):
         for member in guild.members:
             if member.bot:
                 continue
-            
+
             # Adds the member to the database if missing
-            if not members[member.name]:
+            if member.name not in members:
                 AddMember(member)
 
             member_db = members[member.name]
