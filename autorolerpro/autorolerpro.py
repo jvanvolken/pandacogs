@@ -1632,7 +1632,7 @@ class AutoRolerPro(commands.Cog):
             game_refs[game_name] = score
 
         # Sort the entire list by highest hours played
-        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)
+        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[:20]
 
         await ctx.reply(str(sorted_list))
 
