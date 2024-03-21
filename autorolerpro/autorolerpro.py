@@ -1656,13 +1656,13 @@ class AutoRolerPro(commands.Cog):
 
         await ctx.reply(str(sorted_list))
 
-        # index = 0
-        # playtime_message = ""
-        # for game_name, score in dict(sorted_list).items():
-        #     playtime_message += f"**{game_name}**: *{score}*\n"
+        index = 0
+        playtime_message = ""
+        for game_name, score in dict(sorted_list).items():
+            playtime_message += f"**{game_name}**: *{score}*\n"
 
-        #     index += 1
-        #     if index >= 30:
-        #         await ctx.reply(playtime_message)
-        #         playtime_message = ""
-        #         index = 0
+            index += 1
+            if index >= 30:
+                await ctx.reply(playtime_message)
+                playtime_message = ""
+                index = 0
