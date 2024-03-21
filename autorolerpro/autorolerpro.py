@@ -597,7 +597,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             color = GetDominantColor(url)
             # TODO: Shift this color towards middle tones
 
-            role: discord.Role = GetRole(guild, top_game['name'], True)
+            role: discord.Role = await GetRole(guild, top_game['name'], True)
             if role:
                 # Edits the role color to match the dominant color
                 await role.edit(colour = discord.Colour(int(color, 16)))
