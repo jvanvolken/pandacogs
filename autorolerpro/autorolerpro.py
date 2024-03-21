@@ -815,6 +815,18 @@ def GetLastPlayed(game_name: str):
         Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
         return False
 
+def GetNumberOfPlayers(game_name: str):
+    if game_name in games:
+        count = 0
+        for member in members:
+            if game_name in member['games']:
+                count += 1
+        
+        return count
+    else:
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        return False
+
 def FilterName(original: str):
     Log(f"Activity name before filtering: {original}", LogType.Debug)
 
@@ -1620,13 +1632,14 @@ class AutoRolerPro(commands.Cog):
         game_refs = {}
         for game_name, playtime in GetPlaytime(games).items():
 
-            # Get number of days since last played
+            # Get number of days since last played and the number of players
             last_played = GetLastPlayed(game_name)
+            num_players = GetNumberOfPlayers(game_name)
             
             if last_played:
-                score = playtime/last_played
+                score = (num_players + playtime)/last_played
             else:
-                score = playtime
+                score = (num_players + playtime)
 
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
