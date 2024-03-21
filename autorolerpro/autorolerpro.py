@@ -154,9 +154,8 @@ def GetTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 # Normalizes and strips accents from string
-def strip_accents(s):
-   return ''.join(c for c in unicodedata.normalize('NFD', s)
-                  if unicodedata.category(c) != 'Mn')
+def StripAccents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
 # Updates the specified flag to queue for the backup routine
 def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
@@ -815,6 +814,7 @@ def GetLastPlayed(game_name: str):
         Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
         return False
 
+# Returns the number of players who play/track a given game
 def GetNumberOfPlayers(game_name: str):
     if game_name in games:
         count = 0
@@ -832,6 +832,28 @@ def GetNumberOfPlayers(game_name: str):
         Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
         return False
 
+# Scores all games and returns the lowest
+def GetLowestScoringGame():
+    # Initialize the playtime message and game refernces for the games played
+    game_refs = {}
+    for game_name, playtime in GetPlaytime(games).items():
+
+        # Get number of days since last played and the number of players
+        last_played = GetLastPlayed(game_name)
+        num_players = GetNumberOfPlayers(game_name)
+        
+        if last_played:
+            score = (num_players + playtime)/last_played
+        else:
+            score = (num_players + playtime)
+
+        # Store a reference of the game data in game_refs
+        game_refs[game_name] = score
+
+    # Sort the entire list by highest hours played
+    return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0]
+
+# Filters game names of common bad strings and/or characters
 def FilterName(original: str):
     Log(f"Activity name before filtering: {original}", LogType.Debug)
 
@@ -841,7 +863,7 @@ def FilterName(original: str):
     filtered_name = filtered_name.replace("Xbox One", "")               # Remove 'Xbox One'
     filtered_name = filtered_name.replace("for Xbox One", "")           # Remove 'for Xbox One'
     filtered_name = filtered_name.replace("Demo", "")                   # Remove 'Demo'
-    filtered_name = strip_accents(filtered_name)                        # Remove accents
+    filtered_name = StripAccents(filtered_name)                        # Remove accents
     # filtered_name = string.capwords(filtered_name)                      # Capitalizes each word
     filtered_name = filtered_name.strip()                               # Remove leading and trailing whitespace
 
@@ -1633,35 +1655,5 @@ class AutoRolerPro(commands.Cog):
     async def get_lowest(self, ctx):
         '''Returns the lowest scoring game'''
 
-        # Initialize the playtime message and game refernces for the games played
-        game_refs = {}
-        for game_name, playtime in GetPlaytime(games).items():
-
-            # Get number of days since last played and the number of players
-            last_played = GetLastPlayed(game_name)
-            num_players = GetNumberOfPlayers(game_name)
-            
-            if last_played:
-                score = (num_players + playtime)/last_played
-            else:
-                score = (num_players + playtime)
-
-            # Store a reference of the game data in game_refs
-            game_refs[game_name] = score
-
-            # Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
-
-        # Sort the entire list by highest hours played
-        game, score = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0]
+        game, score = GetLowestScoringGame()
         await ctx.reply(f"`{game}` has the lowest score with {score} points.")
-
-        # index = 0
-        # playtime_message = ""
-        # for game_name, score in dict(sorted_list).items():
-        #     playtime_message += f"**{game_name}**: *{score}*\n"
-
-        #     index += 1
-        #     if index >= 30:
-        #         await ctx.reply(playtime_message)
-        #         playtime_message = ""
-        #         index = 0
