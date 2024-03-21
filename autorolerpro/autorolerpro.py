@@ -241,7 +241,7 @@ async def GetImages(game_list: dict):
 
     return images
 
-# Return a list of game sets containing a max of 25 games per set
+# Return a list of game sets containing a max of "set_amount" games per set
 def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort: SortType = SortType.Alphabetical):
     if sort == SortType.Alphabetical:
         # Get a list of keys and sort them
@@ -444,9 +444,14 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
 
     # If no role is found and create_new is true, create a new role
     if not role and create_new:
-        # Checks if role count has exceeded MaxRoleCount and remove a role if necessary
-        role_count = GetRoleCount()
-        if role_count >= config['MaxRoleCount']:
+        # Loop until role_count is less than the maximum allowed number of roles
+        while True:
+            role_count = GetRoleCount()
+
+            # Breaks out of the loop if role count is under max roles
+            if role_count < config['MaxRoleCount']:
+                break
+            
             Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
 
             # Grab the lowest ranking game from the server
