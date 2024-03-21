@@ -1631,7 +1631,7 @@ class AutoRolerPro(commands.Cog):
             #         score = playtime*(math.log(days_to_score) - math.log(last_played))
             #     else:
             if last_played:
-                score = playtime*(math.log(last_played))
+                score = playtime/last_played
             else:
                 score = playtime
 
