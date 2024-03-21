@@ -435,7 +435,7 @@ def GetLowestScoringGame():
         game_refs[game_name] = score
 
     # Sort the entire list by highest hours played
-    return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0][0] # Get the name of the first entry with [0][0]
+    return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0] # Get the first entry with [0]
 
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
 async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False):
@@ -450,14 +450,15 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
             Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
 
             # Grab the lowest ranking game from the server
-            lowest_game = games[GetLowestScoringGame()]
+            game, _ = GetLowestScoringGame()
+            lowest_game = games[game]
 
             # Use the role ID to delete role from server
             role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
             role_to_remove.delete()
 
             # Removes role ID for this game
-            games[GetLowestScoringGame()]['role'] = None
+            games[game]['role'] = None
             Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!", LogType.Log)
         
         # Adds a new role to the server
