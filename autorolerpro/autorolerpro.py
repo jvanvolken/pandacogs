@@ -1652,10 +1652,10 @@ class AutoRolerPro(commands.Cog):
             Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
 
         # Sort the entire list by highest hours played
-        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[:20]
+        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)
 
-        await ctx.reply(str(sorted_list))
-
+        # await ctx.reply(str(sorted_list))
+        
         index = 0
         playtime_message = ""
         for game_name, score in dict(sorted_list).items():
