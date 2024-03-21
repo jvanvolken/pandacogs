@@ -1738,13 +1738,15 @@ class AutoRolerPro(commands.Cog):
 
                         added_games += 1
             
-            for game in member_db['games']:
-                if "name" in game:
-                    del member_db['games']["name"]
+            for game, details in member_db['games'].items():
+                if "name" in details:
+                    del member_db['games'][game]["name"]
+                    UpdateFlag(FlagType.Members, True, f"Cleaned up game data from {game}!")
                     cleanups += 1
 
-                if "last_played" in game:
-                    del member_db['games']["last_played"]
+                if "last_played" in details:
+                    del member_db['games'][game]["last_played"]
+                    UpdateFlag(FlagType.Members, True, f"Cleaned up game data from {game}!")
                     cleanups +=1
 
         await ctx.reply(f"I have completed syncing member roles with the database! I found and added {added_games} missed games and cleaned up {cleanups} entries!")
