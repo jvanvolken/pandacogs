@@ -818,7 +818,7 @@ def GetLastPlayed(game_name: str):
 def GetNumberOfPlayers(game_name: str):
     if game_name in games:
         count = 0
-        for member in members:
+        for member in members.values():
             # Skips member if they don't play the game
             if 'games' not in member:
                 continue
@@ -1650,7 +1650,7 @@ class AutoRolerPro(commands.Cog):
             game_refs[game_name] = score
 
             Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
-            
+
         # Sort the entire list by highest hours played
         sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[:20]
 
