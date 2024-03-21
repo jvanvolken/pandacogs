@@ -1768,8 +1768,8 @@ class AutoRolerPro(commands.Cog):
         seen = set()
         duplicates = [v for v in guild.roles if v in seen or seen.add(v)] 
         for role in duplicates:
-            # role.delete()
+            role.delete()
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
-        await ctx.reply(f"I have completed syncing member roles with the database! I found and added {added_games} missed games, cleaned up {cleanups} data entries, and removed {duplicate_roles} duplicate roles!")
+        await ctx.reply(f"I have completed syncing member roles with the database! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, and removed `{duplicate_roles}` duplicate roles!")
