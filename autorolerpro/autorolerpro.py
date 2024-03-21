@@ -1706,3 +1706,42 @@ class AutoRolerPro(commands.Cog):
 
         game, score = GetLowestScoringGame()
         await ctx.reply(f"`{game}` has the lowest score with {score} points.")
+
+    @commands.command()
+    async def sync_db(self, ctx):
+        '''Loops through each member and verifies the database is in sync'''
+
+        guild: discord.Guild = ctx.guild
+        Log(f"Initializing Role Synchronization!", LogType.Log)
+
+        added_games = 0
+        cleanups = 0
+
+        # Loops through each member in the guild
+        for member in guild.members:
+            # Adds the member to the database if missing
+            if not members[member.name]:
+                AddMember(member)
+
+            member_db = members[member.name]
+
+            for role in member.roles:
+                if role.name in games:
+                    if role.name not in member_db["games"]:
+                        # Updates member database with tracked game
+                        update = {'games' : {role.name : {'tracked' : True}}}
+                        UpdateMember(member, update)
+                        Log(f"Adding {role.name} to {member.name}'s data!", LogType.Log)
+
+                        added_games += 1
+            
+            for game in member_db['games']:
+                if "name" in game:
+                    del member_db['games']["name"]
+                    cleanups += 1
+
+                if "last_played" in game:
+                    del member_db['games']["last_played"]
+                    cleanups +=1
+
+        await ctx.reply(f"I have completed syncing member roles with the database! I found and added {added_games} missed games and cleaned up {cleanups} entries!")
