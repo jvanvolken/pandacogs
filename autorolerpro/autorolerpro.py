@@ -1615,9 +1615,6 @@ class AutoRolerPro(commands.Cog):
     @commands.command()
     async def get_scores(self, ctx):
         '''Returns the bottom 10 game scores'''
-        
-        days_to_score = None
-        scores_to_return = None
 
         # Initialize the playtime message and game refernces for the games played
         game_refs = {}
@@ -1626,10 +1623,6 @@ class AutoRolerPro(commands.Cog):
             # Get number of days since last played
             last_played = GetLastPlayed(game_name)
             
-            # if not days_to_score or last_played and last_played < days_to_score:
-            #     if days_to_score:
-            #         score = playtime*(math.log(days_to_score) - math.log(last_played))
-            #     else:
             if last_played:
                 score = playtime/last_played
             else:
@@ -1637,22 +1630,19 @@ class AutoRolerPro(commands.Cog):
 
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
-            Log(f"{game_name} Score Details: {score}, {last_played}, {playtime}", LogType.Debug)
 
-        if scores_to_return:
-            # Sort the list by highest hours played and shrink to count
-            sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)[:scores_to_return]
-        else: 
-            # Sort the entire list by highest hours played
-            sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=True)
+        # Sort the entire list by highest hours played
+        sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)
 
-        index = 0
-        playtime_message = ""
-        for game_name, score in dict(sorted_list).items():
-            playtime_message += f"**{game_name}**: *{score}*\n"
+        await ctx.reply(str(sorted_list))
 
-            index += 1
-            if index >= 30:
-                await ctx.reply(playtime_message)
-                playtime_message = ""
-                index = 0
+        # index = 0
+        # playtime_message = ""
+        # for game_name, score in dict(sorted_list).items():
+        #     playtime_message += f"**{game_name}**: *{score}*\n"
+
+        #     index += 1
+        #     if index >= 30:
+        #         await ctx.reply(playtime_message)
+        #         playtime_message = ""
+        #         index = 0
