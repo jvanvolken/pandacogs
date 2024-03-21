@@ -1653,7 +1653,7 @@ class AutoRolerPro(commands.Cog):
 
         # Sort the entire list by highest hours played
         game, score = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0]
-        await ctx.reply(f"{game} with a score of {score}")
+        await ctx.reply(f"`{game}` has the lowest score with {score} points.")
 
         # index = 0
         # playtime_message = ""
