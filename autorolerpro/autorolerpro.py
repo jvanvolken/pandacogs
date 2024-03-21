@@ -1649,6 +1649,8 @@ class AutoRolerPro(commands.Cog):
             # Store a reference of the game data in game_refs
             game_refs[game_name] = score
 
+            Log(f"{game_name} Details: {score} = ({num_players} + {playtime})/{last_played}", LogType.Debug)
+            
         # Sort the entire list by highest hours played
         sorted_list = sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[:20]
 
