@@ -118,9 +118,12 @@ if os.path.isfile(config_file):
             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
 
     # Remove config not in default config
+    to_delete = set()
     for entry, _ in config.items():
         if entry not in default_config:
-            del config[entry]
+            to_delete.add(config[entry])
+    for entry in to_delete:
+        del entry
 
     # Saves the updated config file if necessary
     if update_flags[FlagType.Config]['status']:
