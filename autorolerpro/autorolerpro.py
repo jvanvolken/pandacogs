@@ -1758,7 +1758,7 @@ class AutoRolerPro(commands.Cog):
 
         # Collects a list of duplicate roles from the server and deletes them
         seen = set()
-        duplicates = [v for v in guild.roles if v in seen or seen.add(v)] 
+        duplicates = [v for v in guild.roles if v.name in seen or seen.add(v.name)] 
         for role in duplicates:
             await role.delete()
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
