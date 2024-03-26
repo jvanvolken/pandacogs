@@ -417,13 +417,13 @@ def GetNumberOfPlayers(game_name: str):
         return False
 
 # Scores all games and returns the lowest
-def GetLowestScoringGame():
+def GetLowestScoringGame(black_list: list):
     # Initialize the playtime message and game refernces for the games played
     game_refs = {}
     for game_name, playtime in GetPlaytime(games).items():
 
-        # Skip games without a role assigned to them
-        if games[game_name]["role"] == None:
+        # Skip blacklisted games or games without a role assigned to them
+        if games[game_name]["role"] == None or game_name in black_list:
             continue
 
         # Get number of days since last played and the number of players
@@ -459,7 +459,7 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
             Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
 
             # Grab the lowest ranking game from the server
-            game, _ = GetLowestScoringGame()
+            game, _ = GetLowestScoringGame([role_name])
             lowest_game = games[game]
 
             # Use the role ID to delete role from server
@@ -1128,7 +1128,7 @@ class PageView(discord.ui.View):
             if list_type is ListType.Remove_Alias:
                 self.role = None
             else:
-                self.role = self.guild.get_role(self.details['role'])
+                self.role = GetRole(guild, self.details['name'], True) #self.guild.get_role(self.details['role'])
 
             # Check if member has the role and set button color accordingly
             if self.member:
@@ -1452,7 +1452,7 @@ class AutoRolerPro(commands.Cog):
                 StartPlayingGame(current, game['name'])
                 
                 # Get the role associated with the current activity name (game name)
-                role = current.guild.get_role(game['role'])
+                role = GetRole(current.guild, game['name'], True) #current.guild.get_role(game['role'])
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
