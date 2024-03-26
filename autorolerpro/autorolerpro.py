@@ -1028,7 +1028,7 @@ class DirectMessageView(discord.ui.View):
 
 # Create a class called PageView that subclasses discord.ui.View
 class PageView(discord.ui.View):
-    def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
+    async def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
         self.original_message = original_message
         self.member = member
@@ -1040,7 +1040,7 @@ class PageView(discord.ui.View):
 
         # Populate the game buttons
         for name, details in list_sets[page - 1].items():
-            self.add_item(self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
+            self.add_item(await self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
         
     class NavigateButton(discord.ui.Button):
         def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
