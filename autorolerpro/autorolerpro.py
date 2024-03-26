@@ -442,9 +442,10 @@ def GetLowestScoringGame(black_list: list):
     return sorted(game_refs.items(), key = lambda x:x[1], reverse=False)[0] # Get the first entry with [0]
 
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
-async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False):
+async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False):
     # Search for an existing role
-    role: discord.Role = discord.utils.get(guild.roles, name = role_name)
+    role: discord.Role = games[game_name]['role']
+    # role: discord.Role = discord.utils.get(guild.roles, name = role_name)
 
     # If no role is found and create_new is true, create a new role
     if not role and create_new:
@@ -459,7 +460,7 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
             Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
 
             # Grab the lowest ranking game from the server
-            game, _ = GetLowestScoringGame([role_name])
+            game, _ = GetLowestScoringGame([game_name])
             lowest_game = games[game]
 
             # Use the role ID to delete role from server
@@ -471,10 +472,14 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
             Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!", LogType.Log)
         
         # Adds a new role to the server
-        role = await guild.create_role(name = role_name, mentionable = True)
-        Log(f"Created a new role, {role_name}! ID: ({role.id})", LogType.Log)
-    else:
-        return None
+        role = await guild.create_role(name = game_name, mentionable = True)
+        Log(f"Created a new role, {game_name}! ID: ({role.id})", LogType.Log)
+
+        # Stores the role for future use
+        games[game_name]['role'] = role.id
+
+        # Toggles the updated flag for games
+        UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
 
     return role
 
@@ -503,7 +508,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
     already_exists = {}
     failed_to_find = {}
 
-    async def AlreadyExists(game_name):
+    def AlreadyExists(game_name):
         # Checks if game_name is in aliases and grabs the actual name
         if game_name in aliases:
             actual_name = aliases[game_name]
@@ -513,23 +518,12 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Claims already existing game
         already_exists[actual_name] = games[actual_name]
 
-        # Adds missing role id
-        if "role" not in games[actual_name] or games[actual_name]["role"] == None:
-            # Looks for an existing role for the game
-            role = await GetRole(guild, game_name, True)
-            if role:
-                # Stores the role for future use
-                games[game_name]['role'] = role.id
-
-                # Toggles the updated flag for games
-                UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
-
     # Loops through the provided list of game names
     for game_name in game_list:
 
         # Checks if game already exists to avoid unnecessary API calls
         if game_name in games or game_name in aliases:
-            await AlreadyExists(game_name)
+            AlreadyExists(game_name)
 
             # Move onto the next game
             continue
@@ -537,7 +531,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             # Try a case-insensitive search next
             try:
                 game_name = [game for game in games if game.lower() == game_name.lower()][0]
-                await AlreadyExists(game_name)
+                AlreadyExists(game_name)
 
                 # Move onto the next game
                 continue
@@ -690,7 +684,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 # Toggles the updated flag for games
                 UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
             else:
-                Log(f"Failed to add new game, {top_game['name']}! Could not create a new role to give it!", LogType.Error)
+                Log(f"Failed to add new game, {top_game['name']}! Could not create a new role!", LogType.Error)
         else:
             failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
