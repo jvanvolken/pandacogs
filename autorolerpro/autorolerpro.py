@@ -87,14 +87,17 @@ default_config = {
         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
     },
     'ChannelIDs' : {
-        'General': 633799810700410882,
-        'Announcements': 634197647787556864,
-        'Admin': 1013251079418421248,
-        'Test': 665572348350693406
+        'General': 123456789123456789,
+        'Announcements': 123456789123456789,
+        'Admin': 123456789123456789,
+        'Test': 123456789123456789
+    },
+    'Roles' : {
+        'Admin': 123456789123456789,
+        'NewMember': 1020361048194301983
     },
     'WhitelistEnabled': False,
     'WhitelistMembers': [],
-    'AdminRole': 644687492569759791,
     'ActivityBlacklist': ["Spotify"],
     'DebugMode': True,
     'AliasMaxAttempts': 5,
@@ -113,6 +116,11 @@ if os.path.isfile(config_file):
         if entry not in config:
             config[entry] = value
             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
+
+    # Remove config not in default config
+    for entry, _ in config.items():
+        if entry not in default_config:
+            del config[entry]
 
     # Saves the updated config file if necessary
     if update_flags[FlagType.Config]['status']:
@@ -1575,13 +1583,13 @@ class AutoRolerPro(commands.Cog):
         guild: discord.Guild = ctx.message.guild
 
         # Exits if the member is not an admin
-        role: discord.Role = guild.get_role(config['AdminRole'])
+        role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}` - I'm, therefore, unable to verify your admin rights!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -1640,13 +1648,13 @@ class AutoRolerPro(commands.Cog):
         guild: discord.Guild = ctx.message.guild
 
         # Exits if the member is not an admin
-        role = guild.get_role(config['AdminRole'])
+        role = guild.get_role(config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}` - I'm, therefore, unable to verify your admin rights!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         await AddAlias(self.bot, ctx.guild, arg)
@@ -1659,13 +1667,13 @@ class AutoRolerPro(commands.Cog):
         guild: discord.Guild = ctx.message.guild
 
         # Exits if the member is not an admin
-        role = guild.get_role(config['AdminRole'])
+        role = guild.get_role(config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['AdminRole']}> role to add aliases!")
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['AdminRole']}` - I'm, therefore, unable to verify your admin rights!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         if len(aliases) > 0:
