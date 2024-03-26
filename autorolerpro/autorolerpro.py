@@ -479,7 +479,7 @@ async def GetRole(guild: discord.Guild, role_name: str, create_new: bool = False
     return role
 
 # Removes game from games list and saves to file
-async def RemoveGame(role: discord.Role, game_name: str):
+async def RemoveGame(game_name: str, role: discord.Role = None):
     if game_name in games:
         # Delete the role if found, if role doesn't exist, do nothing
         if role:
@@ -503,7 +503,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
     already_exists = {}
     failed_to_find = {}
 
-    def AlreadyExists(game_name):
+    async def AlreadyExists(game_name):
         # Checks if game_name is in aliases and grabs the actual name
         if game_name in aliases:
             actual_name = aliases[game_name]
@@ -516,7 +516,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Adds missing role id
         if "role" not in games[actual_name] or games[actual_name]["role"] == None:
             # Looks for an existing role for the game
-            role = GetRole(guild, game_name, True)
+            role = await GetRole(guild, game_name, True)
             if role:
                 # Stores the role for future use
                 games[game_name]['role'] = role.id
@@ -529,7 +529,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
         # Checks if game already exists to avoid unnecessary API calls
         if game_name in games or game_name in aliases:
-            AlreadyExists(game_name)
+            await AlreadyExists(game_name)
 
             # Move onto the next game
             continue
@@ -537,7 +537,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             # Try a case-insensitive search next
             try:
                 game_name = [game for game in games if game.lower() == game_name.lower()][0]
-                AlreadyExists(game_name)
+                await AlreadyExists(game_name)
 
                 # Move onto the next game
                 continue
@@ -1111,7 +1111,7 @@ class PageView(discord.ui.View):
                 
             
     class ItemButton(discord.ui.Button):
-        def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
+        async def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
             # Instantiate button variables
             self.original_message = original_message
             self.list_type = list_type
@@ -1124,15 +1124,12 @@ class PageView(discord.ui.View):
             self.member = member
             self.sort = sort
 
-            # Grabs role from guild
-            if list_type is ListType.Remove_Alias:
-                self.role = None
-            else:
-                self.role = GetRole(guild, self.details['name'], True) #self.guild.get_role(self.details['role'])
+            # Get a list of member's game
+            member_games = members[self.member.name]['games']
 
             # Check if member has the role and set button color accordingly
             if self.member:
-                if self.role in self.member.roles:
+                if self.name in member_games and member_games[self.name]['tracked']:
                     button_style = discord.ButtonStyle.success
                 else:
                     button_style = discord.ButtonStyle.secondary
@@ -1148,54 +1145,55 @@ class PageView(discord.ui.View):
                 else:
                     await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
                 return
-
-            # Should not be missing role by this stage, log error if missing
-            if self.list_type != ListType.Remove_Alias and self.role == None:
-                error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
-                
-                # Log error and message user about failure
-                Log(error_message, LogType.Error)
-                await interaction.response.send_message(error_message, ephemeral = True)
-
-                # Do not continue if role is missing
-                return
+            
+            # Get a list of member's game
+            member_games = members[self.member.name]['games']
             
             if self.list_type is ListType.Select_Game:
-                # Looks for the role with the same name as the game
-                if self.role:
-                    if self.role in interaction.user.roles:
-                        # Assign role to member
-                        member = interaction.user
-                        await member.remove_roles(self.role)
+                if self.name in member_games and member_games[self.name]['tracked']:
+                    # Assign role to member
+                    member = interaction.user
+                    role = GetRole(self.guild, self.name)
+                    if role:
+                        await member.remove_roles(role)
 
-                        # Updates member details
-                        update = {'games' : {self.name : {'tracked' : False}}}
-                        UpdateMember(member, update)
+                    # Updates member details
+                    update = {'games' : {self.name : {'tracked' : False}}}
+                    UpdateMember(member, update)
 
-                        view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                        view.message = await interaction.message.edit(view = view)
+                    view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                    view.message = await interaction.message.edit(view = view)
 
-                        await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
-                    else:
-                        # Assign role to member
-                        member = interaction.user
-                        await member.add_roles(self.role)
-
-                        # Updates member details
-                        update = {'games' : {self.name : {'tracked' : True}}}
-                        UpdateMember(member, update)
-
-                        view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                        view.message = await interaction.message.edit(view = view)
-
-                        # Informs the user that the role has been assigned to them
-                        await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
+                    await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
                 else:
-                    await interaction.response.send_message(f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using !add_games {self.name}", ephemeral = True)
+                    # Assign role to member
+                    member = interaction.user
+                    role = GetRole(self.guild, self.name, True)
+                    if not role:
+                        error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
+            
+                        # Log error and message user about failure
+                        Log(error_message, LogType.Error)
+                        await interaction.response.send_message(error_message, ephemeral = True)
+
+                        # Do not continue if role is missing
+                        return
+                    
+                    await member.add_roles(role)
+
+                    # Updates member details
+                    update = {'games' : {self.name : {'tracked' : True}}}
+                    UpdateMember(member, update)
+
+                    view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
+                    view.message = await interaction.message.edit(view = view)
+
+                    # Informs the user that the role has been assigned to them
+                    await interaction.response.send_message(f"Added you to the `{self.name}` role!", ephemeral = True, delete_after = 10)
 
             elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
-                if await RemoveGame(self.role, self.name):
+                if await RemoveGame(self.name, GetRole(self.guild, self.name)):
                     self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
                     self.page_count = len(self.list_sets)
 
@@ -1452,7 +1450,7 @@ class AutoRolerPro(commands.Cog):
                 StartPlayingGame(current, game['name'])
                 
                 # Get the role associated with the current activity name (game name)
-                role = GetRole(current.guild, game['name'], True) #current.guild.get_role(game['role'])
+                role = await GetRole(current.guild, game['name'], True) #current.guild.get_role(game['role'])
                 
                 # When somebody starts playing a game and if they are part of the role
                 if role in current.roles and game['name'] in member['games']: 
