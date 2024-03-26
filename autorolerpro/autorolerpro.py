@@ -1028,7 +1028,7 @@ class DirectMessageView(discord.ui.View):
 
 # Create a class called PageView that subclasses discord.ui.View
 class PageView(discord.ui.View):
-    async def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
+    def __init__(self, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member = None, sort: SortType = SortType.Alphabetical):
         super().__init__(timeout = 60 * 60 * 12) # Times out after 12 hours 
         self.original_message = original_message
         self.member = member
@@ -1040,7 +1040,7 @@ class PageView(discord.ui.View):
 
         # Populate the game buttons
         for name, details in list_sets[page - 1].items():
-            self.add_item(await self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
+            self.add_item(self.ItemButton(original_message, list_type, name, details, list_sets, list_filter, page, guild, member, sort))
         
     class NavigateButton(discord.ui.Button):
         def __init__(self, nav_type: NavigationType, original_message: str, list_type: ListType, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
@@ -1111,7 +1111,7 @@ class PageView(discord.ui.View):
                 
             
     class ItemButton(discord.ui.Button):
-        async def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
+        def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
             # Instantiate button variables
             self.original_message = original_message
             self.list_type = list_type
@@ -1153,7 +1153,7 @@ class PageView(discord.ui.View):
                 if self.name in member_games and member_games[self.name]['tracked']:
                     # Assign role to member
                     member = interaction.user
-                    role = GetRole(self.guild, self.name)
+                    role = await GetRole(self.guild, self.name)
                     if role:
                         await member.remove_roles(role)
 
@@ -1168,7 +1168,7 @@ class PageView(discord.ui.View):
                 else:
                     # Assign role to member
                     member = interaction.user
-                    role = GetRole(self.guild, self.name, True)
+                    role = await GetRole(self.guild, self.name, True)
                     if not role:
                         error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
             
@@ -1521,7 +1521,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
-                view = await PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
+                view = PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -1547,32 +1547,32 @@ class AutoRolerPro(commands.Cog):
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"I already have all of these recorded! {member.mention}, how about you do a little more research before asking questions."
-            view = await PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
-            view = await PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
-            view = await PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = await PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
-            view = await PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = await PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
@@ -1601,7 +1601,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
-                view = await PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
+                view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -1684,7 +1684,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any aliases similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
-                view = await PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
+                view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
