@@ -1521,7 +1521,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
-                view = PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
+                view = await PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -1547,32 +1547,32 @@ class AutoRolerPro(commands.Cog):
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"I already have all of these recorded! {member.mention}, how about you do a little more research before asking questions."
-            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
-            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
+            view = await PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
     @commands.command()
@@ -1601,7 +1601,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
-                view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
+                view = await PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
@@ -1684,7 +1684,7 @@ class AutoRolerPro(commands.Cog):
                 await ctx.reply(f"Could not find any aliases similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
-                view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
+                view = await PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
                 view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
