@@ -87,14 +87,14 @@ default_config = {
         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
     },
     'ChannelIDs' : {
-        'General': 123456789123456789,
-        'Announcements': 123456789123456789,
-        'Admin': 123456789123456789,
-        'Test': 123456789123456789
+        'General': 000000000000000000,
+        'Announcements': 000000000000000000,
+        'Admin': 000000000000000000,
+        'Test': 000000000000000000
     },
     'Roles' : {
-        'Admin': 123456789123456789,
-        'NewMember': 1020361048194301983
+        'Admin': 000000000000000000,
+        'NewMember': None
     },
     'WhitelistEnabled': False,
     'WhitelistMembers': [],
@@ -116,14 +116,6 @@ if os.path.isfile(config_file):
         if entry not in config:
             config[entry] = value
             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
-
-    # Remove config not in default config
-    to_delete = set()
-    for entry, _ in config.items():
-        if entry not in default_config:
-            to_delete.add(config[entry])
-    for entry in to_delete:
-        del entry
 
     # Saves the updated config file if necessary
     if update_flags[FlagType.Config]['status']:
