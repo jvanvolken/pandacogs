@@ -483,13 +483,12 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
     return role
 
 # Removes game from games list and saves to file
-async def RemoveGame(game_name: str, role: discord.Role = None):
+async def RemoveGame(game_name: str, guild: discord.Guild):
     if game_name in games:
+        role = await GetRole(guild, game_name)
         # Delete the role if found, if role doesn't exist, do nothing
         if role:
             await role.delete()
-        else:
-            Log(f"Failed to remove game. Could not find this role: `{game_name}`!", LogType.Warning)
 
         del games[game_name]
 
@@ -1186,7 +1185,7 @@ class PageView(discord.ui.View):
 
             elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
-                if await RemoveGame(self.name, GetRole(self.guild, self.name)):
+                if await RemoveGame(self.name, self.guild):
                     self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
                     self.page_count = len(self.list_sets)
 
