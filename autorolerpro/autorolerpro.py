@@ -1382,7 +1382,7 @@ class AutoRolerPro(commands.Cog):
 
         # If the role exists, add it to the member
         if role:
-            await member.add_roles(self.role)
+            await member.add_roles(role)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
