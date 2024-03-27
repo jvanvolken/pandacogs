@@ -106,7 +106,7 @@ default_config = {
     'MaxRoleCount' : 200
 }
 
-# Initializes config
+# Initializes config 
 if os.path.isfile(config_file):
     with open(config_file, "r") as fp:
         config = json.load(fp)
@@ -1371,7 +1371,18 @@ class AutoRolerPro(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        """Assigned the New Member role to new members when they join the server"""
         Log(f"{member.name} has joined the server!")
+        
+        # Grab the member's associated guild
+        guild: discord.Guild = member.guild
+
+        # Grab the new-member role from the config
+        role = guild.get_role(config['Roles']['NewMember'])
+
+        # If the role exists, add it to the member
+        if role:
+            await member.add_roles(self.role)
 
     # Detect when a member's presence changes
     @commands.Cog.listener(name='on_presence_update')
@@ -1686,14 +1697,14 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def top_games(self, ctx):
-        '''Returns the top 5 games played in the server or by yourself.'''
+        """Returns the top 5 games played in the server or by yourself."""
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
 
     @commands.command()
     async def set_channel(self, ctx, arg):
-        '''Sets the channel for bot announcements'''
+        """Sets the channel for bot announcements"""
         guild: discord.Guild  = ctx.guild
 
         channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
@@ -1709,14 +1720,14 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def get_lowest(self, ctx):
-        '''Returns the lowest scoring game'''
+        """Returns the lowest scoring game"""
 
         game, score = GetLowestScoringGame()
         await ctx.reply(f"`{game}` has the lowest score with {score} points.")
 
     @commands.command()
     async def sync_db(self, ctx):
-        '''Loops through each member and verifies the database is in sync'''
+        """Loops through each member and verifies the database is in sync"""
 
         guild: discord.Guild = ctx.guild
         Log(f"Initializing Role Synchronization!", LogType.Log)
