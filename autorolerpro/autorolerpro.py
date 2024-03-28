@@ -427,7 +427,7 @@ def GetLowestScoringGame(black_list: list):
     for game_name, playtime in GetPlaytime(games).items():
 
         # Skip blacklisted games or games without a role assigned to them
-        if games[game_name]["role"] == None or game_name in black_list:
+        if game_name in black_list or games[game_name]["role"] == None:
             continue
 
         # Get number of days since last played and the number of players
