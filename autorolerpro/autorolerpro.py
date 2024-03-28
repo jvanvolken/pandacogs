@@ -447,7 +447,7 @@ def GetLowestScoringGame(black_list: list):
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
 async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False):
     # Search for an existing role, returns None if role does not exist
-    if game_name in games:
+    if game_name in games and 'role' in games[game_name]:
         role: discord.Role = guild.get_role(games[game_name]['role'])
     else:
         role = None
