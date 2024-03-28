@@ -86,13 +86,13 @@ default_config = {
     'Links': {
         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
     },
-    'ChannelIDs' : {
+    'ChannelIDs': {
         'General': 000000000000000000,
         'Announcements': 000000000000000000,
         'Admin': 000000000000000000,
         'Test': 000000000000000000
     },
-    'Roles' : {
+    'Roles': {
         'Admin': 000000000000000000,
         'NewMember': None
     },
@@ -103,7 +103,8 @@ default_config = {
     'AliasMaxAttempts': 5,
     'BackupFrequency': 1,
     'AllowEroticTitles': False,
-    'MaxRoleCount' : 200
+    'MaxRoleCount': 200,
+    'DefaultGameCover': "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
 }
 
 # Initializes config 
@@ -216,7 +217,7 @@ def GetCoverUrl(game_id):
 
         return url
     else:
-        return None
+        return config['DefaultGameCover']
     
 # Returns a list of image files
 async def GetImages(game_list: dict):
@@ -1104,8 +1105,7 @@ class PageView(discord.ui.View):
                 view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the game(s) you'd like to remove...*", view = view)
             if self.list_type is ListType.Remove_Alias:
                 view.message = await interaction.response.edit_message(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.goto} of {self.page_count})` Please select the aliases you'd like to remove...*", view = view)
-                
-            
+
     class ItemButton(discord.ui.Button):
         def __init__(self, original_message: str, list_type: ListType, name: str, details: dict, list_sets: list, list_filter: str, page: int, guild: discord.Guild, member: discord.Member, sort: SortType):
             # Instantiate button variables
@@ -1319,7 +1319,7 @@ class AutoRolerPro(commands.Cog):
     @tasks.loop(minutes = config['BackupFrequency'])
     async def BackupRoutine(self):
         # Initializes the log message
-        log_message = f"Initiating routine data backup sequence ------------------------------"
+        log_message = ""
 
         # Returns true if games flag is updated
         game_flag = update_flags[FlagType.Games]
@@ -1369,8 +1369,13 @@ class AutoRolerPro(commands.Cog):
             # Resets flag
             UpdateFlag(FlagType.Config)
 
-        # Logs the events of the backup routine
-        Log(log_message, LogType.Log)
+        # Print log if not empty
+        if log_message:
+            # Construct log header
+            log_header = f"Initiating routine data backup sequence ------------------------------"
+            
+            # Logs the events of the backup routine
+            Log(f"{log_header}\n{log_message}", LogType.Log)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
