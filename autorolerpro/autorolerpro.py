@@ -1119,11 +1119,11 @@ class PageView(discord.ui.View):
             self.member = member
             self.sort = sort
 
-            # Get a list of member's game
-            member_games = members[self.member.name]['games']
-
             # Check if member has the role and set button color accordingly
             if self.member:
+                # Get a list of member's game
+                member_games = members[self.member.name]['games']
+
                 if self.name in member_games and member_games[self.name]['tracked']:
                     button_style = discord.ButtonStyle.success
                 else:
@@ -1141,13 +1141,15 @@ class PageView(discord.ui.View):
                     await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
                 return
             
+            # Get member
+            member = interaction.user
+
             # Get a list of member's game
-            member_games = members[self.member.name]['games']
+            member_games = members[member.name]['games']
             
             if self.list_type is ListType.Select_Game:
                 if self.name in member_games and member_games[self.name]['tracked']:
                     # Assign role to member
-                    member = interaction.user
                     role = await GetRole(self.guild, self.name)
                     if role:
                         await member.remove_roles(role)
