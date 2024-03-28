@@ -1375,7 +1375,7 @@ class AutoRolerPro(commands.Cog):
             log_header = f"Initiating routine data backup sequence ------------------------------"
             
             # Logs the events of the backup routine
-            Log(f"{log_header}\n{log_message}", LogType.Log)
+            Log(f"{log_header}{log_message}", LogType.Log)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
