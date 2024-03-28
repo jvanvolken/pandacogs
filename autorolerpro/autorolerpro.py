@@ -671,19 +671,16 @@ async def AddGames(guild: discord.Guild, game_list: list):
             color = GetDominantColor(url)
             # TODO: Shift this color towards middle tones
 
+            # Adds the latest_game to the new_games list to return
+            new_games[top_game['name']] = top_game
+
+            # Add game to game list and saves file
+            games[top_game['name']] = top_game
+            
             role: discord.Role = await GetRole(guild, top_game['name'], True)
             if role:
                 # Edits the role color to match the dominant color
                 await role.edit(colour = discord.Colour(int(color, 16)))
-
-                # Stores the role for future use
-                top_game['role'] = role.id
-
-                # Adds the latest_game to the new_games list to return
-                new_games[top_game['name']] = top_game
-
-                # Add game to game list and saves file
-                games[top_game['name']] = top_game
 
                 # Toggles the updated flag for games
                 UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
