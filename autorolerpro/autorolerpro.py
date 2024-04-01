@@ -1,9 +1,8 @@
 
+import traceback
 import unicodedata
 import requests
 import discord
-import difflib
-import string
 import math
 import json
 import os
@@ -941,11 +940,11 @@ class DirectMessageView(discord.ui.View):
 
         self.add_item(self.YesButton(self.original_message, self.role, self.member, self.game))
         self.add_item(self.NoButton(self.original_message, self.role, self.member, self.game))
-        self.add_item(self.OptOutButton(self.original_message, self.role, self.member, self.game))
+        self.add_item(self.OptOutButton(self.original_message, self.member, self.game))
 
     # Create a class called YesButton that subclasses discord.ui.Button
     class YesButton(discord.ui.Button):
-        def __init__(self, original_message, role, member, game):
+        def __init__(self, original_message: str, role: discord.Role, member: discord.Member, game):
             super().__init__(label = "YES", style = discord.ButtonStyle.success, emoji = "😀")
             self.original_message = original_message
             self.role = role
@@ -966,13 +965,14 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Thank you for your understanding while we sort through these early Beta Bugs!")
-                Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role ID: {str(self.role)}", LogType.Error)
+                Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role Check: {str(self.role)}", LogType.Error)
+                Log(traceback.format_exc(), LogType.Error)
                 Log(error, LogType.Error)
                 raise Exception(error)
                 
     # Create a class called NoButton that subclasses discord.ui.Button             
     class NoButton(discord.ui.Button):
-        def __init__(self, original_message, role, member, game):
+        def __init__(self, original_message: str, role: discord.Role, member: discord.Member, game):
             super().__init__(label = "NO", style = discord.ButtonStyle.secondary, emoji = "😕")
             self.original_message = original_message
             self.role = role
@@ -998,10 +998,9 @@ class DirectMessageView(discord.ui.View):
               
     # Create a class called OptOutButton that subclasses discord.ui.Button                   
     class OptOutButton(discord.ui.Button):
-        def __init__(self, original_message, role, member, game):
+        def __init__(self, original_message: str, member: discord.Member, game):
             super().__init__(label = "OPT OUT", style = discord.ButtonStyle.danger, emoji = "😭")
             self.original_message = original_message
-            self.role = role
             self.member = member
             self.game = game
 
