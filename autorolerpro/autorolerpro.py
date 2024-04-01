@@ -964,7 +964,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
-                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Thank you for your understanding while we sort through these early Beta Bugs!")
+                await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please try again later and thank you for your understanding while we sort through these early beta bugs!")
                 Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role Check: {str(self.role)}", LogType.Error)
                 Log(traceback.format_exc(), LogType.Error)
                 Log(error, LogType.Error)
