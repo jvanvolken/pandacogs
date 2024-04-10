@@ -27,7 +27,9 @@ class MediaDownloader(commands.Cog):
         member: discord.Member = ctx.message.author
         guild: discord.Guild = ctx.message.guild
 
-        if guild.get_channel(channel):
+
+
+        if "id" in channel and guild.get_channel(channel.id):
             await ctx.reply(f"{channel} is a channel!")
         else:
             await ctx.reply(f"{channel} is not a channel!")
