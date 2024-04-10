@@ -6,9 +6,10 @@ import os
 import discord
 from redbot.core import commands
 
-# Cog Directory in Appdata
-docker_cog_path  = "/data/cogs/MediaDownloader"
-config_file      = f"{docker_cog_path}/config.json"
+# Setup Cog Directories
+media_archive_path = "/archive"
+docker_cog_path    = "/data/cogs/MediaDownloader"
+config_file        = f"{docker_cog_path}/config.json"
 
 # Create the docker_cog_path if it doesn't already exist
 os.makedirs(docker_cog_path, exist_ok = True)
@@ -60,8 +61,13 @@ class MediaDownloader(commands.Cog):
             # Loop through the messages and count the attachments if any
             media_count = 0
             for msg in messages:
-                if msg.attachments:
-                    media_count += len(msg.attachments)
+                for attachment in msg.attachments:
+                    media_count += 1
+                    if media_count < 10:
+                        media_path = f"{media_archive_path}/{attachment.filename}"
+                        if not os.path.isfile(media_path):
+                            await attachment.save(media_path)
+
 
             # Reply with the media count, giving a special case for '1'
             if media_count == 1:
