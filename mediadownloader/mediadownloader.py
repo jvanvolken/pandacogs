@@ -31,7 +31,7 @@ class MediaDownloader(commands.Cog):
         channel = guild.get_channel(int(channel_id))
 
         if channel:
-            messages = await channel.history(limit=200).flatten()
+            messages = [msg async for msg in channel.history(limit=200)]
 
             media_count = 0
             for msg in messages:
