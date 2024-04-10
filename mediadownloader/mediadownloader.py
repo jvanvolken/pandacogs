@@ -1,7 +1,30 @@
 
+import json
+import os
+
 # Discord Bot Libraries
 import discord
 from redbot.core import commands
+
+# Cog Directory in Appdata
+docker_cog_path  = "/data/cogs/MediaDownloader"
+config_file      = f"{docker_cog_path}/config.json"
+
+# Create the docker_cog_path if it doesn't already exist
+os.makedirs(docker_cog_path, exist_ok = True)
+
+default_config = {
+    "Archive Directory": ""
+}
+
+# Initializes config 
+if os.path.isfile(config_file):
+    with open(config_file, "r") as fp:
+        config = json.load(fp)
+else:
+    config = default_config
+    with open(config_file, "w") as fp:
+        json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
 
 class MediaDownloader(commands.Cog):
     """My custom cog"""
@@ -48,3 +71,26 @@ class MediaDownloader(commands.Cog):
         else:
             # Tell the user that they provided an invalid channel.
             await ctx.reply(f"Could not find the channel, {arg}! Please try again!")
+
+
+    @commands.command()
+    async def check_path(self, ctx):
+        """Checks path for existance"""
+
+        path = docker_cog_path
+        if os.path.exists(path):
+            await ctx.channel.send(f"{path} exists!")
+        else:
+            await ctx.channel.send(f"{path} does not exist!")
+
+        path = "/data"
+        if os.path.exists(path):
+            await ctx.channel.send(f"{path} exists!")
+        else:
+            await ctx.channel.send(f"{path} does not exist!")
+
+        path = "/archive"
+        if os.path.exists(path):
+            await ctx.channel.send(f"{path} exists!")
+        else:
+            await ctx.channel.send(f"{path} does not exist!")
