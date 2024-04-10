@@ -38,6 +38,9 @@ class MediaDownloader(commands.Cog):
                 if msg.attachments:
                     media_count += len(msg.attachments)
 
-            await ctx.reply(f"Within the last 200 messages in {arg}, there is {media_count} attachments!")
+            if media_count == 1:
+                await ctx.reply(f"Within the last 200 messages in {arg}, there is {media_count} attachment!")
+            else:
+                await ctx.reply(f"Within the last 200 messages in {arg}, there are {media_count} attachments!")
         else:
             await ctx.reply(f"Could not find the channel, {arg}!")
