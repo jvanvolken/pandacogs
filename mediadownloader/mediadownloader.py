@@ -31,12 +31,13 @@ class MediaDownloader(commands.Cog):
         channel = guild.get_channel(int(channel_id))
 
         if channel:
-            await ctx.reply(f"{channel} is a channel!")
+            messages = await channel.history(limit=200).flatten()
+
+            media_count = 0
+            for msg in messages:
+                if msg.attachments:
+                    media_count += len(msg.attachments)
+
+            await ctx.reply(f"Within the last 200 messages in {arg}, there is {media_count} attachments!")
         else:
-            await ctx.reply(f"{channel} is not a channel!")
-
-        # messages = await ctx.channel.history(limit=200).flatten()
-
-        # for msg in messages:
-        #     if word in msg.content:
-        #         print(msg.jump_url)
+            await ctx.reply(f"Could not find the channel, {arg}!")
