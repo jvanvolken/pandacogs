@@ -20,16 +20,17 @@ class MediaDownloader(commands.Cog):
         await ctx.reply("Hello World!")
     
     @commands.command()
-    async def get_media(self, ctx, channel):
+    async def get_media(self, ctx, arg: str):
         """Get the media from the last 200 messages\n Usage: !get_media <channel>"""
 
         # Get member that sent the command
         member: discord.Member = ctx.message.author
         guild: discord.Guild = ctx.message.guild
 
+        channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
+        channel = guild.get_channel(int(channel_id))
 
-
-        if channel.id and guild.get_channel(channel.id):
+        if channel:
             await ctx.reply(f"{channel} is a channel!")
         else:
             await ctx.reply(f"{channel} is not a channel!")
