@@ -29,7 +29,7 @@ class MediaDownloader(commands.Cog):
 
 
 
-        if "id" in channel and guild.get_channel(channel.id):
+        if channel.id and guild.get_channel(channel.id):
             await ctx.reply(f"{channel} is a channel!")
         else:
             await ctx.reply(f"{channel} is not a channel!")
