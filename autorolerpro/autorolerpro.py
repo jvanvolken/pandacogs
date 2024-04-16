@@ -1647,7 +1647,7 @@ class AutoRolerPro(commands.Cog):
                     # If the current length of the message exceeds 1000 characters, start a new message
                     if len(messages[message_queue]) > 1000:
                         message_queue += 1
-                        messages[message_queue] += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n```\n"
+                        messages[message_queue] = f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n```\n"
                     
                     # Add alias to message
                     messages[message_queue] += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
