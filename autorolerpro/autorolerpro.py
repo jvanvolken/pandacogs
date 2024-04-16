@@ -1632,24 +1632,35 @@ class AutoRolerPro(commands.Cog):
             longest_game_name = max(list(sorted_aliases.values()), key=len)
 
             prev_game = ""
-            index = 1
             # Sets up the message to reply with
-            message = "__**Here's that list of game aliases you asked for!**__\n```\n"
-            message += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n"
+            messages = []
+            messages[0] = "__**Here's that list of game aliases you asked for!**__\n```\n"
+            messages[0] += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n"
 
+            index = 1
+            message_queue = 0
             for alias, game in sorted_aliases.items():
+                # Always include prev game aliases with it's parent game
                 if game == prev_game:
-                    message += f"{''.ljust(len(longest_game_name)+5)} : {alias.ljust(len(longest_alias))}\n"
+                    messages[message_queue] += f"{''.ljust(len(longest_game_name)+5)} : {alias.ljust(len(longest_alias))}\n"
                 else:
-                    message += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
+                    # If the current length of the message exceeds 1000 characters, start a new message
+                    if len(messages[message_queue]) > 1000:
+                        message_queue += 1
+                        messages[message_queue] += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n```\n"
+                    
+                    # Add alias to message
+                    messages[message_queue] += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
                     index += 1
 
+                # Store the game to compare with the next game
                 prev_game = game
 
-            message += "```"
+            messages[message_queue] += "```"
 
             # Replies with the message
-            await ctx.reply(message)
+            for message in messages:
+                await ctx.reply(message)
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
     
