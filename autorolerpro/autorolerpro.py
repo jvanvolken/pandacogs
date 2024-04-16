@@ -1647,12 +1647,13 @@ class AutoRolerPro(commands.Cog):
                     messages.insert(message_queue, f"```\n{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n")
                     
                 # Provide whitespace if previous game is the same as the current game
-                if game == prev_game:
+                if game == prev_game and len(messages[message_queue]) < 100:
                     messages[message_queue] += f"{''.ljust(len(longest_game_name)+5)} : {alias.ljust(len(longest_alias))}\n"
                 else:
                     # Add alias to message
                     messages[message_queue] += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
-                    index += 1
+                    if len(messages[message_queue]) >= 100:
+                        index += 1
 
                 # Store the game to compare with the next game
                 prev_game = game
