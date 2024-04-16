@@ -1641,7 +1641,7 @@ class AutoRolerPro(commands.Cog):
             message_queue = 0
             for alias, game in sorted_aliases.items():
                 # If the current length of the message exceeds 1000 characters, start a new message
-                if len(messages[message_queue]) > 1000:
+                if len(messages[message_queue]) > 1500:
                     messages[message_queue] += "```"
                     message_queue += 1
                     messages.insert(message_queue, f"```\n{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n")
@@ -1653,6 +1653,7 @@ class AutoRolerPro(commands.Cog):
                     # Add alias to message
                     if len(messages[message_queue]) > 100:
                         index += 1
+
                     messages[message_queue] += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
 
                 # Store the game to compare with the next game
