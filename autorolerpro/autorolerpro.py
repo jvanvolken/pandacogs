@@ -1633,7 +1633,7 @@ class AutoRolerPro(commands.Cog):
 
             prev_game = ""
             # Sets up the message to reply with
-            messages = []
+            messages = {}
             messages[0] = "__**Here's that list of game aliases you asked for!**__\n```\n"
             messages[0] += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n"
 
