@@ -1633,8 +1633,8 @@ class AutoRolerPro(commands.Cog):
 
             prev_game = ""
             # Sets up the message to reply with
-            messages = {}
-            messages[0] = "__**Here's that list of game aliases you asked for!**__\n```\n"
+            messages = []
+            messages.insert(0, "__**Here's that list of game aliases you asked for!**__\n```\n")
             messages[0] += f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n"
 
             index = 1
@@ -1647,7 +1647,7 @@ class AutoRolerPro(commands.Cog):
                     # If the current length of the message exceeds 1000 characters, start a new message
                     if len(messages[message_queue]) > 1000:
                         message_queue += 1
-                        messages[message_queue] = f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n```\n"
+                        messages.insert(message_queue, f"{'---- GAME '.ljust(len(longest_game_name)+7, '-')}{' ALIAS '.ljust(len(longest_alias), '-')}\n```\n")
                     
                     # Add alias to message
                     messages[message_queue] += f"{str(index).rjust(3)}) {game.ljust(len(longest_game_name))} : {alias.ljust(len(longest_alias))}\n"
@@ -1659,8 +1659,8 @@ class AutoRolerPro(commands.Cog):
             messages[message_queue] += "```"
 
             # Replies with the message
-            for message in messages:
-                await ctx.reply(message)
+            for i in messages:
+                await ctx.reply(messages[i])
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
     
