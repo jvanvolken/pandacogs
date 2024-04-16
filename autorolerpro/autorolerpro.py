@@ -1659,8 +1659,8 @@ class AutoRolerPro(commands.Cog):
             messages[message_queue] += "```"
 
             # Replies with the message
-            for i in messages:
-                await ctx.reply(messages[i])
+            for message in messages:
+                await ctx.reply(message)
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
     
