@@ -154,7 +154,7 @@ else:
         json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
 
 # Returns a string formatted datetime of now
-def GetTime():
+def GetDateTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 # Normalizes and strips accents from string
@@ -178,10 +178,10 @@ def Log(message: str, log_type: LogType = LogType.Log):
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
             fp.write("\n")
-            fp.writelines(f"{GetTime()}: ({log_type.value}) {message}")
+            fp.writelines(f"{GetDateTime}: ({log_type.value}) {message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(f"{GetTime()}: ({log_type.value}) {message}")
+            fp.writelines(f"{GetDateTime}: ({log_type.value}) {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -367,7 +367,7 @@ def UpdateMember(member: discord.Member, new_details: dict):
 # Returns a count of how many roles are being used by games
 def GetRoleCount():
     count = 0
-    for game, details in games.items():
+    for _, details in games.items():
         # Role entry should be present even if it's empty
         if 'role' not in details:
             continue
@@ -417,6 +417,16 @@ def GetNumberOfPlayers(game_name: str):
     else:
         Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
         return False
+    
+def GetDaysSinceAdded(game_name: str):
+    if game_name in games:
+        if "added_datetime" in games[game_name]:
+            delta = datetime.now() - datetime.strptime(games[game_name]["added_datetime"], '%Y-%m-%d')
+            return delta.days + delta.seconds/86400
+        else:
+            games[game_name]["added_datetime"] = GetDateTime()
+            return 0
+    return False
 
 # Scores all games and returns the lowest
 def GetLowestScoringGame(black_list: list):
@@ -428,14 +438,15 @@ def GetLowestScoringGame(black_list: list):
         if game_name in black_list or games[game_name]["role"] == None:
             continue
 
-        # Get number of days since last played and the number of players
+        # Get number of days since last played, the number of players, and when the game was added
         last_played = GetLastPlayed(game_name)
         num_players = GetNumberOfPlayers(game_name)
+        days_since_added = GetDaysSinceAdded(game_name)
         
         if last_played:
             score = (num_players + playtime)/last_played
         else:
-            score = (num_players + playtime)
+            score = (num_players + playtime)/max(days_since_added, 1)
 
         # Store a reference of the game data in game_refs
         game_refs[game_name] = score
@@ -670,6 +681,9 @@ async def AddGames(guild: discord.Guild, game_list: list):
             color = GetDominantColor(url)
             # TODO: Shift this color towards middle tones
 
+            # Stores the datetime that the game was added to the database
+            top_game['added_datetime'] = GetDateTime()
+
             # Adds the latest_game to the new_games list to return
             new_games[top_game['name']] = top_game
 
@@ -780,7 +794,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
         games[game_name]['history'][date][member.name] = {}
     
     # Sets the member's last_played datetime for the current day and game
-    games[game_name]['history'][date][member.name]['last_played'] = GetTime()
+    games[game_name]['history'][date][member.name]['last_played'] = GetDateTime
 
     # Toggles the updated flag for games
     UpdateFlag(FlagType.Games, True, f"{member.name} started playing {game_name}")
@@ -1746,7 +1760,7 @@ class AutoRolerPro(commands.Cog):
         await ctx.reply(f"`{game}` has the lowest score with {score} points.")
 
     @commands.command()
-    async def sync_db(self, ctx):
+    async def clean_db(self, ctx):
         """Loops through each member and verifies the database is in sync"""
 
         guild: discord.Guild = ctx.guild
@@ -1755,6 +1769,12 @@ class AutoRolerPro(commands.Cog):
         added_games = 0
         cleanups = 0
         duplicate_roles = 0
+
+        # Verifies every game has an added_datetime recorded
+        # If missing, add current datetime
+        for _, details in games.items():
+            if "added_datetime" not in details:
+                games[details["name"]]["added_datetime"] = GetDateTime()
 
         # Loops through each member in the guild
         for member in guild.members:
