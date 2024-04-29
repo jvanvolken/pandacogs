@@ -585,17 +585,17 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 continue
 
             score = 0
-            if top_game:
-                Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
-            else:
-                Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+            # if top_game:
+            #     Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+            # else:
+            #     Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
 
             # Add similarity ratio to score with added weight                
             candidate_similarity = SequenceMatcher(None, game_name.lower(), str(game_candidate['name']).lower()).ratio()
 
             if candidate_similarity:
                 score += ((candidate_similarity**2) * 10)
-                Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
+                # Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
 
             # Compare release dates, favor newer games
             top_game_year = None
@@ -609,7 +609,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_game_year and candidate_year:
                 if candidate_year > top_game_year:
                     score += 1
-                    Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                 else:
                     score -= 1
 
@@ -625,7 +625,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_rating and candidate_rating:
                 if candidate_rating > top_rating:
                     score += 1
-                    Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                 else:
                     score -= 1
     
@@ -641,21 +641,21 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_dlcs and candidate_dlcs:
                 if len(top_dlcs) > len(candidate_dlcs):
                     score += 1
-                    Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
                 else:
                     score -= 1
 
             # Compare new score with top score and set candidate as top game if higher
             if score > top_score:
-                if top_game:
-                    Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
-                else:
-                    Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
+                # if top_game:
+                #     Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                # else:
+                #     Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
 
                 top_score = score
                 top_game = game_candidate
-            else:
-                Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
+            # else:
+            #     Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
 
         # Checks if game already exists again with the nearly found game name
         if top_game and (top_game['name'] in games or top_game['name'] in aliases):
