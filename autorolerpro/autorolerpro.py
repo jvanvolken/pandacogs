@@ -178,10 +178,10 @@ def Log(message: str, log_type: LogType = LogType.Log):
     if os.path.isfile(log_file):
         with open(log_file, "a") as fp:
             fp.write("\n")
-            fp.writelines(f"{GetDateTime}: ({log_type.value}) {message}")
+            fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
     else:
         with open(log_file, "w") as fp:
-            fp.writelines(f"{GetDateTime}: ({log_type.value}) {message}")
+            fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -794,7 +794,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
         games[game_name]['history'][date][member.name] = {}
     
     # Sets the member's last_played datetime for the current day and game
-    games[game_name]['history'][date][member.name]['last_played'] = GetDateTime
+    games[game_name]['history'][date][member.name]['last_played'] = GetDateTime()
 
     # Toggles the updated flag for games
     UpdateFlag(FlagType.Games, True, f"{member.name} started playing {game_name}")
