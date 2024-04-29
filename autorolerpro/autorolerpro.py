@@ -370,7 +370,6 @@ def GetRoleCount():
     for game, details in games.items():
         # Role entry should be present even if it's empty
         if 'role' not in details:
-            Log(f"{game} missing role field in database!", LogType.Error)
             continue
         
         # Add 1 to the count if the game has a role
