@@ -1771,13 +1771,18 @@ class AutoRolerPro(commands.Cog):
         duplicate_roles = 0
         added_datetimes = 0
 
-        # Verifies every game has an added_datetime recorded
-        # If missing, add current datetime
+        # Verifies every game has an added_datetime and role entry
+        # If missing, add the missing entry
         for game, details in games.items():
             if "added_datetime" not in details:
                 games[game]["added_datetime"] = GetDateTime()
                 UpdateFlag(FlagType.Games, True, f"Added 'added_datetime' to {game}!")
                 added_datetimes += 1
+
+            if "role" not in details:
+                games[game]["role"] = None
+                UpdateFlag(FlagType.Games, True, f"Added empty role entry to {game}!")
+                cleanups += 1
 
         # Loops through each member in the guild
         for member in guild.members:
