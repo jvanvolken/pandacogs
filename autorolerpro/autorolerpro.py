@@ -1773,9 +1773,9 @@ class AutoRolerPro(commands.Cog):
 
         # Verifies every game has an added_datetime recorded
         # If missing, add current datetime
-        for _, details in games.items():
+        for game, details in games.items():
             if "added_datetime" not in details:
-                games[details["name"]]["added_datetime"] = GetDateTime()
+                games[game]["added_datetime"] = GetDateTime()
                 UpdateFlag(FlagType.Games, True, f"Added 'added_datetime' to {game}!")
                 added_datetimes += 1
 
