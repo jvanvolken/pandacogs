@@ -421,7 +421,7 @@ def GetNumberOfPlayers(game_name: str):
 def GetDaysSinceAdded(game_name: str):
     if game_name in games:
         if "added_datetime" in games[game_name]:
-            delta = datetime.now() - datetime.strptime(games[game_name]["added_datetime"], '%Y-%m-%d')
+            delta = datetime.now() - datetime.strptime(games[game_name]["added_datetime"], '%Y-%m-%d %H:%M:%S.%f')
             return delta.days + delta.seconds/86400
         else:
             games[game_name]["added_datetime"] = GetDateTime()
@@ -1769,12 +1769,14 @@ class AutoRolerPro(commands.Cog):
         added_games = 0
         cleanups = 0
         duplicate_roles = 0
+        added_datetimes = 0
 
         # Verifies every game has an added_datetime recorded
         # If missing, add current datetime
         for _, details in games.items():
             if "added_datetime" not in details:
                 games[details["name"]]["added_datetime"] = GetDateTime()
+                added_datetimes += 1
 
         # Loops through each member in the guild
         for member in guild.members:
@@ -1816,4 +1818,4 @@ class AutoRolerPro(commands.Cog):
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
-        await ctx.reply(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, and removed `{duplicate_roles}` duplicate roles!")
+        await ctx.reply(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!")
