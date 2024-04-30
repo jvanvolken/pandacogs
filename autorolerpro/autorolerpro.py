@@ -1776,6 +1776,7 @@ class AutoRolerPro(commands.Cog):
         for _, details in games.items():
             if "added_datetime" not in details:
                 games[details["name"]]["added_datetime"] = GetDateTime()
+                UpdateFlag(FlagType.Games, True, f"Added 'added_datetime' to {game}!")
                 added_datetimes += 1
 
         # Loops through each member in the guild
