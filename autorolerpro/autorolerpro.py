@@ -457,10 +457,15 @@ def GetLowestScoringGame(black_list: list):
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
 async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False):
     # Search for an existing role, returns None if role does not exist
-    if game_name in games and 'role' in games[game_name]:
-        role: discord.Role = guild.get_role(games[game_name]['role'])
+    if game_name in games:
+        if 'role' in games[game_name]:
+            role: discord.Role = guild.get_role(games[game_name]['role'])
+        else:
+            games[game_name]["role"] = None
+            role = None
     else:
-        role = None
+        Log(f"GetRole: Could not find {game_name} in the database!", LogType.Error)
+        return None
 
     # If no role is found and create_new is true, create a new role
     if not role and create_new:
@@ -1761,10 +1766,10 @@ class AutoRolerPro(commands.Cog):
 
     @commands.command()
     async def clean_db(self, ctx):
-        """Loops through each member and verifies the database is in sync"""
+        """Loops entire database, comparing each entry to the server and cleanup missing or bad data"""
 
         guild: discord.Guild = ctx.guild
-        Log(f"Initializing Role Synchronization!", LogType.Log)
+        Log(f"Initializing Database Cleanpu!", LogType.Log)
 
         added_games = 0
         cleanups = 0
