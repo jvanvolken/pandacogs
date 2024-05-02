@@ -434,19 +434,20 @@ def GetLowestScoringGame(black_list: list):
     game_refs = {}
     for game_name, playtime in GetPlaytime(games).items():
 
+        days_since_added = GetDaysSinceAdded(game_name)
+
         # Skip blacklisted games or games without a role assigned to them
-        if game_name in black_list or games[game_name]["role"] == None:
+        if game_name in black_list or games[game_name]["role"] == None or days_since_added <= 1:
             continue
 
         # Get number of days since last played, the number of players, and when the game was added
         last_played = GetLastPlayed(game_name)
         num_players = GetNumberOfPlayers(game_name)
-        days_since_added = GetDaysSinceAdded(game_name)
         
         if last_played:
             score = (num_players + playtime)/last_played
         else:
-            score = (num_players + playtime)/max(days_since_added, 1)
+            score = (num_players + playtime)/days_since_added
 
         # Store a reference of the game data in game_refs
         game_refs[game_name] = score
