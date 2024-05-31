@@ -1527,7 +1527,7 @@ class AutoRolerPro(commands.Cog):
     # async def opt_in(self, ctx):
         """Allows a member to opt back in to tracking their activity"""
         # Get member that sent the command
-        member = interaction.message.author
+        member = interaction.user
 
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
@@ -1540,7 +1540,7 @@ class AutoRolerPro(commands.Cog):
     # async def opt_out(self, ctx,):
         """Allows a member to opt out of tracking their activity"""
         # Get member that sent the command
-        member = interaction.message.author
+        member = interaction.user
 
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
@@ -1554,7 +1554,7 @@ class AutoRolerPro(commands.Cog):
     # async def list_games(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
-        member = interaction.message.author
+        member = interaction.user
         guild  = interaction.guild
 
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
@@ -1577,7 +1577,7 @@ class AutoRolerPro(commands.Cog):
     # async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
         # Get member that sent the command
-        member = interaction.message.author
+        member = interaction.user
 
         # Splits the provided arg into a list of games
         all_games = [FilterName(game) for game in game_names.split(',')][:10]
@@ -1629,8 +1629,8 @@ class AutoRolerPro(commands.Cog):
     # async def remove_games(self, ctx, *, list_filter = None):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
-        member: discord.Member = interaction.message.author
-        guild: discord.Guild = interaction.message.guild
+        member = interaction.user
+        guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
@@ -1703,7 +1703,7 @@ class AutoRolerPro(commands.Cog):
             await interaction.response.send_message(messages[0])
             response: discord.Message = await interaction.original_response()
 
-            # Replies with the message
+            # Replies with the continuation messages if any
             for message in messages[1:]:
                 await response.reply(message)
         else:
@@ -1716,8 +1716,8 @@ class AutoRolerPro(commands.Cog):
     # async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
         # Get member that sent the command
-        member: discord.Member = interaction.message.author
-        guild: discord.Guild = interaction.message.guild
+        member = interaction.user
+        guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
@@ -1749,8 +1749,8 @@ class AutoRolerPro(commands.Cog):
     # async def remove_aliases(self, ctx, *, list_filter = None):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
-        member: discord.Member = interaction.message.author
-        guild: discord.Guild = interaction.message.guild
+        member = interaction.user
+        guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
@@ -1798,8 +1798,8 @@ class AutoRolerPro(commands.Cog):
     # async def set_channel(self, ctx, arg):
         """Sets the channel for bot interactions"""
         # Get member that sent the command
-        member: discord.Member = interaction.message.author
-        guild: discord.Guild = interaction.guild
+        member = interaction.user
+        guild = interaction.guild
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
@@ -1837,8 +1837,8 @@ class AutoRolerPro(commands.Cog):
     # async def clean_db(self, ctx):
         """Loops entire database, comparing each entry to the server and cleanup missing or bad data"""
         # Get member that sent the command
-        member: discord.Member = interaction.message.author
-        guild: discord.Guild = interaction.guild
+        member = interaction.user
+        guild = interaction.guild
 
         Log(f"Initializing Database Cleanpu!", LogType.Log)
 
