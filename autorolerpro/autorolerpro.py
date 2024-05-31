@@ -8,7 +8,7 @@ import json
 import os
 
 from datetime import datetime, timedelta
-from redbot.core import commands, bot
+from redbot.core import commands, bot, app_commands
 from difflib import SequenceMatcher
 from discord.ext import tasks
 from io import BytesIO
@@ -715,11 +715,14 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     # Get the admin and test text channels
     admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
 
+    if not member:
+        return ########## TODO: Member is now required with new slash commands feature
+    
     # Send the original message
-    if member:
-        original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
-    else:
-        original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
+    original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
+
+    # else: ########## TODO: Disabled for new slash commands feature
+    #     original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
 
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
@@ -1516,8 +1519,12 @@ class AutoRolerPro(commands.Cog):
                             await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
                             Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
         
-    @commands.command()
-    async def opt_in(self, ctx):
+
+    @app_commands.command()
+    async def opt_in(self, ctx: discord.Interaction):
+        # await interaction.response.send_message("Hello World!", ephemeral=True)
+    # @commands.command()
+    # async def opt_in(self, ctx):
         """Allows a member to opt back in to tracking their activity"""
         # Get member that sent the command
         member = ctx.message.author
@@ -1525,10 +1532,12 @@ class AutoRolerPro(commands.Cog):
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
         UpdateMember(member, update)
-        await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!")
+        await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!", ephemeral=True)
 
-    @commands.command()
-    async def opt_out(self, ctx,):
+    @app_commands.command()
+    async def opt_out(self, ctx: discord.Interaction):
+    # @commands.command()
+    # async def opt_out(self, ctx,):
         """Allows a member to opt out of tracking their activity"""
         # Get member that sent the command
         member = ctx.message.author
@@ -1536,10 +1545,13 @@ class AutoRolerPro(commands.Cog):
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
         UpdateMember(member, update)
-        await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!")
+        await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!", ephemeral=True)
 
-    @commands.command()
-    async def list_games(self, ctx, *, list_filter = None):
+    @app_commands.command()
+    @app_commands.describe(list_filter="Optional input to filter list of games")
+    async def list_games(self, ctx: discord.Interaction, list_filter: str = None):
+    # @commands.command()
+    # async def list_games(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
         member = ctx.message.author
@@ -1558,14 +1570,17 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
-    @commands.command()
-    async def add_games(self, ctx, *, arg):
+    @app_commands.command()
+    @app_commands.describe(game_names="Name(s) of the game(s) you want to add seperated by commas ','")
+    async def add_games(self, ctx: discord.Interaction, game_names: str ):
+    # @commands.command()
+    # async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
         # Get member that sent the command
         member = ctx.message.author
 
         # Splits the provided arg into a list of games
-        all_games = [FilterName(game) for game in arg.split(',')][:10]
+        all_games = [FilterName(game) for game in game_names.split(',')][:10]
 
         # Attempt to add the games provided, returning new, existing, and/or failed to add games
         new_games, already_exists, failed_to_find = await AddGames(ctx.guild, all_games)
@@ -1607,8 +1622,11 @@ class AutoRolerPro(commands.Cog):
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
             view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
 
-    @commands.command()
-    async def remove_games(self, ctx, *, list_filter = None):
+    @app_commands.command()
+    @app_commands.describe(list_filter="Optional input to filter list of games")
+    async def remove_games(self, ctx: discord.Interaction, list_filter: str = None):
+    # @commands.command()
+    # async def remove_games(self, ctx, *, list_filter = None):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
         member: discord.Member = ctx.message.author
@@ -1638,8 +1656,10 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my games... IF I HAD ANY!")
 
-    @commands.command()
-    async def list_aliases(self, ctx):
+    @app_commands.command()
+    async def list_aliases(self, ctx: discord.Interaction):
+    # @commands.command()
+    # async def list_aliases(self, ctx):
         """Returns a list of aliases from the server."""
         if len(aliases) > 0:
             sorted_aliases = {k: v for k, v in sorted(aliases.items(), key=lambda item: item[1])}
@@ -1686,8 +1706,11 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
     
-    @commands.command()
-    async def add_alias(self, ctx, *, arg):
+    @app_commands.command()
+    @app_commands.describe(role="Role to attribute the alias to", alias="Alias to add to the server")
+    async def list_games(self, ctx: discord.Interaction, role: discord.Role, alias: str):
+    # @commands.command()
+    # async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
         # Get member that sent the command
         member: discord.Member = ctx.message.author
@@ -1703,10 +1726,24 @@ class AutoRolerPro(commands.Cog):
             await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
-        await AddAlias(self.bot, ctx.guild, arg)
 
-    @commands.command()
-    async def remove_aliases(self, ctx, *, list_filter = None):
+        if role.name in games:
+            # Assign game to the new alias
+            aliases[alias] = role.name
+
+            # Toggles the updated flag for aliases
+            UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {role.name} game!")
+
+            # Once a game is found, it sets the alias and exits
+            await ctx.reply(f"Thanks, {ctx.author.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
+            
+            # await AddAlias(self.bot, ctx.guild, alias)
+
+    @app_commands.command()
+    @app_commands.describe(list_filter="Optional input to filter list of aliases")
+    async def remove_aliases(self, ctx: discord.Interaction, list_filter: str = None):
+    # @commands.command()
+    # async def remove_aliases(self, ctx, *, list_filter = None):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member: discord.Member = ctx.message.author
@@ -1735,43 +1772,83 @@ class AutoRolerPro(commands.Cog):
         else:
             await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
 
-    @commands.command()
-    async def top_games(self, ctx):
+    @app_commands.command()
+    async def top_games(self, ctx: discord.Interaction):
+    # @commands.command()
+    # async def top_games(self, ctx):
         """Returns the top 5 games played in the server or by yourself."""
         original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, ctx.message.author)
         view.message = await ctx.reply(f"{original_message}", view = view)
 
-    @commands.command()
-    async def set_channel(self, ctx, arg):
-        """Sets the channel for bot announcements"""
-        guild: discord.Guild  = ctx.guild
+    @app_commands.command()
+    @app_commands.describe(channel_type="The bot channel setting to update")
+    @app_commands.choices(channel_type=[
+         app_commands.Choice(name="General", value="General"),
+         app_commands.Choice(name="Announcements", value="Announcements"),
+         app_commands.Choice(name="Admin", value="Admin"),
+         app_commands.Choice(name="Test", value="Test"),
+    ])
+    @app_commands.describe(channel="The server channel you'd like to set")
+    async def set_channel(self, ctx: discord.Interaction, channel_type: app_commands.Choice[str], channel: discord.abc.GuildChannel):
+    # @commands.command()
+    # async def set_channel(self, ctx, arg):
+        """Sets the channel for bot interactions"""
+        # Get member that sent the command
+        member: discord.Member = ctx.message.author
+        guild: discord.Guild = ctx.guild
 
-        channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
-        new_channel = guild.get_channel(int(channel_id))
-
-        if new_channel:
-            await ctx.reply(f"I've set the Announcements channel to <#{new_channel.id}>!")
-
-            config['ChannelIDs']['Announcements'] = new_channel.id
-            UpdateFlag(FlagType.Config, True, f"Updated Announcements channel ID to {new_channel.id}")
+        # Exits if the member is not an admin
+        role: discord.Role = guild.get_role(config['Roles']['Admin'])
+        if role and role.name != "deleted-role":
+            if role not in member.roles:
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                return
         else:
-            await ctx.reply(f"Could not find the specified channel!")
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            return
 
-    @commands.command()
-    async def get_lowest(self, ctx):
+        # channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
+        # new_channel = guild.get_channel(int(channel_id))
+
+        # if new_channel:
+        config['ChannelIDs'][channel_type] = channel.id
+        UpdateFlag(FlagType.Config, True, f"Updated {channel_type} channel ID to {channel.id}")
+
+        await ctx.reply(f"I've set the {channel_type} channel to {channel.mention}") #<#{new_channel.id}>!")
+        # else:
+        #     await ctx.reply(f"Could not find the specified channel!")
+
+    @app_commands.command()
+    async def get_lowest(self, ctx: discord.Interaction):
+    # @commands.command()
+    # async def get_lowest(self, ctx):
         """Returns the lowest scoring game"""
 
         game, score = GetLowestScoringGame()
         await ctx.reply(f"`{game}` has the lowest score with {score} points.")
 
-    @commands.command()
-    async def clean_db(self, ctx):
+    @app_commands.command()
+    async def clean_db(self, ctx: discord.Interaction):
+    # @commands.command()
+    # async def clean_db(self, ctx):
         """Loops entire database, comparing each entry to the server and cleanup missing or bad data"""
-
+        # Get member that sent the command
+        member: discord.Member = ctx.message.author
         guild: discord.Guild = ctx.guild
+
         Log(f"Initializing Database Cleanpu!", LogType.Log)
 
+        # Exits if the member is not an admin
+        role: discord.Role = guild.get_role(config['Roles']['Admin'])
+        if role and role.name != "deleted-role":
+            if role not in member.roles:
+                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                return
+        else:
+            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            return
+        
         added_games = 0
         cleanups = 0
         duplicate_roles = 0
