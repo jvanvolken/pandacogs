@@ -1521,125 +1521,125 @@ class AutoRolerPro(commands.Cog):
         
 
     @app_commands.command()
-    async def opt_in(self, ctx: discord.Interaction):
+    async def opt_in(self, interaction: discord.Interaction):
         # await interaction.response.send_message("Hello World!", ephemeral=True)
     # @commands.command()
     # async def opt_in(self, ctx):
         """Allows a member to opt back in to tracking their activity"""
         # Get member that sent the command
-        member = ctx.message.author
+        member = interaction.message.author
 
         # Updates the out_out flag for the member
         update = {'opt_out' : False}
         UpdateMember(member, update)
-        await ctx.reply(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!", ephemeral=True)
+        await interaction.response.send_message(f"I've opted you back in for automatic role assignments! If in the future you'd like to opt back out, simply use the `!opt_out` command anywhere in the server!", ephemeral=True)
 
     @app_commands.command()
-    async def opt_out(self, ctx: discord.Interaction):
+    async def opt_out(self, interaction: discord.Interaction):
     # @commands.command()
     # async def opt_out(self, ctx,):
         """Allows a member to opt out of tracking their activity"""
         # Get member that sent the command
-        member = ctx.message.author
+        member = interaction.message.author
 
         # Updates the out_out flag for the member
         update = {'opt_out' : True}
         UpdateMember(member, update)
-        await ctx.reply(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!", ephemeral=True)
+        await interaction.response.send_message(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!", ephemeral=True)
 
     @app_commands.command()
     @app_commands.describe(list_filter="Optional input to filter list of games")
-    async def list_games(self, ctx: discord.Interaction, list_filter: str = None):
+    async def list_games(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
     # async def list_games(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
-        member = ctx.message.author
-        guild  = ctx.guild
+        member = interaction.message.author
+        guild  = interaction.guild
 
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
             # Convert a long list of games into sets of 25 or less
             list_sets = GetListSets(games, 20, list_filter, SortType.Alphabetical)
             if not list_sets:
-                await ctx.reply(f"Could not find any games similar to `{list_filter}`")
+                await interaction.response.send_message(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here's your game list, {member.mention}!"
                 view = PageView(original_message, ListType.Select_Game, list_sets, list_filter, 1, guild, member)
-                view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
+                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the games that you're interested in playing:*", view = view)
         else:
-            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!")
 
     @app_commands.command()
     @app_commands.describe(game_names="Name(s) of the game(s) you want to add seperated by commas ','")
-    async def add_games(self, ctx: discord.Interaction, game_names: str ):
+    async def add_games(self, interaction: discord.Interaction, game_names: str ):
     # @commands.command()
     # async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
         # Get member that sent the command
-        member = ctx.message.author
+        member = interaction.message.author
 
         # Splits the provided arg into a list of games
         all_games = [FilterName(game) for game in game_names.split(',')][:10]
 
         # Attempt to add the games provided, returning new, existing, and/or failed to add games
-        new_games, already_exists, failed_to_find = await AddGames(ctx.guild, all_games)
+        new_games, already_exists, failed_to_find = await AddGames(interaction.guild, all_games)
 
         # Respond in one of the 8 unique ways based on the types of games trying to be added
         if len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
-            await ctx.reply(f"{member.mention}, you need to actually tell me what you want to add")
+            await interaction.response.send_message(f"{member.mention}, you need to actually tell me what you want to add")
 
         elif len(new_games) == 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
-            await ctx.reply(f"I don't recognize any of these games, {member.mention}. Are you sure you know what you're talking about?")
+            await interaction.response.send_message(f"I don't recognize any of these games, {member.mention}. Are you sure you know what you're talking about?")
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"I already have all of these recorded! {member.mention}, how about you do a little more research before asking questions."
-            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view)
 
         elif len(new_games) == 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}."
-            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view)
+            view = PageView(original_message, ListType.Select_Game, [already_exists], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view)
 
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games!\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) == 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! But I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
+            view = PageView(original_message, ListType.Select_Game, [new_games], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) == 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view, files = await GetImages(new_games))
             
         elif len(new_games) > 0 and len(already_exists) > 0 and len(failed_to_find) > 0:
             original_message = f"Thanks for the contribution, {member.mention}! I've added {GetRoleMentions(new_games)} to the list of games! I already have {GetNames(already_exists)}, but I don't recognize {GetNames(failed_to_find)}.\n*Please select any of the games you're interested in playing below*"
-            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, ctx.guild)
-            view.message = await ctx.reply(original_message, view = view, files = await GetImages(new_games))
+            view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, interaction.guild)
+            view.message = await interaction.response.send_message(original_message, view = view, files = await GetImages(new_games))
 
     @app_commands.command()
     @app_commands.describe(list_filter="Optional input to filter list of games")
-    async def remove_games(self, ctx: discord.Interaction, list_filter: str = None):
+    async def remove_games(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
     # async def remove_games(self, ctx, *, list_filter = None):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
-        member: discord.Member = ctx.message.author
-        guild: discord.Guild = ctx.message.guild
+        member: discord.Member = interaction.message.author
+        guild: discord.Guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -1648,16 +1648,16 @@ class AutoRolerPro(commands.Cog):
             list_sets = GetListSets(games, 20, list_filter, SortType.Alphabetical)
             
             if not list_sets:
-                await ctx.reply(f"Could not find any games similar to `{list_filter}`")
+                await interaction.response.send_message(f"Could not find any games similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
-                view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
+                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
         else:
-            await ctx.reply("This is where I would list my games... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!")
 
     @app_commands.command()
-    async def list_aliases(self, ctx: discord.Interaction):
+    async def list_aliases(self, interaction: discord.Interaction):
     # @commands.command()
     # async def list_aliases(self, ctx):
         """Returns a list of aliases from the server."""
@@ -1702,28 +1702,28 @@ class AutoRolerPro(commands.Cog):
 
             # Replies with the message
             for message in messages:
-                await ctx.reply(message)
+                await interaction.response.send_message(message)
         else:
-            await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!")
     
     @app_commands.command()
     @app_commands.describe(role="Role to attribute the alias to", alias="Alias to add to the server")
-    async def add_alias(self, ctx: discord.Interaction, role: discord.Role, alias: str):
+    async def add_alias(self, interaction: discord.Interaction, role: discord.Role, alias: str):
     # @commands.command()
     # async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
         # Get member that sent the command
-        member: discord.Member = ctx.message.author
-        guild: discord.Guild = ctx.message.guild
+        member: discord.Member = interaction.message.author
+        guild: discord.Guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
 
@@ -1735,28 +1735,28 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {role.name} game!")
 
             # Once a game is found, it sets the alias and exits
-            await ctx.reply(f"Thanks, {ctx.author.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
+            await interaction.response.send_message(f"Thanks, {interaction.author.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
             
             # await AddAlias(self.bot, ctx.guild, alias)
 
     @app_commands.command()
     @app_commands.describe(list_filter="Optional input to filter list of aliases")
-    async def remove_aliases(self, ctx: discord.Interaction, list_filter: str = None):
+    async def remove_aliases(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
     # async def remove_aliases(self, ctx, *, list_filter = None):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
-        member: discord.Member = ctx.message.author
-        guild: discord.Guild = ctx.message.guild
+        member: discord.Member = interaction.message.author
+        guild: discord.Guild = interaction.message.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         if len(aliases) > 0:
@@ -1764,22 +1764,22 @@ class AutoRolerPro(commands.Cog):
             list_sets = GetListSets(aliases, 20, list_filter, SortType.Alphabetical)
             
             if not list_sets:
-                await ctx.reply(f"Could not find any aliases similar to `{list_filter}`")
+                await interaction.response.send_message(f"Could not find any aliases similar to `{list_filter}`")
             else:
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
-                view.message = await ctx.reply(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
+                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
         else:
-            await ctx.reply("This is where I would list my aliases... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!")
 
     @app_commands.command()
-    async def top_games(self, ctx: discord.Interaction):
+    async def top_games(self, interaction: discord.Interaction):
     # @commands.command()
     # async def top_games(self, ctx):
         """Returns the top 5 games played in the server or by yourself."""
-        original_message = f"Hey, {ctx.message.author.mention}! Would you like to see the top games for the server or just yourself?"
-        view = PlaytimeView(original_message, ctx.message.author)
-        view.message = await ctx.reply(f"{original_message}", view = view)
+        original_message = f"Hey, {interaction.message.author.mention}! Would you like to see the top games for the server or just yourself?"
+        view = PlaytimeView(original_message, interaction.message.author)
+        view.message = await interaction.response.send_message(f"{original_message}", view = view)
 
     @app_commands.command()
     @app_commands.describe(channel_type="The bot channel setting to update")
@@ -1790,22 +1790,22 @@ class AutoRolerPro(commands.Cog):
          app_commands.Choice(name="Test", value="Test"),
     ])
     @app_commands.describe(channel="The server channel you'd like to set")
-    async def set_channel(self, ctx: discord.Interaction, channel_type: app_commands.Choice[str], channel: discord.abc.GuildChannel):
+    async def set_channel(self, interaction: discord.Interaction, channel_type: app_commands.Choice[str], channel: discord.abc.GuildChannel):
     # @commands.command()
     # async def set_channel(self, ctx, arg):
         """Sets the channel for bot interactions"""
         # Get member that sent the command
-        member: discord.Member = ctx.message.author
-        guild: discord.Guild = ctx.guild
+        member: discord.Member = interaction.message.author
+        guild: discord.Guild = interaction.guild
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
 
         # channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
@@ -1815,27 +1815,27 @@ class AutoRolerPro(commands.Cog):
         config['ChannelIDs'][channel_type] = channel.id
         UpdateFlag(FlagType.Config, True, f"Updated {channel_type} channel ID to {channel.id}")
 
-        await ctx.reply(f"I've set the {channel_type} channel to {channel.mention}") #<#{new_channel.id}>!")
+        await interaction.response.send_message(f"I've set the {channel_type} channel to {channel.mention}") #<#{new_channel.id}>!")
         # else:
         #     await ctx.reply(f"Could not find the specified channel!")
 
     @app_commands.command()
-    async def get_lowest(self, ctx: discord.Interaction):
+    async def get_lowest(self, interaction: discord.Interaction):
     # @commands.command()
     # async def get_lowest(self, ctx):
         """Returns the lowest scoring game"""
 
         game, score = GetLowestScoringGame()
-        await ctx.reply(f"`{game}` has the lowest score with {score} points.")
+        await interaction.response.send_message(f"`{game}` has the lowest score with {score} points.")
 
     @app_commands.command()
-    async def clean_db(self, ctx: discord.Interaction):
+    async def clean_db(self, interaction: discord.Interaction):
     # @commands.command()
     # async def clean_db(self, ctx):
         """Loops entire database, comparing each entry to the server and cleanup missing or bad data"""
         # Get member that sent the command
-        member: discord.Member = ctx.message.author
-        guild: discord.Guild = ctx.guild
+        member: discord.Member = interaction.message.author
+        guild: discord.Guild = interaction.guild
 
         Log(f"Initializing Database Cleanpu!", LogType.Log)
 
@@ -1843,10 +1843,10 @@ class AutoRolerPro(commands.Cog):
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await ctx.reply(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
         
         added_games = 0
@@ -1907,4 +1907,4 @@ class AutoRolerPro(commands.Cog):
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
-        await ctx.reply(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!")
+        await interaction.response.send_message(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!")
