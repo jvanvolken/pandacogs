@@ -1525,16 +1525,12 @@ class AutoRolerPro(commands.Cog):
                             await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
                             Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
         
-
     list_group = app_commands.Group(name="list", description="Request a list of something")
     add_group = app_commands.Group(name="add", description="Add something")
     remove_group = app_commands.Group(name="remove", description="Remove something")
 
     @app_commands.command()
     async def opt_in(self, interaction: discord.Interaction):
-        # await interaction.response.send_message("Hello World!", ephemeral=True)
-    # @commands.command()
-    # async def opt_in(self, ctx):
         """Allows a member to opt back in to tracking their activity"""
         # Get member that sent the command
         member = interaction.user
@@ -1546,8 +1542,6 @@ class AutoRolerPro(commands.Cog):
 
     @app_commands.command()
     async def opt_out(self, interaction: discord.Interaction):
-    # @commands.command()
-    # async def opt_out(self, ctx,):
         """Allows a member to opt out of tracking their activity"""
         # Get member that sent the command
         member = interaction.user
@@ -1560,8 +1554,6 @@ class AutoRolerPro(commands.Cog):
     @list_group.command(name="games", description="Returns a list of games played on the server, filted using the optional input")
     @app_commands.describe(list_filter="Optional input to filter list of games")
     async def list_games(self, interaction: discord.Interaction, list_filter: str = None):
-    # @commands.command()
-    # async def list_games(self, ctx, *, list_filter = None):
         """Returns a list of game pages from the server."""
         # Get member that sent the command
         member = interaction.user
@@ -1583,8 +1575,6 @@ class AutoRolerPro(commands.Cog):
     @add_group.command(name="games", description="Manually adds a game or a set of games (max 10) to the autoroler. Seperate games using commas ','")
     @app_commands.describe(game_names="Name(s) of the game(s) you want to add seperated by commas ','")
     async def add_games(self, interaction: discord.Interaction, game_names: str ):
-    # @commands.command()
-    # async def add_games(self, ctx, *, arg):
         """Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10"""
         # Get member that sent the command
         member = interaction.user
@@ -1635,8 +1625,6 @@ class AutoRolerPro(commands.Cog):
     @remove_group.command(name="games", description="Returns a list of games that can be selected for removal")
     @app_commands.describe(list_filter="Optional input to filter list of games")
     async def remove_games(self, interaction: discord.Interaction, list_filter: str = None):
-    # @commands.command()
-    # async def remove_games(self, ctx, *, list_filter = None):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
         member = interaction.user
@@ -1668,8 +1656,6 @@ class AutoRolerPro(commands.Cog):
 
     @list_group.command(name="aliases", description="Returns a list of aliases from the server")
     async def list_aliases(self, interaction: discord.Interaction):
-    # @commands.command()
-    # async def list_aliases(self, ctx):
         """Returns a list of aliases from the server."""
         if len(aliases) > 0:
             sorted_aliases = {k: v for k, v in sorted(aliases.items(), key=lambda item: item[1])}
@@ -1722,8 +1708,6 @@ class AutoRolerPro(commands.Cog):
     @add_group.command(name="alias", description="Adds the provided alias to the server")
     @app_commands.describe(role="Role to attribute the alias to", alias="Alias to add to the server")
     async def add_alias(self, interaction: discord.Interaction, role: discord.Role, alias: str):
-    # @commands.command()
-    # async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
         # Get member that sent the command
         member = interaction.user
@@ -1754,8 +1738,6 @@ class AutoRolerPro(commands.Cog):
     @remove_group.command(name="aliases", description="Returns a list of aliases that can be selected for removal")
     @app_commands.describe(list_filter="Optional input to filter list of aliases")
     async def remove_aliases(self, interaction: discord.Interaction, list_filter: str = None):
-    # @commands.command()
-    # async def remove_aliases(self, ctx, *, list_filter = None):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member = interaction.user
@@ -1786,8 +1768,6 @@ class AutoRolerPro(commands.Cog):
 
     @app_commands.command()
     async def top_games(self, interaction: discord.Interaction):
-    # @commands.command()
-    # async def top_games(self, ctx):
         """Returns the top 5 games played in the server or by yourself."""
         original_message = f"Hey, {interaction.user.mention}! Would you like to see the top games for the server or just yourself?"
         view = PlaytimeView(original_message, interaction.user)
@@ -1803,8 +1783,6 @@ class AutoRolerPro(commands.Cog):
     ])
     @app_commands.describe(channel="The server channel you'd like to set")
     async def set_channel(self, interaction: discord.Interaction, channel_type: app_commands.Choice[str], channel: discord.abc.GuildChannel):
-    # @commands.command()
-    # async def set_channel(self, ctx, arg):
         """Sets the channel for bot interactions"""
         # Get member that sent the command
         member = interaction.user
@@ -1833,8 +1811,6 @@ class AutoRolerPro(commands.Cog):
 
     @app_commands.command()
     async def get_lowest_score(self, interaction: discord.Interaction):
-    # @commands.command()
-    # async def get_lowest(self, ctx):
         """Returns the lowest scoring game"""
 
         game, score = GetLowestScoringGame([])
@@ -1842,8 +1818,6 @@ class AutoRolerPro(commands.Cog):
 
     @app_commands.command()
     async def clean_db(self, interaction: discord.Interaction):
-    # @commands.command()
-    # async def clean_db(self, ctx):
         """Loops entire database, comparing each entry to the server and cleanup missing or bad data"""
         # Get member that sent the command
         member = interaction.user
