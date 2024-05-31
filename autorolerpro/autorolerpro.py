@@ -1700,9 +1700,12 @@ class AutoRolerPro(commands.Cog):
 
             messages[message_queue] += "```"
 
+            await interaction.response.send_message(messages[0])
+            response: discord.Message = await interaction.original_response()
+
             # Replies with the message
-            for message in messages:
-                await interaction.response.send_message(message)
+            for message in messages[1:]:
+                await response.reply(message)
         else:
             await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!")
     
