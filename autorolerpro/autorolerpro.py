@@ -1630,7 +1630,7 @@ class AutoRolerPro(commands.Cog):
         """Returns a list of games that can be selected for removal."""
         # Get member that sent the command
         member = interaction.user
-        guild = interaction.message.guild
+        guild = interaction.guild
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
@@ -1717,7 +1717,7 @@ class AutoRolerPro(commands.Cog):
         """Adds the provided alias to the server."""
         # Get member that sent the command
         member = interaction.user
-        guild = interaction.message.guild
+        guild = interaction.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
@@ -1750,7 +1750,7 @@ class AutoRolerPro(commands.Cog):
         """Returns a list of aliases that can be selected for removal."""
         # Get member that sent the command
         member = interaction.user
-        guild = interaction.message.guild
+        guild = interaction.guild
 
         # Exits if the member is not an admin
         role = guild.get_role(config['Roles']['Admin'])
@@ -1780,8 +1780,8 @@ class AutoRolerPro(commands.Cog):
     # @commands.command()
     # async def top_games(self, ctx):
         """Returns the top 5 games played in the server or by yourself."""
-        original_message = f"Hey, {interaction.message.author.mention}! Would you like to see the top games for the server or just yourself?"
-        view = PlaytimeView(original_message, interaction.message.author)
+        original_message = f"Hey, {interaction.user.mention}! Would you like to see the top games for the server or just yourself?"
+        view = PlaytimeView(original_message, interaction.user)
         view.message = await interaction.response.send_message(f"{original_message}", view = view)
 
     @app_commands.command()
