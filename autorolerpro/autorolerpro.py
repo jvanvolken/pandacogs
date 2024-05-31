@@ -1636,10 +1636,10 @@ class AutoRolerPro(commands.Cog):
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
@@ -1652,9 +1652,9 @@ class AutoRolerPro(commands.Cog):
             else:
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Game, list_sets, list_filter, 1, guild, member)
-                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view)
+                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the game(s) you'd like to remove...*", view = view, ephemeral=True)
         else:
-            await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!", ephemeral=True)
 
     @app_commands.command()
     async def list_aliases(self, interaction: discord.Interaction):
@@ -1756,10 +1756,10 @@ class AutoRolerPro(commands.Cog):
         role = guild.get_role(config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
         if len(aliases) > 0:
@@ -1771,9 +1771,9 @@ class AutoRolerPro(commands.Cog):
             else:
                 original_message = f"Here you go, {member.mention}!"
                 view = PageView(original_message, ListType.Remove_Alias, list_sets, list_filter, 1, guild, member)
-                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view)
+                view.message = await interaction.response.send_message(f"{original_message}\n*`{SortType.Alphabetical.value}: (Page 1 of {len(list_sets)})` Please select the aliases you'd like to remove...*", view = view, ephemeral=True)
         else:
-            await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!")
+            await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!", ephemeral=True)
 
     @app_commands.command()
     async def top_games(self, interaction: discord.Interaction):
@@ -1805,10 +1805,10 @@ class AutoRolerPro(commands.Cog):
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
 
         # channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
@@ -1818,7 +1818,7 @@ class AutoRolerPro(commands.Cog):
         config['ChannelIDs'][channel_type] = channel.id
         UpdateFlag(FlagType.Config, True, f"Updated {channel_type} channel ID to {channel.id}")
 
-        await interaction.response.send_message(f"I've set the {channel_type} channel to {channel.mention}") #<#{new_channel.id}>!")
+        await interaction.response.send_message(f"I've set the {channel_type} channel to {channel.mention}", ephemeral=True) #<#{new_channel.id}>!")
         # else:
         #     await ctx.reply(f"Could not find the specified channel!")
 
@@ -1846,10 +1846,10 @@ class AutoRolerPro(commands.Cog):
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
         added_games = 0
@@ -1910,4 +1910,4 @@ class AutoRolerPro(commands.Cog):
             Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
             duplicate_roles += 1
 
-        await interaction.response.send_message(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!")
+        await interaction.response.send_message(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!", ephemeral=True)
