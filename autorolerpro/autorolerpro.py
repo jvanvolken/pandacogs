@@ -1747,7 +1747,7 @@ class AutoRolerPro(commands.Cog):
             UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {role.name} game!")
 
             # Once a game is found, it sets the alias and exits
-            await interaction.response.send_message(f"Thanks, {interaction.author.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
+            await interaction.response.send_message(f"Thanks, {interaction.user.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
         else:
             await interaction.response.send_message(f"Sorry, I could not find {role.name} in the list of games!")
 
