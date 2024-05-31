@@ -1824,10 +1824,10 @@ class AutoRolerPro(commands.Cog):
         # new_channel = guild.get_channel(int(channel_id))
 
         # if new_channel:
-        config['ChannelIDs'][channel_type] = channel.id
-        UpdateFlag(FlagType.Config, True, f"Updated {channel_type} channel ID to {channel.id}")
+        config['ChannelIDs'][channel_type.value] = channel.id
+        UpdateFlag(FlagType.Config, True, f"Updated {channel_type.value} channel ID to {channel.id}")
 
-        await interaction.response.send_message(f"I've set the {channel_type} channel to {channel.mention}", ephemeral=True) #<#{new_channel.id}>!")
+        await interaction.response.send_message(f"I've set the {channel_type.value} channel to {channel.mention}", ephemeral=True) #<#{new_channel.id}>!")
         # else:
         #     await ctx.reply(f"Could not find the specified channel!")
 
