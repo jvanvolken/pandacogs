@@ -579,6 +579,11 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
 
+        if 'message' in results and 'Authorization Failure' in results['message']:
+            Log(f"Authorization Failure, need to update authorization key!", LogType.Error)
+            Log(results, LogType.Error)
+            return
+
         # TODO: Check for active IGDBCredentials and notify admin if it needs updating
         # Exits if 'cause' exists in results, this is indicative of an error
         try:
@@ -606,7 +611,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
             # else:
             #     Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
 
-            # Add similarity ratio to score with added weight                
+            # Add similarity ratio to score with added weight          
+            
             candidate_similarity = SequenceMatcher(None, game_name.lower(), str(game_candidate['name']).lower()).ratio()
 
             if candidate_similarity:
