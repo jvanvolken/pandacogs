@@ -1738,7 +1738,6 @@ class AutoRolerPro(commands.Cog):
         else:
             await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
-        
 
         if role.name in games:
             # Assign game to the new alias
@@ -1749,8 +1748,8 @@ class AutoRolerPro(commands.Cog):
 
             # Once a game is found, it sets the alias and exits
             await interaction.response.send_message(f"Thanks, {interaction.author.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
-            
-            # await AddAlias(self.bot, ctx.guild, alias)
+        else:
+            await interaction.response.send_message(f"Sorry, I could not find {role.name} in the list of games!")
 
     @remove_group.command(name="aliases", description="Returns a list of aliases that can be selected for removal")
     @app_commands.describe(list_filter="Optional input to filter list of aliases")
