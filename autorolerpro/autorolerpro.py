@@ -1180,9 +1180,8 @@ class PageView(discord.ui.View):
                     update = {'games' : {self.name : {'tracked' : False}}}
                     UpdateMember(member, update)
 
-                    response: discord.Message = await interaction.original_response()
                     view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                    view.message = await response.edit(view = view)
+                    view.message = await interaction.message.edit(view = view)
 
                     await interaction.response.send_message(f"I have removed you from the `{self.name}` role! I'll also not message you in the future regarding this particular game!", ephemeral = True, delete_after = 10)
                 else:
@@ -1221,9 +1220,8 @@ class PageView(discord.ui.View):
                     if self.page > self.page_count:
                         self.page = self.page_count
                     
-                    response: discord.Message = await interaction.original_response()
                     view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                    view.message = await response.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the game(s) you'd like to remove...*", view = view)
+                    view.message = await interaction.message.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the game(s) you'd like to remove...*", view = view)
 
                     await interaction.response.send_message(f"I have removed {self.name} from the list!", ephemeral = True, delete_after = 10)
                 else:
@@ -1239,9 +1237,8 @@ class PageView(discord.ui.View):
                     if self.page > self.page_count:
                         self.page = self.page_count
 
-                    response: discord.Message = await interaction.original_response()
                     view = PageView(self.original_message, self.list_type, self.list_sets, self.list_filter, self.page, self.guild, self.member, self.sort)
-                    view.message = await response.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the aliases you'd like to remove...*", view = view)
+                    view.message = await interaction.message.edit(content = f"{self.original_message}\n*`{self.sort.value}: (Page {self.page} of {self.page_count})` Please select the aliases you'd like to remove...*", view = view)
 
                     await interaction.response.send_message(f"`{self.name}` has been removed from the list!")
                 else:
