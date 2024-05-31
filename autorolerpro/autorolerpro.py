@@ -1708,7 +1708,7 @@ class AutoRolerPro(commands.Cog):
     
     @app_commands.command()
     @app_commands.describe(role="Role to attribute the alias to", alias="Alias to add to the server")
-    async def list_games(self, ctx: discord.Interaction, role: discord.Role, alias: str):
+    async def add_alias(self, ctx: discord.Interaction, role: discord.Role, alias: str):
     # @commands.command()
     # async def add_alias(self, ctx, *, arg):
         """Adds the provided alias to the server."""
