@@ -1520,9 +1520,9 @@ class AutoRolerPro(commands.Cog):
                             Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
         
 
-    list_group = app_commands.Group(name="List", description="Request a list of something")
-    add_group = app_commands.Group(name="Add", description="Add something")
-    remove_group = app_commands.Group(name="Remove", description="Remove something")
+    list_group = app_commands.Group(name="list", description="Request a list of something")
+    add_group = app_commands.Group(name="add", description="Add something")
+    remove_group = app_commands.Group(name="remove", description="Remove something")
 
     @app_commands.command()
     async def opt_in(self, interaction: discord.Interaction):
@@ -1551,7 +1551,7 @@ class AutoRolerPro(commands.Cog):
         UpdateMember(member, update)
         await interaction.response.send_message(f"I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the server!", ephemeral=True)
 
-    @list_group.command(name="Games", description="Returns a list of games played on the server, filted using the optional input")
+    @list_group.command(name="games", description="Returns a list of games played on the server, filted using the optional input")
     @app_commands.describe(list_filter="Optional input to filter list of games")
     async def list_games(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
@@ -1574,7 +1574,7 @@ class AutoRolerPro(commands.Cog):
         else:
             await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!")
 
-    @add_group.command(name="Games", description="Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10")
+    @add_group.command(name="games", description="Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10")
     @app_commands.describe(game_names="Name(s) of the game(s) you want to add seperated by commas ','")
     async def add_games(self, interaction: discord.Interaction, game_names: str ):
     # @commands.command()
@@ -1626,7 +1626,7 @@ class AutoRolerPro(commands.Cog):
             view = PageView(original_message, ListType.Select_Game, [new_games | already_exists], None, 1, interaction.guild)
             view.message = await interaction.response.send_message(original_message, view = view, files = await GetImages(new_games))
 
-    @remove_group.command(name="Games", description="Returns a list of games that can be selected for removal")
+    @remove_group.command(name="games", description="Returns a list of games that can be selected for removal")
     @app_commands.describe(list_filter="Optional input to filter list of games")
     async def remove_games(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
@@ -1660,7 +1660,7 @@ class AutoRolerPro(commands.Cog):
         else:
             await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!", ephemeral=True)
 
-    @list_group.command(name="Aliases", description="Returns a list of aliases from the server")
+    @list_group.command(name="aliases", description="Returns a list of aliases from the server")
     async def list_aliases(self, interaction: discord.Interaction):
     # @commands.command()
     # async def list_aliases(self, ctx):
@@ -1713,7 +1713,7 @@ class AutoRolerPro(commands.Cog):
         else:
             await interaction.response.send_message("This is where I would list my aliases... IF I HAD ANY!")
     
-    @add_group.command(name="Alias", description="Adds the provided alias to the server")
+    @add_group.command(name="alias", description="Adds the provided alias to the server")
     @app_commands.describe(role="Role to attribute the alias to", alias="Alias to add to the server")
     async def add_alias(self, interaction: discord.Interaction, role: discord.Role, alias: str):
     # @commands.command()
@@ -1746,7 +1746,7 @@ class AutoRolerPro(commands.Cog):
             
             # await AddAlias(self.bot, ctx.guild, alias)
 
-    @remove_group.command(name="Aliases", description="Returns a list of aliases that can be selected for removal")
+    @remove_group.command(name="aliases", description="Returns a list of aliases that can be selected for removal")
     @app_commands.describe(list_filter="Optional input to filter list of aliases")
     async def remove_aliases(self, interaction: discord.Interaction, list_filter: str = None):
     # @commands.command()
