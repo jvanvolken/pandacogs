@@ -10,7 +10,6 @@ class ChatBot(commands.Cog):
 
 
     @app_commands.command()
-    @app_commands.describe(color="Say hello!")
     async def hello(self, interaction: discord.Interaction):
         await interaction.response.send_message("Hello World!", ephemeral=True)
         
