@@ -1,0 +1,8 @@
+{
+  "author": ["James (SadPanda)"],
+  "install_msg": "Thanks for installing! Report any issues on GitHub.",
+  "name": "ChatBot",
+  "short": "ChatGPT Integration with Discord",
+  "description": "A bot that uses ChatGPT's API to understand and respond with interactions naturally.",
+  "tags": ["auto", "roles"]
+}
