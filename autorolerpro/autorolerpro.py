@@ -1730,9 +1730,9 @@ class AutoRolerPro(commands.Cog):
         guild = interaction.guild
 
         # Exits if the member is not an admin
-        role = guild.get_role(config['Roles']['Admin'])
-        if role:
-            if role not in member.roles:
+        admin_role = guild.get_role(config['Roles']['Admin'])
+        if admin_role:
+            if admin_role not in member.roles:
                 await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
