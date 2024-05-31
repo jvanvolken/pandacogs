@@ -1574,7 +1574,7 @@ class AutoRolerPro(commands.Cog):
         else:
             await interaction.response.send_message("This is where I would list my games... IF I HAD ANY!")
 
-    @add_group.command(name="games", description="Manually adds a game or a set of games (max 10) to the autoroler.\nSeperate games using commas: !add_games game_1, game_2, ..., game_10")
+    @add_group.command(name="games", description="Manually adds a game or a set of games (max 10) to the autoroler. Seperate games using commas ','")
     @app_commands.describe(game_names="Name(s) of the game(s) you want to add seperated by commas ','")
     async def add_games(self, interaction: discord.Interaction, game_names: str ):
     # @commands.command()
