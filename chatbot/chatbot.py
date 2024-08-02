@@ -8,3 +8,8 @@ class ChatBot(commands.Cog):
     def __init__(self, bot: bot.Red):
         self.bot = bot
 
+
+    @app_commands.command()
+    async def hello(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Hello World!", ephemeral=True)
+        

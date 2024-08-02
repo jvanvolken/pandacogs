@@ -580,9 +580,14 @@ async def AddGames(guild: discord.Guild, game_list: list):
         results = db_json.json()
 
         if 'message' in results and 'Authorization Failure' in results['message']:
-            Log(f"Authorization Failure, need to update authorization key!", LogType.Error)
+            Log(f"Authorization failure, please update authorization key!", LogType.Error)
             Log(results, LogType.Error)
-            return
+
+            # Get the admin channel and send warning
+            admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
+            await admin_channel.send(f"Authorization failure, please update authorization key!")
+
+            return None, None, None
 
         # TODO: Check for active IGDBCredentials and notify admin if it needs updating
         # Exits if 'cause' exists in results, this is indicative of an error
@@ -1558,6 +1563,7 @@ class AutoRolerPro(commands.Cog):
         # Get member that sent the command
         member = interaction.user
         guild  = interaction.guild
+        # TODO: Add Role on selecting game
 
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
         if len(games) > 0:
