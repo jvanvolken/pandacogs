@@ -483,10 +483,11 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
             # Grab the lowest ranking game from the server
             game, _ = GetLowestScoringGame([game_name])
             lowest_game = games[game]
-            Log(f"Lowest scoring game is ${game}, which has a role of ${lowest_game['role']}")
+            Log(f"Lowest scoring game is {game}, which has a role of {lowest_game['role']}")
 
             # Use the role ID to delete role from server
             role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
+            Log(role_to_remove)
             await role_to_remove.delete()
 
             # Removes role ID for this game
