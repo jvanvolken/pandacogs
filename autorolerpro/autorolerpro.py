@@ -284,11 +284,11 @@ def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort:
             list_filter = list_filter.strip().lower()
             test_name = name.lower()
             similarity = SequenceMatcher(None, test_name, list_filter).ratio()
-            Log(f"Similarity Score for {list_filter} and {test_name} is ({similarity}).", LogType.Debug)
+            # Log(f"Similarity Score for {list_filter} and {test_name} is ({similarity}).", LogType.Debug)
 
             # If the list_filter is not in the name and similarity score is below 0.55, skip this game
             if list_filter not in test_name and similarity < 0.55:
-                Log(f"Skipping {test_name}!", LogType.Debug)
+                # Log(f"Skipping {test_name}!", LogType.Debug)
                 continue
 
         # Get the next index from set_amount
@@ -483,6 +483,7 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
             # Grab the lowest ranking game from the server
             game, _ = GetLowestScoringGame([game_name])
             lowest_game = games[game]
+            Log(f"Lowest scoring game is ${game}, which has a role of ${lowest_game['role']}")
 
             # Use the role ID to delete role from server
             role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
