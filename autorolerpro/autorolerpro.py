@@ -1864,9 +1864,8 @@ class AutoRolerPro(commands.Cog):
             if games[game]["role"]:
                 guild_role: discord.Role = guild.get_role(games[game]["role"])
                 if not guild_role:
-                    # games[game]["role"] = None
-                    # UpdateFlag(FlagType.Games, True, f"Removed obsolete role ID from {game}!")
-                    Log(f"Would have removed obsolete role ID from {game}!")
+                    games[game]["role"] = None
+                    UpdateFlag(FlagType.Games, True, f"Removed obsolete role ID from {game}!")
                     cleanups += 1
 
         # Loops through each member in the guild
