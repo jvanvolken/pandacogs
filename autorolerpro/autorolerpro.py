@@ -1831,7 +1831,7 @@ class AutoRolerPro(commands.Cog):
         member = interaction.user
         guild = interaction.guild
 
-        Log(f"Initializing Database Cleanpu!", LogType.Log)
+        Log(f"Initializing Database Cleanup!", LogType.Log)
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
