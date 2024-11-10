@@ -17,8 +17,6 @@ FM = FileManager({
     'Authorization': "SECRET / CHANGE ME"
 })
 
-FM.Log("Successfully loaded file manager!")
-
 async def Fetch(body):
     async with aiohttp.ClientSession() as session:
         async with session.request(
@@ -61,12 +59,15 @@ class GrokBot(commands.Cog):
 
         print("-- RESPONSE ".ljust(70, '-'))
         try:
+            await interaction.response.send_message("Let me see...")
+            await asyncio.sleep()
+            
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
 
-            await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
             # asyncio.sleep()
