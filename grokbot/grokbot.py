@@ -58,7 +58,7 @@ class GrokBot(commands.Cog):
         }
 
         try:
-            await interaction.response.send_message("hmmm...")
+            await interaction.response.send_message("*hmmm...*")
             
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
