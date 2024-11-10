@@ -67,14 +67,16 @@ class GrokBot(commands.Cog):
 
             original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\nTBD")
 
-            # Returns true of the message is a reply to the original message
-            def check(message):
-                return message.reference and message.reference.message_id == original_message.id
-            
+            message_id = original_message.id
             while True:
+                # Returns true of the message is a reply to the original message
+                def check(message):
+                    return message.reference and message.reference.message_id == message_id
+            
                 # Wait for a reply in accordance with the check function
                 msg = await self.bot.wait_for('message', check = check, timeout=10.0)
-
+                
+                message_id = msg.id
                 if msg is None:
                     await interaction.followup.send(content=f"Thanks for chatting!")
                     break
