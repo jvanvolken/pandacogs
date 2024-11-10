@@ -34,7 +34,7 @@ class GrokBot(commands.Cog):
     """GrokBot"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
-        FM.Log("Successfully initialized GrokBot!")
+        FM.Log("-- Successfully initialized GrokBot! ".ljust(70, '-'))
                 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
@@ -57,24 +57,15 @@ class GrokBot(commands.Cog):
             'temperature': 0.1,
         }
 
-        print("-- RESPONSE ".ljust(70, '-'))
         try:
-            await interaction.response.send_message("Let me see...")
+            await interaction.response.send_message("hmmm...")
             
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
 
-            await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
-
-            # await interaction.response.defer()
-            # asyncio.sleep()
-
-            # await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            msg = await interaction.original_response()
+            await msg.edit(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
-            # await interaction.response.defer()
-            # asyncio.sleep()
-            # await interaction.followup.send(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
-            # await interaction.response.send_message(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
