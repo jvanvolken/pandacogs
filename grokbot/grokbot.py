@@ -5,12 +5,18 @@ import aiohttp
 import discord
 
 from redbot.core import commands, bot, app_commands
+from filemanager import FileManager
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
 
 # Initializes client with intents
 client = discord.Client(intents = intents)
+
+FM = FileManager()
+FM.Initialize({
+    'Authorization': "xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+})
 
 async def Fetch(body):
     async with aiohttp.ClientSession() as session:
@@ -19,7 +25,7 @@ async def Fetch(body):
             url="https://api.x.ai/v1/chat/completions",
             headers={
                 "Content-Type":"application/json",
-                "Authorization":"Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+                "Authorization":f"Bearer {FM.config['Authorization']}"
             },
             json=body
         ) as response:
