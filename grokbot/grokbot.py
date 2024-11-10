@@ -50,8 +50,7 @@ class GrokBot(commands.Cog):
             'temperature': 0.1,
         }
 
-        response = await fetch(json_data)
-        data_json = json.loads(response.content) 
-        response_message = data_json["choices"][0]["message"]["content"]
+        response_json = json.loads(await fetch(json_data))
+        response_message = response_json["choices"][0]["message"]["content"]
 
         await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
