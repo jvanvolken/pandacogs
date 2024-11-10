@@ -1,6 +1,6 @@
 
 import json
-import requests
+import aiohttp
 import discord
 
 from redbot.core import commands, bot, app_commands
@@ -21,10 +21,10 @@ class GrokBot(commands.Cog):
     async def benjamin(self, interaction: discord.Interaction, personality: str, message: str):
         """Replies to a message!"""
 
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu',
-        }
+        # headers = {
+        #     'Content-Type': 'application/json',
+        #     'Authorization': 'Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu',
+        # }
 
         json_data = {
             'messages': [
@@ -41,9 +41,23 @@ class GrokBot(commands.Cog):
             'stream': False,
             'temperature': 0,
         }
+        
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.request(
+                    method="POST",
+                    url="https://api.x.ai/v1/chat/completions",
+                    headers={
+                        "Content-Type":"application/json",
+                        "Authorization":"Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+                    },
+                    data=json_data
+                ) as response:
+                    await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response.text()}")
 
-        response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
-        data_json = json.loads(response.content) 
-        response_message = data_json["choices"][0]["message"]["content"]
+            except Exception as e:
+                print(f"An error has occurred while processing the request: {str(e)}")
 
-        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+        # response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
+        # data_json = json.loads(response.content) 
+        # response_message = data_json["choices"][0]["message"]["content"]
