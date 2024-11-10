@@ -43,7 +43,7 @@ class GrokBot(commands.Cog):
                 },
                 {
                     'role': 'user',
-                    'content': f"{message}",
+                    'content': f"{message} - limit your response to a maximum of 2000 characters",
                 },
             ],
             'model': 'grok-beta',
@@ -57,11 +57,11 @@ class GrokBot(commands.Cog):
             print(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
-            print(response_message)
+            
+            await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
             # asyncio.sleep()
-            # await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
