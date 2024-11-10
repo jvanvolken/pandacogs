@@ -51,8 +51,8 @@ class GrokBot(commands.Cog):
             'temperature': 0.1,
         }
 
+        print("-- RESPONSE ".ljust(70, '-'))
         try:
-            print("-- RESPONSE ".ljust(70, '-'))
             response_json = json.loads(await Fetch(json_data))
             print(response_json)
 
