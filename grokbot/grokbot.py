@@ -15,6 +15,7 @@ class GrokBot(commands.Cog):
     def __init__(self, bot: bot.Red):
         self.bot = bot
 
+    @app_commands.command()
     @app_commands.describe(personality="Describe who benjamin should be responding as.")
     async def benjamin(self, interaction: discord.Interaction, personality: str = None):
         """Replies to a message!"""
