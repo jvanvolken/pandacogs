@@ -4,6 +4,11 @@ import discord
 
 from redbot.core import commands, bot, app_commands
 
+# Initializes intents
+intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
+
+# Initializes client with intents
+client = discord.Client(intents = intents)
 
 class GrokBot(commands.Cog):
     """GrokBot"""
