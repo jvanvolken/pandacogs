@@ -74,13 +74,13 @@ class GrokBot(commands.Cog):
                     return message.reference and message.reference.message_id == message_id
             
                 # Wait for a reply in accordance with the check function
-                msg = await self.bot.wait_for('message', check = check, timeout=10.0)
-                
+                msg: discord.Message = await self.bot.wait_for('message', check = check, timeout=10.0)
+
                 message_id = msg.id
                 if msg is None:
-                    await interaction.followup.send(content=f"Thanks for chatting!")
+                    await original_message.channel.send("Thanks for chatting!")
                     break
 
-                await interaction.followup.send(content=f"You replied with: {msg.content}")
+                await msg.reply(content=f"You replied with: {msg.content}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
