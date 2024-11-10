@@ -10,7 +10,7 @@ log_file         = f"{docker_cog_path}/log.txt"
 class FileManager():
     config = None
     
-    def Initialize(default_config: dict):
+    def Initialize(self, default_config: dict):
         # Initializes config 
         if os.path.isfile(config_file):
             with open(config_file, "r") as fp:

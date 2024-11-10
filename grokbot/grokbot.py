@@ -13,12 +13,10 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 # Initializes client with intents
 client = discord.Client(intents = intents)
 
-default_config = {
-    'Authorization': "xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
-}
-
 FM = FileManager()
-FM.Initialize(default_config)
+FM.Initialize({
+    'Authorization': "xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+})
 
 async def Fetch(body):
     async with aiohttp.ClientSession() as session:
