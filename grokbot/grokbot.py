@@ -31,7 +31,7 @@ class GrokBot(commands.Cog):
                 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
-    async def benjamin(self, interaction: discord.Interaction, personality: str, message: str):
+    async def chat(self, interaction: discord.Interaction, personality: str, message: str):
         """Replies to a message!"""
 
         json_data = {
@@ -50,33 +50,10 @@ class GrokBot(commands.Cog):
             'temperature': 0.1,
         }
 
-        response_json = json.loads(await Fetch(json_data))
-        response_message = response_json["choices"][0]["message"]["content"]
+        try:
+            response_json = json.loads(await Fetch(json_data))
+            response_message = response_json["choices"][0]["message"]["content"]
 
-        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
-
-    @app_commands.command()
-    @app_commands.describe(personality="Describe Harmony's personality for this response!", message="Your message to Harmony!")
-    async def harmony(self, interaction: discord.Interaction, personality: str, message: str):
-        """Replies to a message!"""
-
-        json_data = {
-            'messages': [
-                {
-                    'role': 'system',
-                    'content': f"{personality}",
-                },
-                {
-                    'role': 'user',
-                    'content': f"{message}",
-                },
-            ],
-            'model': 'grok-beta',
-            'stream': False,
-            'temperature': 0.1,
-        }
-
-        response_json = json.loads(await Fetch(json_data))
-        response_message = response_json["choices"][0]["message"]["content"]
-
-        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+        except Exception as e:
+            await interaction.response.send_message(f"Command failed!\n{e}", ephemeral=True)
