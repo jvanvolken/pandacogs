@@ -49,7 +49,7 @@ class GrokBot(commands.Cog):
                 },
                 {
                     'role': 'user',
-                    'content': f"{message} - limit your response to a maximum of 2000 characters",
+                    'content': f"{message} - limit your response to a maximum of 1000 characters",
                 },
             ],
             'model': 'grok-beta',
@@ -58,7 +58,7 @@ class GrokBot(commands.Cog):
         }
 
         try:
-            await interaction.response.send_message(content="*hmmm...*")
+            await interaction.response.send_message(content="*let me think...*")
             
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
