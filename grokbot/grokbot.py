@@ -5,7 +5,7 @@ import aiohttp
 import discord
 
 from redbot.core import commands, bot, app_commands
-from .filemanager import FileManager
+from .filemanager import FileManager, LogType
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
@@ -13,10 +13,11 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 # Initializes client with intents
 client = discord.Client(intents = intents)
 
-FM = FileManager()
-FM.Initialize({
+FM = FileManager({
     'Authorization': "SECRET / CHANGE ME"
 })
+
+FM.Log("Successfully loaded file manager!", LogType.Log)
 
 async def Fetch(body):
     async with aiohttp.ClientSession() as session:
@@ -35,6 +36,7 @@ class GrokBot(commands.Cog):
     """GrokBot"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
+        FM.Log("Successfully initialized GrokBot!", LogType.Log)
                 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
