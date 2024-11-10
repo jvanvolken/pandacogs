@@ -58,13 +58,13 @@ class GrokBot(commands.Cog):
         }
 
         try:
-            await interaction.response.send_message("*hmmm...*")
+            await interaction.response.send_message(content="*hmmm...*")
             
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
 
-            await interaction.response.edit_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            await interaction.response.edit_message(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
