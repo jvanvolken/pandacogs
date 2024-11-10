@@ -71,9 +71,9 @@ class GrokBot(commands.Cog):
             while True:
                 # Returns true of the message is a reply to the original message
                 def check(message):
-                    FM.Log(message)
+                    FM.Log(message.reference)
                     return message.reference and message.reference.message_id == message_id
-            
+
                 # Wait for a reply in accordance with the check function
                 msg: discord.Message = await self.bot.wait_for('message', check = check, timeout=10.0)
                 FM.Log(msg.content)
