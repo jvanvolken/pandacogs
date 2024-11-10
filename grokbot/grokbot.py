@@ -29,13 +29,13 @@ async def Fetch(body):
             json=body
         ) as response:
             return await response.read()
-            
+
 class GrokBot(commands.Cog):
     """GrokBot"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
         FM.Log("-- Successfully initialized GrokBot! ".ljust(70, '-'))
-                
+
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
     async def chat(self, interaction: discord.Interaction, personality: str, message: str):
@@ -50,7 +50,7 @@ class GrokBot(commands.Cog):
                 {
                     'role': 'user',
                     'content': f"{message} - limit your response to a maximum of 1000 characters",
-                },
+                }
             ],
             'model': 'grok-beta',
             'stream': False,
@@ -59,12 +59,21 @@ class GrokBot(commands.Cog):
 
         try:
             await interaction.response.send_message(content="*let me think...*")
-            
+
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
 
-            await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+
+            # Returns true of the message is a reply to the original message
+            def check(message):
+                return message.reference and message.reference.message_id == original_message.id
+
+            # Wait for a reply in accordance with the check function
+            msg = await bot.wait_for('message', check = check)
+
+            await interaction.followup.send(content=f"You replied with: {msg}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
