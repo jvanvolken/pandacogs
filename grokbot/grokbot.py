@@ -60,7 +60,6 @@ class GrokBot(commands.Cog):
         print("-- RESPONSE ".ljust(70, '-'))
         try:
             await interaction.response.send_message("Let me see...")
-            await asyncio.sleep()
             
             response_json = json.loads(await Fetch(json_data))
             FM.Log(response_json)
