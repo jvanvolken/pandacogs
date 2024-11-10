@@ -26,6 +26,19 @@ class GrokBot(commands.Cog):
         #     'Authorization': 'Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu',
         # }
 
+        async def fetch(body):
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method="POST",
+                    url="https://api.x.ai/v1/chat/completions",
+                    headers={
+                        "Content-Type":"application/json",
+                        "Authorization":"Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+                    },
+                    data=body
+                ) as response:
+                    return await response.read()
+            
         json_data = {
             'messages': [
                 {
@@ -41,23 +54,9 @@ class GrokBot(commands.Cog):
             'stream': False,
             'temperature': 0,
         }
-        
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.request(
-                    method="POST",
-                    url="https://api.x.ai/v1/chat/completions",
-                    headers={
-                        "Content-Type":"application/json",
-                        "Authorization":"Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
-                    },
-                    data=json_data
-                ) as response:
-                    await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response.text()}")
-
-            except Exception as e:
-                print(f"An error has occurred while processing the request: {str(e)}")
 
         # response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
         # data_json = json.loads(response.content) 
         # response_message = data_json["choices"][0]["message"]["content"]
+
+        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{await fetch(json_data)}")
