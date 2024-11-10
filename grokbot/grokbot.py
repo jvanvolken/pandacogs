@@ -57,8 +57,8 @@ class GrokBot(commands.Cog):
             print(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
-            
-            await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+
+            await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
             # asyncio.sleep()
