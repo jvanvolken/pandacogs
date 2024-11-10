@@ -17,7 +17,7 @@ FM = FileManager({
     'Authorization': "SECRET / CHANGE ME"
 })
 
-FM.Log("Successfully loaded file manager!", LogType.Log)
+FM.Log("Successfully loaded file manager!")
 
 async def Fetch(body):
     async with aiohttp.ClientSession() as session:
@@ -36,7 +36,7 @@ class GrokBot(commands.Cog):
     """GrokBot"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
-        FM.Log("Successfully initialized GrokBot!", LogType.Log)
+        FM.Log("Successfully initialized GrokBot!")
                 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
@@ -62,7 +62,7 @@ class GrokBot(commands.Cog):
         print("-- RESPONSE ".ljust(70, '-'))
         try:
             response_json = json.loads(await Fetch(json_data))
-            print(response_json)
+            FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
 
@@ -73,7 +73,7 @@ class GrokBot(commands.Cog):
 
             # await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
-            print(str(e))
+            FM.Log(str(e), LogType.Error)
             # await interaction.response.defer()
             # asyncio.sleep()
             # await interaction.followup.send(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
