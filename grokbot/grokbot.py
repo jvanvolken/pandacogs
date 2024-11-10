@@ -5,7 +5,7 @@ import aiohttp
 import discord
 
 from redbot.core import commands, bot, app_commands
-from filemanager import FileManager
+from .filemanager import FileManager
 
 # Initializes intents
 intents = discord.Intents(messages=True, guilds=True, members = True, presences = True)
