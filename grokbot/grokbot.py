@@ -55,13 +55,13 @@ class GrokBot(commands.Cog):
             response_json = json.loads(await Fetch(json_data))
             response_message = response_json["choices"][0]["message"]["content"]
 
-            interaction.response.defer()
+            await interaction.response.defer()
             asyncio.sleep()
-            interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            await interaction.followup.send(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
-            interaction.response.defer()
+            await interaction.response.defer()
             asyncio.sleep()
-            interaction.followup.send(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
+            await interaction.followup.send(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
             # await interaction.response.send_message(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
