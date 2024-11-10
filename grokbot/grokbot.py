@@ -60,20 +60,25 @@ class GrokBot(commands.Cog):
         try:
             await interaction.response.send_message(content="*let me think...*")
 
-            response_json = json.loads(await Fetch(json_data))
+            # response_json = json.loads(await Fetch(json_data))
 
-            response_message = response_json["choices"][0]["message"]["content"]
-            FM.Log(response_message)
+            # response_message = response_json["choices"][0]["message"]["content"]
+            # FM.Log(response_message)
 
-            original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # Returns true of the message is a reply to the original message
             def check(message):
                 return message.reference and message.reference.message_id == original_message.id
+            
+            while True:
+                # Wait for a reply in accordance with the check function
+                msg = await self.bot.wait_for('message', check = check, timeout=10.0)
 
-            # Wait for a reply in accordance with the check function
-            msg  = await self.bot.wait_for('message', check = check)
+                if msg is None:
+                    await interaction.followup.send(content=f"Thanks for chatting!")
+                    break
 
-            await interaction.followup.send(content=f"You replied with: {msg.content}")
+                await interaction.followup.send(content=f"You replied with: {msg.content}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
