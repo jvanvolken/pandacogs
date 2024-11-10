@@ -44,5 +44,6 @@ class GrokBot(commands.Cog):
 
         response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
         data_json = json.loads(response.content) 
+        response_message = data_json["choices"][0]["message"]["content"]
 
-        await interaction.response.send_message(data_json["choices"][0]["message"]["content"])
+        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
