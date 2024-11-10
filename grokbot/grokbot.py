@@ -72,9 +72,8 @@ class GrokBot(commands.Cog):
                 return message.reference and message.reference.message_id == original_message.id
 
             # Wait for a reply in accordance with the check function
-            msg = await self.bot.wait_for('message', check = check)
-            FM.Log(f"Message: {msg}")
+            msg  = await self.bot.wait_for('message', check = check)
 
-            await interaction.followup.send(content=f"You replied with: {msg}")
+            await interaction.followup.send(content=f"You replied with: {msg.content}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
