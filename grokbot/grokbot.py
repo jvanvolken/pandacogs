@@ -1,4 +1,5 @@
 
+import json
 import requests
 import discord
 
@@ -20,8 +21,28 @@ class GrokBot(commands.Cog):
     async def benjamin(self, interaction: discord.Interaction, personality: str, message: str):
         """Replies to a message!"""
 
-        # Get member that sent the command
-        member = interaction.user
-        guild  = interaction.guild
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu',
+        }
 
-        await interaction.response.send_message(f"Thank you for giving me the personality of '{personality}' along with your message, '{message}'")
+        json_data = {
+            'messages': [
+                {
+                    'role': 'system',
+                    'content': f"{personality}",
+                },
+                {
+                    'role': 'user',
+                    'content': f"{message}",
+                },
+            ],
+            'model': 'grok-beta',
+            'stream': False,
+            'temperature': 0,
+        }
+
+        response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
+        data_json = json.loads(response.content) 
+
+        await interaction.response.send_message(data_json["choices"][0]["message"]["content"])
