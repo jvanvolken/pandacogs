@@ -65,7 +65,7 @@ class GrokBot(commands.Cog):
             response_message = response_json["choices"][0]["message"]["content"]
             FM.Log(response_message)
 
-            original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\nTBD")
+            original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # message_id = original_message.id
             # while True:
