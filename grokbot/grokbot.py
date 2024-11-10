@@ -35,7 +35,7 @@ class GrokBot(commands.Cog):
                         "Content-Type":"application/json",
                         "Authorization":"Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
                     },
-                    data=body
+                    json=body
                 ) as response:
                     return await response.read()
             
