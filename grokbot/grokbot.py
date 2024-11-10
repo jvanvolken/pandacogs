@@ -61,9 +61,9 @@ class GrokBot(commands.Cog):
             await interaction.response.send_message(content="*let me think...*")
 
             response_json = json.loads(await Fetch(json_data))
-            FM.Log(response_json)
 
             response_message = response_json["choices"][0]["message"]["content"]
+            FM.Log(response_message)
 
             original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
@@ -72,7 +72,8 @@ class GrokBot(commands.Cog):
                 return message.reference and message.reference.message_id == original_message.id
 
             # Wait for a reply in accordance with the check function
-            msg = await bot.wait_for('message', check = check)
+            msg = await self.bot.wait_for('message', check = check)
+            FM.Log(f"Message: {msg}")
 
             await interaction.followup.send(content=f"You replied with: {msg}")
         except Exception as e:
