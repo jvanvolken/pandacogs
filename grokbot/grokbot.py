@@ -65,6 +65,6 @@ class GrokBot(commands.Cog):
 
             response_message = response_json["choices"][0]["message"]["content"]
 
-            await interaction.response.edit_message(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
