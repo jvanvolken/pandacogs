@@ -15,7 +15,7 @@ client = discord.Client(intents = intents)
 
 FM = FileManager()
 FM.Initialize({
-    'Authorization': "xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu"
+    'Authorization': "SECRET / CHANGE ME"
 })
 
 async def Fetch(body):
