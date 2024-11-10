@@ -58,7 +58,7 @@ class GrokBot(commands.Cog):
         }
 
         try:
-            await interaction.response.send_message(content="*let me think...*")
+            original_message = await interaction.response.send_message(content="*let me think...*")
 
             # response_json = json.loads(await Fetch(json_data))
 
