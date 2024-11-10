@@ -21,11 +21,6 @@ class GrokBot(commands.Cog):
     async def benjamin(self, interaction: discord.Interaction, personality: str, message: str):
         """Replies to a message!"""
 
-        # headers = {
-        #     'Content-Type': 'application/json',
-        #     'Authorization': 'Bearer xai-NibicvvthU6cC5C4H2bybwWS6EuNmbCFETUyZIg9xeNnBLnHEl1O9mn3nBcBeG2NfCPkqhRWfde4bTxu',
-        # }
-
         async def fetch(body):
             async with aiohttp.ClientSession() as session:
                 async with session.request(
@@ -52,11 +47,11 @@ class GrokBot(commands.Cog):
             ],
             'model': 'grok-beta',
             'stream': False,
-            'temperature': 0,
+            'temperature': 0.1,
         }
 
-        # response = requests.post('https://api.x.ai/v1/chat/completions', headers=headers, json=json_data)
-        # data_json = json.loads(response.content) 
-        # response_message = data_json["choices"][0]["message"]["content"]
+        response = await fetch(json_data)
+        data_json = json.loads(response.content) 
+        response_message = data_json["choices"][0]["message"]["content"]
 
-        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{await fetch(json_data)}")
+        await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
