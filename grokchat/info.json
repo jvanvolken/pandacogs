@@ -1,0 +1,8 @@
+{
+  "author": ["James (SadPanda)"],
+  "install_msg": "Thanks for installing! Report any issues on GitHub.",
+  "name": "GrokBot",
+  "short": "A cog that gives redbots the ability to chat with Grok!",
+  "description": "A cog that gives redbots the ability to chat with Grok!",
+  "tags": ["grok", "xai"]
+}
