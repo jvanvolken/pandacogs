@@ -56,4 +56,4 @@ class GrokBot(commands.Cog):
 
             await interaction.response.send_message(f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
         except Exception as e:
-            await interaction.response.send_message(f"Command failed!\n{e[:2000]}", ephemeral=True)
+            await interaction.response.send_message(f"Command failed!\n{str(e)[:2000]}", ephemeral=True)
