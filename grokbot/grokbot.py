@@ -62,13 +62,6 @@ class GrokBot(commands.Cog):
             # response_json = json.loads(await Fetch(json_data))
             # thread_name = response_json["choices"][0]["message"]["content"]
 
-            thread = await interaction.channel.create_thread(
-                name = "TBD",
-                type = discord.ChannelType.private_thread
-            )
-
-            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
-
             response_json = json.loads(await Fetch(json_data))
 
             response_message = response_json["choices"][0]["message"]["content"]
@@ -77,9 +70,17 @@ class GrokBot(commands.Cog):
             response_body = ""
             for line in response_message.splitlines():
                 if "Summary:" in line:
-                    thread.edit(name=line.strip("Summary:").strip()[:15])
+                    thread_name = line.strip("Summary:").strip()[:15]
                 elif line is not "":
-                    response_body += f"{line}\n"
+                    response_body += f"\n{line}"
+
+            thread = await interaction.channel.create_thread(
+                name = thread_name,
+                type = discord.ChannelType.private_thread
+            )
+
+            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
+
 
             # response_message = "TBD"
             # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
