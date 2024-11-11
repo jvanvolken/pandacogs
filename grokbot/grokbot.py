@@ -15,7 +15,8 @@ client = discord.Client(intents = intents)
 
 FM = FileManager({
     'Authorization': "SECRET / CHANGE ME",
-    "DefaultPersonality": "You are Grok, a kind and helpful chat bot."
+    "DefaultPersonality": "You are Grok, a kind and helpful chat bot.",
+    "BotName": "Grok"
 })
 
 async def Fetch(body):
@@ -38,7 +39,7 @@ class GrokBot(commands.Cog):
         FM.Log("-- Successfully initialized GrokBot! ".ljust(70, '-'))
 
     @app_commands.command()
-    @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
+    @app_commands.describe(personality=f"Describe {FM.config['BotName']}'s personality for this chat!", message=f"Your message to {FM.config['BotName']}!")
     async def chat(self, interaction: discord.Interaction, message: str, personality: str = FM.config['DefaultPersonality']):
         """Replies to a message!"""
 
