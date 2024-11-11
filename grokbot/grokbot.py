@@ -92,11 +92,10 @@ class GrokBot(commands.Cog):
 
             # message_id = original_message.id
             while True:
-                # Returns true of the message is a reply to the original message
-                def check(message: discord.Message):
-                    FM.Log(f"{message.channel.id} <> {thread.id} <> {message.channel.type} <> {message.channel}")
-                    return message.reference and message.channel.id == thread.id # .reference.message_id == message_id
-
+                # # Returns true of the message is a reply to the original message
+                # def check(message: discord.Message):
+                #     return message.channel.id == thread.id # .reference.message_id == message_id
+                    
                 # Reset personality to remove summary
                 json_data["messages"][0]['content'] = f"{personality} - formatted nicely"
 
@@ -107,7 +106,7 @@ class GrokBot(commands.Cog):
                 })
 
                 # Wait for a reply in accordance with the check function
-                msg: discord.Message = await self.bot.wait_for('message', check = check)#, timeout=10.0)
+                msg: discord.Message = await self.bot.wait_for('message', check = lambda m: m.channel.id == thread.id)#, timeout=10.0)
 
                 # End the conversation if the msg is empty
                 if msg is None:
