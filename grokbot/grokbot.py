@@ -77,7 +77,7 @@ class GrokBot(commands.Cog):
             response_body = ""
             for line in response_message.splitlines():
                 if "Summary:" in line:
-                    thread.name = line.strip("Summary:").strip()[:15]
+                    thread.edit(name=line.strip("Summary:").strip()[:15])
                 elif line is not "":
                     response_body += f"{line}\n"
 
