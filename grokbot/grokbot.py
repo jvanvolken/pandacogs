@@ -83,8 +83,6 @@ class GrokBot(commands.Cog):
                 message = None
             )
 
-            thread.edit(type=discord.ChannelType.public_thread)
-
             # Notify the user that a new thread has been created to house this chat
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
