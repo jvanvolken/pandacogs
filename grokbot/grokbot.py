@@ -94,6 +94,7 @@ class GrokBot(commands.Cog):
             while True:
                 # Returns true of the message is a reply to the original message
                 def check(message: discord.Message):
+                    FM.Log(f"{message.channel.id} <> {thread.id} <> {message.channel.type} <> {message.channel}")
                     return message.reference and message.channel.id == thread.id # .reference.message_id == message_id
 
                 # Reset personality to remove summary
