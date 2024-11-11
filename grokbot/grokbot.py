@@ -15,7 +15,7 @@ client = discord.Client(intents = intents)
 
 FM = FileManager({
     'Authorization': "SECRET / CHANGE ME",
-    "DefaultPersonality": "You are Benjamin, a kind and helpful chat bot."
+    "DefaultPersonality": "You are Grok, a kind and helpful chat bot."
 })
 
 async def Fetch(body):

@@ -35,9 +35,16 @@ class FileManager():
                 self.config = json.load(fp)
 
             # Add missing default config entries
+            update_config = False
             for entry, value in default_config.items():
                 if entry not in self.config:
                     self.config[entry] = value
+                    update_config = True
+
+            # Saves the updated config file if necessary
+            if update_config:
+                with open(config_file, "w") as fp:
+                    json.dump(self.config, fp, indent = 2, default = str, ensure_ascii = False)
         else:
             # Set config to default config and write to file
             self.config = default_config
