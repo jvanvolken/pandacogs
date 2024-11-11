@@ -49,7 +49,7 @@ class GrokBot(commands.Cog):
                 },
                 {
                     'role': 'user',
-                    'content': f"In one word that's less than 15 characters long, summarize this message: {message}",
+                    'content': f"In less than 15 characters, summarize this message: {message}",
                 }
             ],
             'model': 'grok-beta',
