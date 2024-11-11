@@ -54,38 +54,36 @@ class GrokBot(commands.Cog):
             ],
             'model': 'grok-beta',
             'stream': False,
-            'temperature': 0.1,
+            'temperature': 0.2,
         }
 
         try:
             await interaction.response.defer()
-            # response_json = json.loads(await Fetch(json_data))
-            # thread_name = response_json["choices"][0]["message"]["content"]
 
             response_json = json.loads(await Fetch(json_data))
-
             response = response_json["choices"][0]["message"]["content"]
             FM.Log(response)
 
+            # Find summary text
             result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
             thread_name = result.group(1)[:15]
 
+            # Construct the body of the response (without summary)
             response_body = ""
             for line in response.splitlines():
                 if "Summary" not in line:
                     response_body += f"\n{line}"
 
+            # Create a thread to house the conversation
             thread = await interaction.channel.create_thread(
                 name = thread_name,
                 type = discord.ChannelType.private_thread
             )
 
+            # Notify the user that a new thread has been created to house this chat
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
-            # response_message = "TBD"
-            # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
-            # await interaction.response.defer()
-
+            # Send the thread details and the response body
             await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
             original_message = await thread.send(content=f"\n{response_body}")
 
@@ -93,23 +91,40 @@ class GrokBot(commands.Cog):
             while True:
                 # Returns true of the message is a reply to the original message
                 def check(message):
-                    FM.Log(message)
-                    FM.Log(message.reference)
-                    FM.Log(f"{message.reference.message_id} <> {message_id}")
                     return message.reference and message.reference.message_id == message_id
 
-                # Wait for a reply in accordance with the check function
-                FM.Log("PRE-CHECK")
-                msg: discord.Message = await self.bot.wait_for('message', check = check)#, timeout=10.0)
-                FM.Log("POST-CHECK")
+                # Reset personality to remove summary
+                json_data["messages"][0]['content'] = f"{personality} - formatted nicely"
 
+                # Append assistant's message
+                json_data["messages"].append({
+                    'role': 'assistant',
+                    'content': response_body,
+                })
+
+                # Wait for a reply in accordance with the check function
+                msg: discord.Message = await self.bot.wait_for('message', check = check)#, timeout=10.0)
+
+                # End the conversation if the msg is empty
                 if msg is None:
                     FM.Log("Thanks for chatting!")
-                    await original_message.channel.send("Thanks for chatting!")
+                    await thread.send("Thanks for chatting!")
                     break
 
-                new_response = await msg.reply(content=f"You replied with: {msg.content}")
-                message_id = new_response.id
+                # Append user's message
+                json_data["messages"].append({
+                    'role': 'user',
+                    'content': msg.content,
+                })
+
+                # Fetch a new response
+                response_json = json.loads(await Fetch(json_data))
+                response = response_json["choices"][0]["message"]["content"]
+                FM.Log(response)
+
+                # Reply with a response
+                new_message = await thread.send(content=f"\n{response}")
+                message_id = new_message.id
 
         except Exception as e:
             FM.Log(str(e), LogType.Error)
