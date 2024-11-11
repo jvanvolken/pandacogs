@@ -1,8 +1,8 @@
 
-import asyncio
 import json
 import aiohttp
 import discord
+import re
 
 from redbot.core import commands, bot, app_commands
 from .filemanager import FileManager, LogType
@@ -45,7 +45,7 @@ class GrokBot(commands.Cog):
             'messages': [
                 {
                     'role': 'system',
-                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[body of response] ",
+                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[rich text body of response] ",
                 },
                 {
                     'role': 'user',
@@ -67,11 +67,12 @@ class GrokBot(commands.Cog):
             response_message = response_json["choices"][0]["message"]["content"]
             FM.Log(response_message)
 
+            result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", msg)
+            thread_name = result.group(1)[:15]
+
             response_body = ""
             for line in response_message.splitlines():
-                if "Summary:" in line:
-                    thread_name = line.strip("Summary:").strip()[:15]
-                elif line is not "":
+                if "Summary" not in line:
                     response_body += f"\n{line}"
 
             thread = await interaction.channel.create_thread(
