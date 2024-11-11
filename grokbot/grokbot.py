@@ -68,7 +68,7 @@ class GrokBot(commands.Cog):
                 type = discord.ChannelType.private_thread
             )
 
-            await interaction.response.send_message(content = f"I've created a thread for us!\n{thread.mention}")
+            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
             # response_json = json.loads(await Fetch(json_data))
 
