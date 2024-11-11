@@ -79,7 +79,8 @@ class GrokBot(commands.Cog):
             # Create a thread to house the conversation
             thread = await interaction.channel.create_thread(
                 name = thread_name,
-                type = discord.ChannelType.private_thread
+                type = discord.ChannelType.public_thread,
+                message = None
             )
 
             thread.edit(type=discord.ChannelType.public_thread)
