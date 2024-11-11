@@ -45,7 +45,7 @@ class GrokBot(commands.Cog):
             'messages': [
                 {
                     'role': 'system',
-                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[rich text body of response] ",
+                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[formatted body of response] ",
                 },
                 {
                     'role': 'user',
