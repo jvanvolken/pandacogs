@@ -60,8 +60,7 @@ class GrokBot(commands.Cog):
         try:
             thread = await interaction.channel.create_thread(
                 name = "test_thread",
-                type = discord.ChannelType.public_thread,
-                message = interaction.original_response
+                type = discord.ChannelType.public_thread
             )
 
             await interaction.response.send_message(content = f"I've created a thread for us here! {thread.mention}")
