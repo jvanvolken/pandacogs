@@ -38,7 +38,7 @@ class GrokBot(commands.Cog):
 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
-    async def chat(self, interaction: discord.Interaction, personality: str, message: str):
+    async def chat(self, interaction: discord.Interaction, message: str, personality: str = "You are Grok, a helpful chat bot."):
         """Replies to a message!"""
 
         json_data = {
