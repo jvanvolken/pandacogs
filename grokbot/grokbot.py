@@ -87,7 +87,7 @@ class GrokBot(commands.Cog):
             # await interaction.response.defer()
 
             await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
-            original_message = await thread.send(content=f"{response_body}")
+            original_message = await thread.send(content=f"\n{response_body}")
 
             message_id = original_message.id
             while True:
