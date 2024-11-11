@@ -60,32 +60,34 @@ class GrokBot(commands.Cog):
         try:
             await interaction.response.send_message(content="*let me think...*")
 
-            response_json = json.loads(await Fetch(json_data))
+            # response_json = json.loads(await Fetch(json_data))
 
-            response_message = response_json["choices"][0]["message"]["content"]
-            FM.Log(response_message)
+            # response_message = response_json["choices"][0]["message"]["content"]
+            # FM.Log(response_message)
 
+            response_message = "TBD"
             original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
-            # message_id = original_message.id
-            # while True:
-            #     # Returns true of the message is a reply to the original message
-            #     def check(message):
-            #         FM.Log(message.reference)
-            #         return message.reference and message.reference.message_id == message_id
+            message_id = original_message.id
+            while True:
+                # Returns true of the message is a reply to the original message
+                def check(message):
+                    FM.Log(message)
+                    FM.Log(message.reference)
+                    FM.Log(f"{message.reference.message_id} <> {message_id}")
+                    return message.reference and message.reference.message_id == message_id
 
-            #     # Wait for a reply in accordance with the check function
-            #     msg: discord.Message = await self.bot.wait_for('message', check = check, timeout=10.0)
-            #     FM.Log(msg.content)
+                # Wait for a reply in accordance with the check function
+                FM.Log("PRE-CHECK")
+                msg: discord.Message = await self.bot.wait_for('message', check = check)#, timeout=10.0)
+                FM.Log("POST-CHECK")
 
-            #     message_id = msg.id
-            #     FM.Log(message_id)
-            #     if msg is None:
-            #         FM.Log("Thanks for chatting!")
-            #         await original_message.channel.send("Thanks for chatting!")
-            #         break
+                if msg is None:
+                    FM.Log("Thanks for chatting!")
+                    await original_message.channel.send("Thanks for chatting!")
+                    break
 
-            #     FM.Log(f"You replied with: {msg.content}")
-            #     await msg.reply(content=f"You replied with: {msg.content}")
+                message_id = msg.id
+                await msg.reply(content=f"You replied with: {msg.content}")
         except Exception as e:
             FM.Log(str(e), LogType.Error)
