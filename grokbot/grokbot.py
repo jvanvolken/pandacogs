@@ -45,11 +45,11 @@ class GrokBot(commands.Cog):
             'messages': [
                 {
                     'role': 'system',
-                    'content': f"{personality}",
+                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[body of response] ",
                 },
                 {
                     'role': 'user',
-                    'content': f"In less than 15 characters, summarize this message: {message}",
+                    'content': f"{message}",
                 }
             ],
             'model': 'grok-beta',
@@ -59,16 +59,15 @@ class GrokBot(commands.Cog):
 
         try:
             await interaction.response.defer()
-            
-            response_json = json.loads(await Fetch(json_data))
-            thread_name = response_json["choices"][0]["message"]["content"]
+            # response_json = json.loads(await Fetch(json_data))
+            # thread_name = response_json["choices"][0]["message"]["content"]
 
             thread = await interaction.channel.create_thread(
-                name = thread_name,
+                name = "tbd",
                 type = discord.ChannelType.private_thread
             )
 
-            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
+            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}", thread=thread)
 
             # response_json = json.loads(await Fetch(json_data))
 
