@@ -116,14 +116,16 @@ class GrokBot(commands.Cog):
                     'role': 'user',
                     'content': msg.content,
                 })
+                
+                FM.Log(json_data["messages"])
 
                 # Fetch a new response
                 response_json = json.loads(await Fetch(json_data))
-                response = response_json["choices"][0]["message"]["content"]
+                response_body = response_json["choices"][0]["message"]["content"]
                 FM.Log(response)
 
                 # Reply with a response
-                new_message = await thread.send(content=f"\n{response}")
+                new_message = await thread.send(content=f"\n{response_body}")
                 message_id = new_message.id
 
         except Exception as e:
