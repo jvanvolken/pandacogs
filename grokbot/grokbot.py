@@ -14,7 +14,8 @@ intents = discord.Intents(messages=True, guilds=True, members = True, presences 
 client = discord.Client(intents = intents)
 
 FM = FileManager({
-    'Authorization': "SECRET / CHANGE ME"
+    'Authorization': "SECRET / CHANGE ME",
+    "DefaultPersonality": "You are Benjamin, a kind and helpful chat bot."
 })
 
 async def Fetch(body):
@@ -38,7 +39,7 @@ class GrokBot(commands.Cog):
 
     @app_commands.command()
     @app_commands.describe(personality="Describe Benjamin's personality for this response!", message="Your message to Benjamin!")
-    async def chat(self, interaction: discord.Interaction, message: str, personality: str = "You are Grok, a helpful chat bot."):
+    async def chat(self, interaction: discord.Interaction, message: str, personality: str = FM.config['DefaultPersonality']):
         """Replies to a message!"""
 
         json_data = {
@@ -114,7 +115,7 @@ class GrokBot(commands.Cog):
                 # Append user's message
                 json_data["messages"].append({
                     'role': 'user',
-                    'content': msg.content,
+                    'content': f"{msg.content} - limit your response to a maximum of 1000 characters",
                 })
                 
                 FM.Log(json_data["messages"])
