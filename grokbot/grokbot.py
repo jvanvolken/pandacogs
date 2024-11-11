@@ -45,7 +45,7 @@ class GrokBot(commands.Cog):
             'messages': [
                 {
                     'role': 'system',
-                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[formatted body of response] ",
+                    'content': f"{personality}. Answer in this format:\n**Summary:** *[summary that's 15 characters or less]*\n\n[formatted body of response]",
                 },
                 {
                     'role': 'user',
@@ -66,7 +66,7 @@ class GrokBot(commands.Cog):
 
             # Find summary text
             # result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
-            result = re.search(r".*Summary.*?([a-zA-Z0-9_]+[a-zA-Z0-9_ ]+)", response)
+            result = re.search(r".*Summary.*?([a-zA-Z0-9_']+[a-zA-Z0-9_' ]+)", response)
             thread_name = result.group(1)[:15]
 
             # Construct the body of the response (without summary)
