@@ -87,7 +87,8 @@ class GrokBot(commands.Cog):
                     await original_message.channel.send("Thanks for chatting!")
                     break
 
-                message_id = msg.id
-                await msg.reply(content=f"You replied with: {msg.content}")
+                new_response = await msg.reply(content=f"You replied with: {msg.content}")
+                message_id = new_response.id
+                
         except Exception as e:
             FM.Log(str(e), LogType.Error)
