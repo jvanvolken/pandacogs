@@ -45,7 +45,7 @@ class GrokBot(commands.Cog):
             'messages': [
                 {
                     'role': 'system',
-                    'content': f"{personality}. Answer in this format: **Summary:** [replace with summary that's less than 15 characters long]\n\n[replace with the formatted response]",
+                    'content': f"{personality}. Answer in this format: **Summary:** [replace with a 1 or 2 word summary that's LESS than 15 CHARACTERS LONG]\n\n[replace with the formatted response]",
                 },
                 {
                     'role': 'user',
