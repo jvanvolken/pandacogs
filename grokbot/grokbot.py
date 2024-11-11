@@ -66,7 +66,6 @@ class GrokBot(commands.Cog):
             FM.Log(response)
 
             # Find summary text
-            # result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
             result = re.search(r".*Summary.*?([a-zA-Z0-9_']+[a-zA-Z0-9_' ]+)", response)
             thread_name = result.group(1)[:15]
 
@@ -87,15 +86,9 @@ class GrokBot(commands.Cog):
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
             # Send the thread details and the response body
-            # original_message = 
             await thread.send(content=f"**Personality**\n`{personality}`\n**Message**\n`{message}`\n\n{response_body.strip()}")
 
-            # message_id = original_message.id
             while True:
-                # # Returns true of the message is a reply to the original message
-                # def check(message: discord.Message):
-                #     return message.channel.id == thread.id # .reference.message_id == message_id
-                    
                 # Reset personality to remove summary
                 json_data["messages"][0]['content'] = f"{personality} - formatted nicely"
 
@@ -120,7 +113,7 @@ class GrokBot(commands.Cog):
                     'content': f"{msg.content} - limit your response to a maximum of 1000 characters",
                 })
                 
-                FM.Log(json_data["messages"])
+                FM.Log(json.dumps(json_data["messages"], indent=2))
 
                 # Fetch a new response
                 response_json = json.loads(await Fetch(json_data))
@@ -128,9 +121,7 @@ class GrokBot(commands.Cog):
                 FM.Log(response)
 
                 # Reply with a response
-                # new_message = 
                 await msg.reply(content=f"\n{response_body}")
-                # message_id = new_message.id
 
         except Exception as e:
             FM.Log(str(e), LogType.Error)
