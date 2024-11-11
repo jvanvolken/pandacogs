@@ -64,14 +64,14 @@ class GrokBot(commands.Cog):
 
             response_json = json.loads(await Fetch(json_data))
 
-            response_message = response_json["choices"][0]["message"]["content"]
-            FM.Log(response_message)
+            response = response_json["choices"][0]["message"]["content"]
+            FM.Log(response)
 
-            result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", msg)
+            result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
             thread_name = result.group(1)[:15]
 
             response_body = ""
-            for line in response_message.splitlines():
+            for line in response.splitlines():
                 if "Summary" not in line:
                     response_body += f"\n{line}"
 
@@ -82,14 +82,11 @@ class GrokBot(commands.Cog):
 
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
-
             # response_message = "TBD"
             # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
-
             # await interaction.response.defer()
 
-            
-            original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
+            await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
             original_message = await thread.send(content=f"{response_body}")
 
             message_id = original_message.id
