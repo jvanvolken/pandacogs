@@ -66,7 +66,17 @@ class GrokBot(commands.Cog):
             # FM.Log(response_message)
 
             response_message = "TBD"
-            original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+
+            await interaction.response.defer()
+
+            channel = client.get_channel(int(interaction.channel_id))
+            thread = await channel.create_thread(
+                name = "test_thread",
+                type = discord.ChannelType.public_thread
+            )
+            
+            original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             message_id = original_message.id
             while True:
@@ -89,6 +99,6 @@ class GrokBot(commands.Cog):
 
                 new_response = await msg.reply(content=f"You replied with: {msg.content}")
                 message_id = new_response.id
-                
+
         except Exception as e:
             FM.Log(str(e), LogType.Error)
