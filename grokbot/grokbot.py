@@ -49,7 +49,7 @@ class GrokBot(commands.Cog):
                 },
                 {
                     'role': 'user',
-                    'content': f"{message} - limit your response to a maximum of 1000 characters",
+                    'content': f"In one word that's less than 15 characters long, summarize this message: {message}",
                 }
             ],
             'model': 'grok-beta',
@@ -58,8 +58,13 @@ class GrokBot(commands.Cog):
         }
 
         try:
+            await interaction.response.defer()
+            
+            response_json = json.loads(await Fetch(json_data))
+            thread_name = response_json["choices"][0]["message"]["content"]
+
             thread = await interaction.channel.create_thread(
-                name = "test_thread",
+                name = thread_name,
                 type = discord.ChannelType.private_thread
             )
 
