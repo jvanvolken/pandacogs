@@ -65,7 +65,8 @@ class GrokBot(commands.Cog):
             FM.Log(response)
 
             # Find summary text
-            result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
+            # result = re.search(r".*Summary.*?([a-zA-Z0-9_].*)\*", response)
+            result = re.search(r".*Summary.*?([a-zA-Z0-9_]+[a-zA-Z0-9_ ]+)", response)
             thread_name = result.group(1)[:15]
 
             # Construct the body of the response (without summary)
