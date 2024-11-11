@@ -58,24 +58,25 @@ class GrokBot(commands.Cog):
         }
 
         try:
-            await interaction.response.send_message(content="*let me think...*")
+            original_message = await interaction.response.send_message(content="*let me think...*")
 
             # response_json = json.loads(await Fetch(json_data))
 
             # response_message = response_json["choices"][0]["message"]["content"]
             # FM.Log(response_message)
 
-            response_message = "TBD"
+            # response_message = "TBD"
             # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
 
             thread = await interaction.channel.create_thread(
                 name = "test_thread",
-                type = discord.ChannelType.public_thread
+                type = discord.ChannelType.public_thread,
+                message = interaction.original_response
             )
             
-            original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            # original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             message_id = original_message.id
             while True:
