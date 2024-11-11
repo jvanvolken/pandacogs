@@ -49,7 +49,7 @@ class GrokBot(commands.Cog):
                 },
                 {
                     'role': 'user',
-                    'content': f"{message}",
+                    'content': f"{message} - limit your response to a maximum of 1000 characters",
                 }
             ],
             'model': 'grok-beta',
@@ -63,18 +63,18 @@ class GrokBot(commands.Cog):
             # thread_name = response_json["choices"][0]["message"]["content"]
 
             thread = await interaction.channel.create_thread(
-                name = "tbd",
+                name = "TBD",
                 type = discord.ChannelType.private_thread
             )
 
-            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}", thread=thread)
+            await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
-            # response_json = json.loads(await Fetch(json_data))
+            response_json = json.loads(await Fetch(json_data))
 
-            # response_message = response_json["choices"][0]["message"]["content"]
-            # FM.Log(response_message)
+            response_message = response_json["choices"][0]["message"]["content"]
+            FM.Log(response_message)
 
-            response_message = "TBD"
+            # response_message = "TBD"
             # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
