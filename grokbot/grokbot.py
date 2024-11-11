@@ -60,10 +60,10 @@ class GrokBot(commands.Cog):
         try:
             thread = await interaction.channel.create_thread(
                 name = "test_thread",
-                type = discord.ChannelType.public_thread
+                type = discord.ChannelType.private_thread
             )
 
-            await interaction.response.send_message(content = f"I've created a thread for us here! {thread.mention}")
+            await interaction.response.send_message(content = f"I've created a thread for us!\n{thread.mention}")
 
             # response_json = json.loads(await Fetch(json_data))
 
