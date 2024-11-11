@@ -87,13 +87,14 @@ class GrokBot(commands.Cog):
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
             # Send the thread details and the response body
-            original_message = await thread.send(content=f"**Personality**\n`{personality}`\n**Message**\n`{message}`\n\n{response_body.strip()}")
+            # original_message = 
+            await thread.send(content=f"**Personality**\n`{personality}`\n**Message**\n`{message}`\n\n{response_body.strip()}")
 
-            message_id = original_message.id
+            # message_id = original_message.id
             while True:
                 # Returns true of the message is a reply to the original message
-                def check(message):
-                    return message.reference and message.reference.message_id == message_id
+                def check(message: discord.Message):
+                    return message.reference and message.channel.id == thread.id # .reference.message_id == message_id
 
                 # Reset personality to remove summary
                 json_data["messages"][0]['content'] = f"{personality} - formatted nicely"
@@ -127,8 +128,9 @@ class GrokBot(commands.Cog):
                 FM.Log(response)
 
                 # Reply with a response
-                new_message = await msg.reply(content=f"\n{response_body}")
-                message_id = new_message.id
+                # new_message = 
+                await msg.reply(content=f"\n{response_body}")
+                # message_id = new_message.id
 
         except Exception as e:
             FM.Log(str(e), LogType.Error)
