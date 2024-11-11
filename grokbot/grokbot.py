@@ -74,13 +74,21 @@ class GrokBot(commands.Cog):
             response_message = response_json["choices"][0]["message"]["content"]
             FM.Log(response_message)
 
+            response_body = ""
+            for line in response_message.splitlines():
+                if "Summary:" in line:
+                    thread.name = line.strip("Summary:").strip()[:15]
+                elif line is not "":
+                    response_body += f"{line}\n"
+
             # response_message = "TBD"
             # original_message = await interaction.edit_original_response(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
 
             # await interaction.response.defer()
 
             
-            original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*\n\n{response_message}")
+            original_message = await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
+            original_message = await thread.send(content=f"{response_body}")
 
             message_id = original_message.id
             while True:
