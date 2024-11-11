@@ -85,8 +85,7 @@ class GrokBot(commands.Cog):
             await interaction.followup.send(content = f"I've created a thread for us!\n{thread.mention}")
 
             # Send the thread details and the response body
-            await thread.send(content=f"**Personality**\n*{personality}*\n**Message**\n*{message}*")
-            original_message = await thread.send(content=f"\n{response_body}")
+            original_message = await thread.send(content=f"**Personality**\n`{personality}`\n**Message**\n`{message}`\n\n{response_body.strip()}")
 
             message_id = original_message.id
             while True:
@@ -126,7 +125,7 @@ class GrokBot(commands.Cog):
                 FM.Log(response)
 
                 # Reply with a response
-                new_message = await thread.send(content=f"\n{response_body}")
+                new_message = await msg.reply(content=f"\n{response_body}")
                 message_id = new_message.id
 
         except Exception as e:
