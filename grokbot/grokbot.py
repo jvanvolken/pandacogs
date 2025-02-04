@@ -126,3 +126,4 @@ class GrokBot(commands.Cog):
 
         except Exception as e:
             FM.Log(str(e), LogType.Error)
+            raise e

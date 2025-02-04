@@ -487,8 +487,9 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
 
             # Use the role ID to delete role from server
             role_to_remove: discord.Role = guild.get_role(lowest_game['role'])
-            Log(role_to_remove)
-            await role_to_remove.delete()
+            if role_to_remove:
+                Log(f"Found {role_to_remove} role! Deleting role from the guild!")
+                await role_to_remove.delete()
 
             # Removes role ID for this game
             games[game]['role'] = None
