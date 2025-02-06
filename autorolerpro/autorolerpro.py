@@ -740,7 +740,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
 
         # If the reply comes from a bot, break the loop
         if msg.author.bot:
-            break
+            return
         
         # Add the msg.content as a game to the server
         new_games, already_exists, failed_to_find = await AddGames(guild, [FilterName(msg.content)])
