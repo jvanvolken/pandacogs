@@ -177,7 +177,7 @@ def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
 # # Writes or appends a message to the log_file
 # def Log(message: str, log_type: LogType = LogType.Log):
 #     # Skips debug logs if debug mode is False
-#     if log_type == LogType.Debug and not config['DebugMode']:
+#     if log_type == LogType.DEBUG and not config['DebugMode']:
 #         return
     
 #     # Initializes the log file or appends to an existing one
@@ -290,11 +290,11 @@ def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort:
             list_filter = list_filter.strip().lower()
             test_name = name.lower()
             similarity = SequenceMatcher(None, test_name, list_filter).ratio()
-            # Log(f"Similarity Score for {list_filter} and {test_name} is ({similarity}).", LogType.Debug)
+            # Log(f"Similarity Score for {list_filter} and {test_name} is ({similarity}).", LogType.DEBUG)
 
             # If the list_filter is not in the name and similarity score is below 0.55, skip this game
             if list_filter not in test_name and similarity < 0.55:
-                # Log(f"Skipping {test_name}!", LogType.Debug)
+                # Log(f"Skipping {test_name}!", LogType.DEBUG)
                 continue
 
         # Get the next index from set_amount
@@ -403,7 +403,7 @@ def GetLastPlayed(game_name: str):
         
         return last_played
     else:
-        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.ERROR)
         return False
 
 # Returns the number of players who play/track a given game
@@ -421,7 +421,7 @@ def GetNumberOfPlayers(game_name: str):
         
         return count
     else:
-        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.Error)
+        Log(f"Failed to get last played. Could not find {game_name} in list.", LogType.ERROR)
         return False
     
 def GetDaysSinceAdded(game_name: str):
@@ -471,7 +471,7 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
             games[game_name]["role"] = None
             role = None
     else:
-        Log(f"GetRole: Could not find {game_name} in the database!", LogType.Error)
+        Log(f"GetRole: Could not find {game_name} in the database!", LogType.ERROR)
         return None
 
     # If no role is found and create_new is true, create a new role
@@ -528,7 +528,7 @@ async def RemoveGame(game_name: str, guild: discord.Guild):
         
         return True
     else:
-        Log(f"Failed to remove game. Could not find {game_name} in list.", LogType.Error)
+        Log(f"Failed to remove game. Could not find {game_name} in list.", LogType.ERROR)
         return False
 
 # Adds a list of games to the games list after verifying they are real games
@@ -571,7 +571,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         if config['AllowEroticTitles']:
             if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
                 # Request the game title with the provided game id
-                Log(f"Looking for game id {game_name}", LogType.Debug)
+                Log(f"Looking for game id {game_name}", LogType.DEBUG)
                 db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
             else:
                 # Request all game titles that match the game name
@@ -579,7 +579,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         else:
             if game_name.isnumeric():
                 # Request the game title with the provided game id
-                Log(f"Looking for game id {game_name}", LogType.Debug)
+                Log(f"Looking for game id {game_name}", LogType.DEBUG)
                 db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
             else:
                 # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
@@ -589,8 +589,8 @@ async def AddGames(guild: discord.Guild, game_list: list):
         results = db_json.json()
 
         if 'message' in results and 'Authorization Failure' in results['message']:
-            Log(f"Authorization failure, please update authorization key!", LogType.Error)
-            Log(results, LogType.Error)
+            Log(f"Authorization failure, please update authorization key!", LogType.ERROR)
+            Log(results, LogType.ERROR)
 
             # Get the admin channel and send warning
             admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
@@ -602,14 +602,14 @@ async def AddGames(guild: discord.Guild, game_list: list):
         # Exits if 'cause' exists in results, this is indicative of an error
         try:
             if len(results) == 0 or (len(results) > 0 and 'cause' in results[0]):
-                Log(f"No Results Found for {game_name}: {str(results)}", LogType.Warning)
+                Log(f"No Results Found for {game_name}: {str(results)}", LogType.WARNING)
                 failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
                 continue
             else:
-                Log(str(results), LogType.Debug)
+                Log(str(results), LogType.DEBUG)
         except:
-            Log(results, LogType.Error)
-            Log(f"Error when parsing results for new game!", LogType.Error)
+            Log(results, LogType.ERROR)
+            Log(f"Error when parsing results for new game!", LogType.ERROR)
 
         # Compares the list of games to the matches, from there score by different features of the game
         top_game = None
@@ -621,9 +621,9 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             score = 0
             # if top_game:
-            #     Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.Debug)
+            #     Log(f"Comparing {game_candidate['name']} with {top_game['name']}!", LogType.DEBUG)
             # else:
-            #     Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.Debug)
+            #     Log(f"Comparing {game_candidate['name']} with nothing to start scoring!", LogType.DEBUG)
 
             # Add similarity ratio to score with added weight          
             
@@ -631,7 +631,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
             if candidate_similarity:
                 score += ((candidate_similarity**2) * 10)
-                # Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.Debug)
+                # Log(f"{game_candidate['name']} started off with {score} points for similarity to original search of {game_name}!", LogType.DEBUG)
 
             # Compare release dates, favor newer games
             top_game_year = None
@@ -645,7 +645,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_game_year and candidate_year:
                 if candidate_year > top_game_year:
                     score += 1
-                    # Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for newer release date, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.DEBUG)
                 else:
                     score -= 1
 
@@ -661,7 +661,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_rating and candidate_rating:
                 if candidate_rating > top_rating:
                     score += 1
-                    # Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for higher rating, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.DEBUG)
                 else:
                     score -= 1
     
@@ -677,21 +677,21 @@ async def AddGames(guild: discord.Guild, game_list: list):
             if top_dlcs and candidate_dlcs:
                 if len(top_dlcs) > len(candidate_dlcs):
                     score += 1
-                    # Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                    # Log(f"{game_candidate['name']} added a point for more dlcs, now at {score}, compared to {top_game['name']}'s {top_score}!", LogType.DEBUG)
                 else:
                     score -= 1
 
             # Compare new score with top score and set candidate as top game if higher
             if score > top_score:
                 # if top_game:
-                #     Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.Debug)
+                #     Log(f"{game_candidate['name']} is a more likely candidate with a score of {score} compared to {top_game['name']}'s {top_score}!", LogType.DEBUG)
                 # else:
-                #     Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.Debug)
+                #     Log(f"{game_candidate['name']} is the first candidate with a score of {score}!", LogType.DEBUG)
 
                 top_score = score
                 top_game = game_candidate
             # else:
-            #     Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.Debug)
+            #     Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.DEBUG)
 
         # Checks if game already exists again with the nearly found game name
         if top_game and (top_game['name'] in games or top_game['name'] in aliases):
@@ -724,7 +724,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 # Toggles the updated flag for games
                 UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
             else:
-                Log(f"Failed to add new game, {top_game['name']}! Could not create a new role!", LogType.Error)
+                Log(f"Failed to add new game, {top_game['name']}! Could not create a new role!", LogType.ERROR)
         else:
             failed_to_find[game_name] = {'name' : game_name, 'summary' : 'unknown', 'first_release_date' : 'unknown'}
         
@@ -804,7 +804,7 @@ def StartPlayingGame(member: discord.Member, game_name: str):
         try:
             game_name = [game for game in games if game.lower() == game_name.lower()][0]
         except:
-            Log(f"Could not find {game_name} in the game list or aliases when {member.name} started playing!", LogType.Warning)
+            Log(f"Could not find {game_name} in the game list or aliases when {member.name} started playing!", LogType.WARNING)
             return
             
     # Grabs the current YYYY-MM-DD from the current datetime
@@ -837,12 +837,12 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         try:
             game_name = [game for game in games if game.lower() == game_name.lower()][0]
         except:
-            Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.Warning)
+            Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.WARNING)
             return
 
     # Checks if game has history, log error if missing
     if 'history' not in games[game_name]:
-        Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.Warning)
+        Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.WARNING)
         return
     
     def AddPlaytime(date, hours):
@@ -867,7 +867,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     if today in games[game_name]['history']:
         # Verifies that member has history for today, logs error if not
         if member.name not in games[game_name]['history'][today]:
-            Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.Warning)
+            Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.WARNING)
             return
         
         # Get the difference in time between last_played and now
@@ -910,7 +910,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             # Add playtime for today
             AddPlaytime(today, hours)
         else:
-            Log(f"Could not determine {member.name}'s play session for {game_name}! Maybe it spanned more than 2 days?", LogType.Warning)
+            Log(f"Could not determine {member.name}'s play session for {game_name}! Maybe it spanned more than 2 days?", LogType.WARNING)
 
             # Loop through all of the dates in the game's history
             for date in games[game_name]['history']: 
@@ -955,7 +955,7 @@ def GetPlaytime(game_list: dict, days: int = None, count: int = None, member: di
 
 # Filters game names of common bad strings and/or characters
 def FilterName(original: str):
-    Log(f"Activity name before filtering: {original}", LogType.Debug)
+    Log(f"Activity name before filtering: {original}", LogType.DEBUG)
 
     # TODO: Update these replaces with case-insensitive replaces
     filtered_name = original.replace("™", "")                           # Remove '™' from original
@@ -967,7 +967,7 @@ def FilterName(original: str):
     # filtered_name = string.capwords(filtered_name)                      # Capitalizes each word
     filtered_name = filtered_name.strip()                               # Remove leading and trailing whitespace
 
-    Log(f"Activity name after filtering: {filtered_name}", LogType.Debug)
+    Log(f"Activity name after filtering: {filtered_name}", LogType.DEBUG)
     return filtered_name
 
 # Create a class called DirectMessageView that subclasses discord.ui.View
@@ -1007,9 +1007,9 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please try again later and thank you for your understanding while we sort through these early beta bugs!")
-                Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role Check: {str(self.role)}", LogType.Error)
-                Log(traceback.format_exc(), LogType.Error)
-                Log(error, LogType.Error)
+                Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role Check: {str(self.role)}", LogType.ERROR)
+                Log(traceback.format_exc(), LogType.ERROR)
+                Log(error, LogType.ERROR)
                 raise Exception(error)
                 
     # Create a class called NoButton that subclasses discord.ui.Button             
@@ -1035,7 +1035,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
-                Log(error, LogType.Error)
+                Log(error, LogType.ERROR)
                 raise Exception(error)
               
     # Create a class called OptOutButton that subclasses discord.ui.Button                   
@@ -1056,7 +1056,7 @@ class DirectMessageView(discord.ui.View):
                 await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
-                Log(error, LogType.Error)
+                Log(error, LogType.ERROR)
                 raise Exception(error)
 
     async def on_timeout(self):
@@ -1212,7 +1212,7 @@ class PageView(discord.ui.View):
                         error_message = f"Something went wrong, I can't find the associated role for `{self.name}`.\nPlease try adding the game again using `!add_games {self.name}`"
             
                         # Log error and message user about failure
-                        Log(error_message, LogType.Error)
+                        Log(error_message, LogType.ERROR)
                         await interaction.response.send_message(error_message, ephemeral = True)
 
                         # Do not continue if role is missing
@@ -1307,7 +1307,7 @@ class PlaytimeView(discord.ui.View):
                 await interaction.response.send_message(f"Check out this server's top 5 games this month!\n{playtime_message}", files = await GetImages(game_refs))
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to grab the server's top 5 games for this month. Please check the logs for further details.", ephemeral = True)
-                Log(error, LogType.Error)
+                Log(error, LogType.ERROR)
                 raise Exception(error)
 
     class SelfButton(discord.ui.Button):
@@ -1339,7 +1339,7 @@ class PlaytimeView(discord.ui.View):
 
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unabe to grab your top 5 games for this month. Please check the logs for further details.", ephemeral = True)
-                Log(error, LogType.Error)
+                Log(error, LogType.ERROR)
                 raise Exception(error)
             
     async def on_timeout(self):
