@@ -10,7 +10,6 @@ class AliasView(discord.ui.View):
         
         self.original_message = original_message
         self.alias = alias
-        self.handled = False
 
         self.add_item(self.BlacklistButton(self.original_message, alias))
 
@@ -26,7 +25,6 @@ class AliasView(discord.ui.View):
                 # TODO: actually blacklist the alias
 
                 # Responds to the request
-                self.handled = True
                 await interaction.response.edit_message(content = f"{self.original_message}\n`{self.alias}` *has been blacklisted*", view = None)
                 # await interaction.response.send_message(f"I've blacklisted `{self.alias}`!")
             except Exception as error:
