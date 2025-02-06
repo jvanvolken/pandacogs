@@ -7,8 +7,8 @@ import math
 import json
 import os
 
-from utils import LogManager, LogType
-from views import AliasView
+from .utils import LogManager, LogType
+from .views import AliasView
 
 from datetime import datetime, timedelta
 from redbot.core import commands, bot, app_commands
