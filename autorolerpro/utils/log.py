@@ -23,7 +23,7 @@ class LogManager:
 
     # Writes or appends a message to the log_file
     def __call__(self, message: str, log_type: LogType = LogType.INFO):
-        if log_type == LogType.Debug and not self.debug_mode:
+        if log_type == LogType.DEBUG and not self.debug_mode:
             # Skips debug logs if debug mode is False
             return
 
