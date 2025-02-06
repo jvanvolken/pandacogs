@@ -26,6 +26,7 @@ class AliasView(discord.ui.View):
 
                 # Responds to the request
                 await interaction.response.edit_message(content = f"{self.original_message}\n`{self.alias}` *has been blacklisted*", view = None)
+                return
                 # await interaction.response.send_message(f"I've blacklisted `{self.alias}`!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to blacklist the `{self.alias}` alias!")
