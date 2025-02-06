@@ -716,9 +716,9 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         return ########## TODO: Member is now required with new slash commands feature
     
     # Send the alias message
+    original_message = f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*"
     view = AliasView(original_message, alias)
-    original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*", view = view)
-    view.message = original_message
+    view.message = await admin_channel.send(original_message, view = view)
     view.Log = Log
     
     # # Send the original message
@@ -733,7 +733,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     while not game and attempt_count < config['AliasMaxAttempts']:
         # Returns true of the message is a reply to the original message
         def check(message):
-            return message.reference and message.reference.message_id == original_message.id
+            return message.reference and message.reference.message_id == view.message.id
 
         # Wait for a reply in accordance with the check function
         msg = await bot.wait_for('message', check = check)
@@ -750,7 +750,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
         elif len(failed_to_find) > 0 and remaining_attempts > 0:
-            original_message = await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
+            await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
             attempt_count += 1
     
     # Update alias if a game was ultimately found
