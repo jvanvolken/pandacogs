@@ -43,14 +43,6 @@ class FlagType(Enum):
     Aliases  = 3
     Config   = 4
 
-# # Log Types
-# class LogType(Enum):
-#     Log     = "LOG"
-#     Debug   = "DEBUG"
-#     Warning = "WARNING"
-#     Error   = "ERROR"
-#     Fatal   = "FATAL"
-
 # Navigation types
 class NavigationType(Enum):
     First    = "First"
@@ -173,21 +165,6 @@ def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
         update_flags[flag] = {'status': False, 'comment': ""}
     else:
         update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
-
-# # Writes or appends a message to the log_file
-# def Log(message: str, log_type: LogType = LogType.Log):
-#     # Skips debug logs if debug mode is False
-#     if log_type == LogType.DEBUG and not config['DebugMode']:
-#         return
-    
-#     # Initializes the log file or appends to an existing one
-#     if os.path.isfile(log_file):
-#         with open(log_file, "a") as fp:
-#             fp.write("\n")
-#             fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
-#     else:
-#         with open(log_file, "w") as fp:
-#             fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -738,8 +715,14 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     if not member:
         return ########## TODO: Member is now required with new slash commands feature
     
-    # Send the original message
-    original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
+    # Send the alias message
+    view = AliasView(original_message, alias)
+    original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*", view = view)
+    view.message = original_message
+    view.Log = Log
+    
+    # # Send the original message
+    # original_message = await admin_channel.send(f"{member.mention} started playing `{alias}`, but I can't find it in the database!\n*Please reply with the full name associated with this game!*")
 
     # else: ########## TODO: Disabled for new slash commands feature
     #     original_message = await admin_channel.send(f"So you want to set up `{alias}` as an alias, huh? Reply with the full name of the game associated with this alias!")
