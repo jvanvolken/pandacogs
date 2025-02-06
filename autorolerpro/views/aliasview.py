@@ -21,10 +21,7 @@ class AliasView(discord.ui.View):
             self.alias = alias
 
         async def callback(self, interaction):
-            try:
-                # Assign role to member
-                await self.member.add_roles(self.role)
-                
+            try:                
                 # TODO: actually blacklist the alias
 
                 # Responds to the request

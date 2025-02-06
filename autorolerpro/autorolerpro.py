@@ -750,7 +750,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         elif len(already_exists) > 0:
             game = list(already_exists.values())[0]
         elif len(failed_to_find) > 0 and remaining_attempts > 0:
-            await msg.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
+            await view.message.reply(f"I was unable to assign `{alias}` to a game - I couldn't find `{msg.content}` in the database!\n*Please try again by replying to this message! Attempts remaining: {remaining_attempts}*")
             attempt_count += 1
     
     # Update alias if a game was ultimately found
