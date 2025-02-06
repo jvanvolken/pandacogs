@@ -18,7 +18,7 @@ class LogManager:
         self.debug_mode = debug_mode
 
     # Returns a string formatted datetime of now
-    def GetDateTime():
+    def GetDateTime(self):
         return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     # Writes or appends a message to the log_file
