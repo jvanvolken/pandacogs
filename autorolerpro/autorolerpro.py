@@ -7,6 +7,9 @@ import math
 import json
 import os
 
+from utils import LogManager, LogType
+from views import AliasView
+
 from datetime import datetime, timedelta
 from redbot.core import commands, bot, app_commands
 from difflib import SequenceMatcher
@@ -40,13 +43,13 @@ class FlagType(Enum):
     Aliases  = 3
     Config   = 4
 
-# Log Types
-class LogType(Enum):
-    Log     = "LOG"
-    Debug   = "DEBUG"
-    Warning = "WARNING"
-    Error   = "ERROR"
-    Fatal   = "FATAL"
+# # Log Types
+# class LogType(Enum):
+#     Log     = "LOG"
+#     Debug   = "DEBUG"
+#     Warning = "WARNING"
+#     Error   = "ERROR"
+#     Fatal   = "FATAL"
 
 # Navigation types
 class NavigationType(Enum):
@@ -153,6 +156,9 @@ else:
     with open(aliases_file, "w") as fp:
         json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
 
+# Create the log object 
+Log = LogManager(log_file, config['DebugMode'])
+
 # Returns a string formatted datetime of now
 def GetDateTime():
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -168,20 +174,20 @@ def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
     else:
         update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
 
-# Writes or appends a message to the log_file
-def Log(message: str, log_type: LogType = LogType.Log):
-    # Skips debug logs if debug mode is False
-    if log_type == LogType.Debug and not config['DebugMode']:
-        return
+# # Writes or appends a message to the log_file
+# def Log(message: str, log_type: LogType = LogType.Log):
+#     # Skips debug logs if debug mode is False
+#     if log_type == LogType.Debug and not config['DebugMode']:
+#         return
     
-    # Initializes the log file or appends to an existing one
-    if os.path.isfile(log_file):
-        with open(log_file, "a") as fp:
-            fp.write("\n")
-            fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
-    else:
-        with open(log_file, "w") as fp:
-            fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
+#     # Initializes the log file or appends to an existing one
+#     if os.path.isfile(log_file):
+#         with open(log_file, "a") as fp:
+#             fp.write("\n")
+#             fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
+#     else:
+#         with open(log_file, "w") as fp:
+#             fp.writelines(f"{GetDateTime()}: ({log_type.value}) {message}")
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -478,7 +484,7 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
             if role_count < config['MaxRoleCount']:
                 break
             
-            Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!", LogType.Log)
+            Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!")
 
             # Grab the lowest ranking game from the server
             game, _ = GetLowestScoringGame([game_name])
@@ -493,11 +499,11 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
 
             # Removes role ID for this game
             games[game]['role'] = None
-            Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!", LogType.Log)
+            Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!")
         
         # Adds a new role to the server
         role = await guild.create_role(name = game_name, mentionable = True)
-        Log(f"Created a new role, {game_name}! ID: ({role.id})", LogType.Log)
+        Log(f"Created a new role, {game_name}! ID: ({role.id})")
 
         # Stores the role for future use
         games[game_name]['role'] = role.id
@@ -559,7 +565,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 # Move onto the next game
                 continue
             except:
-                Log(f"Could not find {game_name} in the game list or aliases! Must be a new game!", LogType.Log)
+                Log(f"Could not find {game_name} in the game list or aliases! Must be a new game!")
 
         # Check if erotic titles are allowed in the config
         if config['AllowEroticTitles']:
@@ -876,7 +882,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
     else:
         # Check if there's a last_played in yesterday's history
         if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
-            Log(f"{member.name} played {game_name} overnight, splitting time across two days!", LogType.Log)
+            Log(f"{member.name} played {game_name} overnight, splitting time across two days!")
 
             # Get yesterday's last_played time and midnight
             last_played  = games[game_name]['history'][yesterday][member.name]['last_played']
@@ -910,7 +916,7 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             for date in games[game_name]['history']: 
                 if member.name in games[game_name]['history'][date] and 'last_played' in games[game_name]['history'][date][member.name]:
                     # Log the last_played and then delete the entry
-                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {games[game_name]['history'][date][member.name]['last_played']}", LogType.Log)
+                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {games[game_name]['history'][date][member.name]['last_played']}")
                     del games[game_name]['history'][date][member.name]['last_played']
 
                     # Toggles the updated flag for games
@@ -1343,7 +1349,7 @@ class AutoRolerPro(commands.Cog):
     """AutoRolerPro"""
     def __init__(self, bot: bot.Red):
         self.bot = bot
-        Log("AutorolerPro loaded!", LogType.Log)
+        Log("AutorolerPro loaded!")
 
         # Start the backup routine
         self.BackupRoutine.start()
@@ -1410,7 +1416,7 @@ class AutoRolerPro(commands.Cog):
             log_header = f"Initiating routine data backup sequence ------------------------------"
             
             # Logs the events of the backup routine
-            Log(f"{log_header}{log_message}", LogType.Log)
+            Log(f"{log_header}{log_message}")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -1516,7 +1522,7 @@ class AutoRolerPro(commands.Cog):
                     else:
                         # Informs the admin channel that the member is playing a game without it's role assigned
                         await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
-                        Log(f"Sent {member['display_name']} a direct message!", LogType.Log)
+                        Log(f"Sent {member['display_name']} a direct message!")
                 
                         try:
                             # Get the direct message channel from the member
@@ -1531,7 +1537,7 @@ class AutoRolerPro(commands.Cog):
                             
                         except discord.errors.Forbidden:
                             await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
-                            Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!", LogType.Log)
+                            Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!")
         
     list_group = app_commands.Group(name="list", description="Request a list of something")
     add_group = app_commands.Group(name="add", description="Add something")
@@ -1832,7 +1838,7 @@ class AutoRolerPro(commands.Cog):
         member = interaction.user
         guild = interaction.guild
 
-        Log(f"Initializing Database Cleanup!", LogType.Log)
+        Log(f"Initializing Database Cleanup!")
 
         # Exits if the member is not an admin
         role: discord.Role = guild.get_role(config['Roles']['Admin'])
@@ -1886,7 +1892,7 @@ class AutoRolerPro(commands.Cog):
                     if role.name not in member_db["games"]:
                         update = {'games' : {role.name : {'tracked' : True}}}
                         UpdateMember(member, update)
-                        Log(f"Adding {role.name} to {member.name}'s data!", LogType.Log)
+                        Log(f"Adding {role.name} to {member.name}'s data!")
                         added_games += 1
 
             # Removes known old/bad data from database
@@ -1906,7 +1912,7 @@ class AutoRolerPro(commands.Cog):
         duplicates = [v for v in guild.roles if v.name in seen or seen.add(v.name)] 
         for role in duplicates:
             await role.delete()
-            Log(f"Removed duplicate {role.name} role from the server!", LogType.Log)
+            Log(f"Removed duplicate {role.name} role from the server!")
             duplicate_roles += 1
 
         await interaction.response.send_message(f"I have successfully synced the database with the server! I found and added `{added_games}` missed games, cleaned up `{cleanups}` data entries, removed `{duplicate_roles}` duplicate roles, and added `{added_datetimes}` added-datetimes!", ephemeral=True)
