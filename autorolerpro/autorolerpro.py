@@ -4,10 +4,8 @@ import unicodedata
 import requests
 import discord
 import math
-import json
-import os
 
-from .utils import LogManager, LogType
+from .utils import LogManager, LogType, FileManager, FlagType
 from .views import AliasView
 
 from datetime import datetime, timedelta
@@ -36,12 +34,12 @@ class SortType(Enum):
     Popularity    = "Popularity"
     RecentlyAdded = "Recently Added"
 
-# Flag types
-class FlagType(Enum):
-    Games    = 1
-    Members  = 2
-    Aliases  = 3
-    Config   = 4
+# # Flag types
+# class FlagType(Enum):
+#     Games    = 1
+#     Members  = 2
+#     Aliases  = 3
+#     Config   = 4
 
 # Navigation types
 class NavigationType(Enum):
@@ -52,104 +50,107 @@ class NavigationType(Enum):
     Last     = "Last"
 
 # Cog Directory in Appdata
-docker_cog_path  = "/data/cogs/AutoRolerPro"
-games_file       = f"{docker_cog_path}/games.json"
-members_file     = f"{docker_cog_path}/members.json"
-aliases_file     = f"{docker_cog_path}/aliases.json"
-config_file      = f"{docker_cog_path}/config.json"
-log_file         = f"{docker_cog_path}/log.txt"
+# docker_cog_path  = "/data/cogs/AutoRolerPro"
+# games_file       = f"{docker_cog_path}/games.json"
+# members_file     = f"{docker_cog_path}/members.json"
+# aliases_file     = f"{docker_cog_path}/aliases.json"
+# config_file      = f"{docker_cog_path}/config.json"
+# log_file         = f"{docker_cog_path}/log.txt"
 
-# Dictionary of updated file flags
-update_flags = {
-    FlagType.Games:   {'status': False, 'comment': ""}, 
-    FlagType.Members: {'status': False, 'comment': ""}, 
-    FlagType.Aliases: {'status': False, 'comment': ""}, 
-    FlagType.Config:  {'status': False, 'comment': ""}
-}
+Files = FileManager("/data/cogs/AutoRolerPro")
 
-# Create the docker_cog_path if it doesn't already exist
-os.makedirs(docker_cog_path, exist_ok = True)
+# # Dictionary of updated file flags
+# update_flags = {
+#     FlagType.Games:   {'status': False, 'comment': ""}, 
+#     FlagType.Files.members: {'status': False, 'comment': ""}, 
+#     FlagType.Files.aliases: {'status': False, 'comment': ""}, 
+#     FlagType.Config:  {'status': False, 'comment': ""}
+# }
 
-default_config = {
-    # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
-    # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-    'IGDBCredentials': {
-        'Client-ID': 'CHANGE-ME',
-        'Authorization': 'CHANGE-ME'
-    },
-    'Links': {
-        'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
-    },
-    'ChannelIDs': {
-        'General': 000000000000000000,
-        'Announcements': 000000000000000000,
-        'Admin': 000000000000000000,
-        'Test': 000000000000000000
-    },
-    'Roles': {
-        'Admin': 000000000000000000,
-        'NewMember': None
-    },
-    'WhitelistEnabled': False,
-    'WhitelistMembers': [],
-    'ActivityBlacklist': ["Spotify"],
-    'DebugMode': True,
-    'AliasMaxAttempts': 5,
-    'BackupFrequency': 1,
-    'AllowEroticTitles': False,
-    'MaxRoleCount': 200,
-    'DefaultGameCover': "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
-}
+# # Create the docker_cog_path if it doesn't already exist
+# os.makedirs(docker_cog_path, exist_ok = True)
 
-# Initializes config 
-if os.path.isfile(config_file):
-    with open(config_file, "r") as fp:
-        config = json.load(fp)
+# default_config = {
+#     # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+#     # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
+#     'IGDBCredentials': {
+#         'Client-ID': 'CHANGE-ME',
+#         'Authorization': 'CHANGE-ME'
+#     },
+#     'Links': {
+#         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
+#     },
+#     'ChannelIDs': {
+#         'General': 000000000000000000,
+#         'Announcements': 000000000000000000,
+#         'Admin': 000000000000000000,
+#         'Test': 000000000000000000
+#     },
+#     'Roles': {
+#         'Admin': 000000000000000000,
+#         'NewMember': None
+#     },
+#     'WhitelistEnabled': False,
+#     'WhitelistMembers': [],
+#     'ActivityBlacklist': ["Spotify"],
+#     'DebugMode': True,
+#     'AliasMaxAttempts': 5,
+#     'BackupFrequency': 1,
+#     'AllowEroticTitles': False,
+#     'MaxRoleCount': 200,
+#     'DefaultGameCover': "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
+# }
 
-    # Add missing default config entries
-    for entry, value in default_config.items():
-        if entry not in config:
-            config[entry] = value
-            update_flags[FlagType.Config] = {'status': True, 'comment': ""}
+# # Initializes config 
+# if os.path.isfile(config_file):
+#     with open(config_file, "r") as fp:
+#         config = json.load(fp)
 
-    # Saves the updated config file if necessary
-    if update_flags[FlagType.Config]['status']:
-        with open(config_file, "w") as fp:
-            json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
-else:
-    config = default_config
-    with open(config_file, "w") as fp:
-        json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
+#     # Add missing default config entries
+#     for entry, value in default_config.items():
+#         if entry not in config:
+#             config[entry] = value
+#             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
 
-# Initializes the games list
-if os.path.isfile(games_file):
-    with open(games_file, "r") as fp:
-        games = json.load(fp)
-else:
-    games = {}
-    with open(games_file, "w") as fp:
-        json.dump(games, fp, indent = 2, default = str, ensure_ascii = False)
+#     # Saves the updated config file if necessary
+#     if update_flags[FlagType.Config]['status']:
+#         with open(config_file, "w") as fp:
+#             json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
+# else:
+#     config = default_config
+#     with open(config_file, "w") as fp:
+#         json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
 
-# Initializes the members list
-if os.path.isfile(members_file):
-    with open(members_file, "r") as fp:
-        members = json.load(fp)
-else:
-    members = {}
-    with open(members_file, "w") as fp:
-        json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
+# # Initializes the games list
+# if os.path.isfile(games_file):
+#     with open(games_file, "r") as fp:
+#         games = json.load(fp)
+# else:
+#     games = {}
+#     with open(games_file, "w") as fp:
+#         json.dump(games, fp, indent = 2, default = str, ensure_ascii = False)
 
-# Initializes the aliases list
-if os.path.isfile(aliases_file):
-    with open(aliases_file, "r") as fp:
-        aliases = json.load(fp)
-else:
-    aliases = {}
-    with open(aliases_file, "w") as fp:
-        json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
+# # Initializes the members list
+# if os.path.isfile(members_file):
+#     with open(members_file, "r") as fp:
+#         members = json.load(fp)
+# else:
+#     members = {}
+#     with open(members_file, "w") as fp:
+#         json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
+
+# # Initializes the aliases list
+# if os.path.isfile(aliases_file):
+#     with open(aliases_file, "r") as fp:
+#         aliases = json.load(fp)
+# else:
+#     aliases = {}
+#     with open(aliases_file, "w") as fp:
+#         json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
+
 
 # Create the log object 
-Log = LogManager(log_file, config['DebugMode'])
+Log = LogManager(Files.log_file, Files.config['DebugMode'])
 
 # Returns a string formatted datetime of now
 def GetDateTime():
@@ -159,12 +160,12 @@ def GetDateTime():
 def StripAccents(s):
    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
 
-# Updates the specified flag to queue for the backup routine
-def UpdateFlag(flag: FlagType, status: bool = False, comment: str = ""):
-    if not status:
-        update_flags[flag] = {'status': False, 'comment': ""}
-    else:
-        update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
+# # Updates the specified flag to queue for the backup routine
+# def Files.Update(flag: FlagType, status: bool = False, comment: str = ""):
+#     if not status:
+#         update_flags[flag] = {'status': False, 'comment': ""}
+#     else:
+#         update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
 
 # Returns a string list of game names
 def GetNames(game_list: list):
@@ -189,7 +190,7 @@ def GetRoleMentions(game_list: list):
 # Returns the cover art URL for the provided game_id
 def GetCoverUrl(game_id):
     # Request the cover image urls
-    db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : config['IGDBCredentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {game_id};'})
+    db_json = requests.post('https://api.igdb.com/v4/covers', **{'headers' : Files.config['IGDBCredentials'], 'data' : f'fields url; limit 1; where animated = false; where game = {game_id};'})
     results = db_json.json()
 
     if len(results) > 0:
@@ -199,7 +200,7 @@ def GetCoverUrl(game_id):
 
         return url
     else:
-        return config['DefaultGameCover']
+        return Files.config['DefaultGameCover']
     
 # Returns a list of image files
 async def GetImages(game_list: dict):
@@ -208,10 +209,10 @@ async def GetImages(game_list: dict):
         # Request the http content of the game's cover url
         if 'cover_url' not in game:
             url = GetCoverUrl(game['id'])
-            games[game['name']]['cover_url'] = url
+            Files.games[game['name']]['cover_url'] = url
             game['cover_url'] = url
 
-            UpdateFlag(FlagType.Games, True, f"Added missing cover url to {game['name']}.")
+            Files.Update(FlagType.Games, True, f"Added missing cover url to {game['name']}.")
 
         response = requests.get(game['cover_url'])
         img = Image.open(BytesIO(response.content))
@@ -245,14 +246,14 @@ def GetListSets(game_list: dict, set_amount: int, list_filter: str = None, sort:
         game_list = {i: game_list[i] for i in listKeys}
 
     elif sort == SortType.RecentlyAdded:
-        listKeys = list(games.keys())
+        listKeys = list(Files.games.keys())
         listKeys.reverse()
 
         new_list = {}
         # Loop through games and rebuild game_list 
         for game_name in listKeys:
             if game_name in game_list:
-                new_list[game_name] = games[game_name]
+                new_list[game_name] = Files.games[game_name]
 
         # Rebuild game_list using the sorted list of keys
         game_list = new_list
@@ -319,10 +320,10 @@ def AddMember(member: discord.Member):
     member_details['opt_out'] = False
     
     # Adds the member details to the members list
-    members[member_details['name']] = member_details
+    Files.members[member_details['name']] = member_details
 
     # Toggles the updated flag for members
-    UpdateFlag(FlagType.Members, True, f"Added a new member, {member.name}")
+    Files.Update(FlagType.Members, True, f"Added a new member, {member.name}")
 
 # Update first dict with second recursively
 def MergeDictionaries(d1: dict, d2: dict):
@@ -338,19 +339,19 @@ def MergeDictionaries(d1: dict, d2: dict):
 # Updates a member in the members list and saves file
 def UpdateMember(member: discord.Member, new_details: dict):
     # Checks if member was previously added, if not, add them.
-    if member.name not in members:
+    if member.name not in Files.members:
         AddMember(member)
 
     # Updates specific member with new details using the recursive MergeDictionaries function
-    MergeDictionaries(members[member.name], new_details)
+    MergeDictionaries(Files.members[member.name], new_details)
     
     # Toggles the updated flag for members
-    UpdateFlag(FlagType.Members, True, f"Updated member information, {member.name}")
+    Files.Update(FlagType.Members, True, f"Updated member information, {member.name}")
 
 # Returns a count of how many roles are being used by games
 def GetRoleCount():
     count = 0
-    for _, details in games.items():
+    for _, details in Files.games.items():
         # Role entry should be present even if it's empty
         if 'role' not in details:
             continue
@@ -363,8 +364,8 @@ def GetRoleCount():
 
 # Returns the number of days since a game was last played
 def GetLastPlayed(game_name: str):
-    if game_name in games:
-        game = games[game_name]
+    if game_name in Files.games:
+        game = Files.games[game_name]
 
         # Skips game if there's not history
         if 'history' not in game:
@@ -385,9 +386,9 @@ def GetLastPlayed(game_name: str):
 
 # Returns the number of players who play/track a given game
 def GetNumberOfPlayers(game_name: str):
-    if game_name in games:
+    if game_name in Files.games:
         count = 0
-        for member in members.values():
+        for member in Files.members.values():
             # Skips member if they don't play the game
             if 'games' not in member:
                 continue
@@ -402,12 +403,12 @@ def GetNumberOfPlayers(game_name: str):
         return False
     
 def GetDaysSinceAdded(game_name: str):
-    if game_name in games:
-        if "added_datetime" in games[game_name]:
-            delta = datetime.now() - datetime.strptime(games[game_name]["added_datetime"], '%Y-%m-%d %H:%M:%S.%f')
+    if game_name in Files.games:
+        if "added_datetime" in Files.games[game_name]:
+            delta = datetime.now() - datetime.strptime(Files.games[game_name]["added_datetime"], '%Y-%m-%d %H:%M:%S.%f')
             return delta.days + delta.seconds/86400
         else:
-            games[game_name]["added_datetime"] = GetDateTime()
+            Files.games[game_name]["added_datetime"] = GetDateTime()
             return 0
     return False
 
@@ -415,12 +416,12 @@ def GetDaysSinceAdded(game_name: str):
 def GetLowestScoringGame(black_list: list):
     # Initialize the playtime message and game refernces for the games played
     game_refs = {}
-    for game_name, playtime in GetPlaytime(games).items():
+    for game_name, playtime in GetPlaytime(Files.games).items():
 
         days_since_added = GetDaysSinceAdded(game_name)
 
         # Skip blacklisted games or games without a role assigned to them
-        if game_name in black_list or games[game_name]["role"] == None or days_since_added <= 1:
+        if game_name in black_list or Files.games[game_name]["role"] == None or days_since_added <= 1:
             continue
 
         # Get number of days since last played, the number of players, and when the game was added
@@ -441,11 +442,11 @@ def GetLowestScoringGame(black_list: list):
 # Finds role in guild - can create one if missing and remove the lowest score game's role if role count is maxed out
 async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False):
     # Search for an existing role, returns None if role does not exist
-    if game_name in games:
-        if 'role' in games[game_name]:
-            role: discord.Role = guild.get_role(games[game_name]['role'])
+    if game_name in Files.games:
+        if 'role' in Files.games[game_name]:
+            role: discord.Role = guild.get_role(Files.games[game_name]['role'])
         else:
-            games[game_name]["role"] = None
+            Files.games[game_name]["role"] = None
             role = None
     else:
         Log(f"GetRole: Could not find {game_name} in the database!", LogType.ERROR)
@@ -458,14 +459,14 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
             role_count = GetRoleCount()
 
             # Breaks out of the loop if role count is under max roles
-            if role_count < config['MaxRoleCount']:
+            if role_count < Files.config['MaxRoleCount']:
                 break
             
-            Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({config['MaxRoleCount']})!")
+            Log(f"Role count of {role_count} exceeds maximum allowed number of roles ({Files.config['MaxRoleCount']})!")
 
             # Grab the lowest ranking game from the server
             game, _ = GetLowestScoringGame([game_name])
-            lowest_game = games[game]
+            lowest_game = Files.games[game]
             Log(f"Lowest scoring game is {game}, which has a role of {lowest_game['role']}")
 
             # Use the role ID to delete role from server
@@ -475,7 +476,7 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
                 await role_to_remove.delete()
 
             # Removes role ID for this game
-            games[game]['role'] = None
+            Files.games[game]['role'] = None
             Log(f"Removed role ID ({role_to_remove.id}) from {lowest_game['name']}!")
         
         # Adds a new role to the server
@@ -483,25 +484,25 @@ async def GetRole(guild: discord.Guild, game_name: str, create_new: bool = False
         Log(f"Created a new role, {game_name}! ID: ({role.id})")
 
         # Stores the role for future use
-        games[game_name]['role'] = role.id
+        Files.games[game_name]['role'] = role.id
 
         # Toggles the updated flag for games
-        UpdateFlag(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
+        Files.Update(FlagType.Games, True, f"Added missing role entry for the {game_name} game!")
 
     return role
 
 # Removes game from games list and saves to file
 async def RemoveGame(game_name: str, guild: discord.Guild):
-    if game_name in games:
+    if game_name in Files.games:
         role = await GetRole(guild, game_name)
         # Delete the role if found, if role doesn't exist, do nothing
         if role:
             await role.delete()
 
-        del games[game_name]
+        del Files.games[game_name]
 
         # Toggles the updated flag for games
-        UpdateFlag(FlagType.Games, True, f"Removed a game, {game_name}")
+        Files.Update(FlagType.Games, True, f"Removed a game, {game_name}")
         
         return True
     else:
@@ -516,19 +517,19 @@ async def AddGames(guild: discord.Guild, game_list: list):
 
     def AlreadyExists(game_name):
         # Checks if game_name is in aliases and grabs the actual name
-        if game_name in aliases:
-            actual_name = aliases[game_name]
+        if game_name in Files.aliases:
+            actual_name = Files.aliases[game_name]
         else:
             actual_name = game_name
         
         # Claims already existing game
-        already_exists[actual_name] = games[actual_name]
+        already_exists[actual_name] = Files.games[actual_name]
 
     # Loops through the provided list of game names
     for game_name in game_list:
 
         # Checks if game already exists to avoid unnecessary API calls
-        if game_name in games or game_name in aliases:
+        if game_name in Files.games or game_name in Files.aliases:
             AlreadyExists(game_name)
 
             # Move onto the next game
@@ -536,7 +537,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
         else:
             # Try a case-insensitive search next
             try:
-                game_name = [game for game in games if game.lower() == game_name.lower()][0]
+                game_name = [game for game in Files.games if game.lower() == game_name.lower()][0]
                 AlreadyExists(game_name)
 
                 # Move onto the next game
@@ -545,22 +546,22 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 Log(f"Could not find {game_name} in the game list or aliases! Must be a new game!")
 
         # Check if erotic titles are allowed in the config
-        if config['AllowEroticTitles']:
+        if Files.config['AllowEroticTitles']:
             if game_name.isnumeric(): #TODO: Need a better way of determing if name is actually an ID
                 # Request the game title with the provided game id
                 Log(f"Looking for game id {game_name}", LogType.DEBUG)
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : Files.config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)};'})
             else:
                 # Request all game titles that match the game name
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null;'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : Files.config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null;'})
         else:
             if game_name.isnumeric():
                 # Request the game title with the provided game id
                 Log(f"Looking for game id {game_name}", LogType.DEBUG)
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : Files.config['IGDBCredentials'], 'data' : f'fields name,summary,first_release_date,aggregated_rating,dlcs; limit 1; where id = {int(game_name)} & themes != (42);'})
             else:
                 # Request all game titles that match the game name while filtering out titles with the 42 ('erotic') theme.
-                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null & themes != (42);'})
+                db_json = requests.post('https://api.igdb.com/v4/games', **{'headers' : Files.config['IGDBCredentials'], 'data' : f'search "{game_name}"; fields name,summary,first_release_date,aggregated_rating,dlcs; limit 500; where summary != null & themes != (42);'})
 
         # Converts the json database response to a usable dictionary results variable
         results = db_json.json()
@@ -570,7 +571,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             Log(results, LogType.ERROR)
 
             # Get the admin channel and send warning
-            admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
+            admin_channel = guild.get_channel(Files.config['ChannelIDs']['Admin'])
             await admin_channel.send(f"Authorization failure, please update authorization key!")
 
             return None, None, None
@@ -671,7 +672,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             #     Log(f"{game_candidate['name']} did not collect enough points with a score of {score} to replace {top_game['name']} with a score of {top_score}!", LogType.DEBUG)
 
         # Checks if game already exists again with the nearly found game name
-        if top_game and (top_game['name'] in games or top_game['name'] in aliases):
+        if top_game and (top_game['name'] in Files.games or top_game['name'] in Files.aliases):
             AlreadyExists(top_game['name'])
         elif top_game:
             # Get cover url from game id
@@ -691,7 +692,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
             new_games[top_game['name']] = top_game
 
             # Add game to game list and saves file
-            games[top_game['name']] = top_game
+            Files.games[top_game['name']] = top_game
             
             role: discord.Role = await GetRole(guild, top_game['name'], True)
             if role:
@@ -699,7 +700,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
                 await role.edit(colour = discord.Colour(int(color, 16)))
 
                 # Toggles the updated flag for games
-                UpdateFlag(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
+                Files.Update(FlagType.Games, True, f"Added new game, {top_game['name']}, and it's associated role to the server!")
             else:
                 Log(f"Failed to add new game, {top_game['name']}! Could not create a new role!", LogType.ERROR)
         else:
@@ -710,7 +711,7 @@ async def AddGames(guild: discord.Guild, game_list: list):
 # Adds an alias and game to the aliases list, adds the game if it doesn't already exist
 async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member: discord.Member = None):
     # Get the admin and test text channels
-    admin_channel = guild.get_channel(config['ChannelIDs']['Admin'])
+    admin_channel = guild.get_channel(Files.config['ChannelIDs']['Admin'])
 
     if not member:
         return ########## TODO: Member is now required with new slash commands feature
@@ -730,7 +731,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     # Sets up a loop to allow for multiple attempts at setting a name
     game = None
     attempt_count = 0
-    while not game and attempt_count < config['AliasMaxAttempts']:
+    while not game and attempt_count < Files.config['AliasMaxAttempts']:
         # Returns true of the message is a reply to the original message
         def check(message):
             return message.reference and message.reference.message_id == view.message.id
@@ -746,7 +747,7 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
         new_games, already_exists, failed_to_find = await AddGames(guild, [FilterName(msg.content)])
 
         # Decrement remaining_attempts by 1
-        remaining_attempts = config['AliasMaxAttempts'] - attempt_count - 1
+        remaining_attempts = Files.config['AliasMaxAttempts'] - attempt_count - 1
 
         # If a new or existing game is found, assign it to game to exit the loop
         if len(new_games) > 0:
@@ -760,10 +761,10 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
     # Update alias if a game was ultimately found
     if game:
         # Assign game to the new alias
-        aliases[alias] = game['name']
+        Files.aliases[alias] = game['name']
 
         # Toggles the updated flag for aliases
-        UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
+        Files.Update(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {game['name']} game!")
 
         # Once a game is found, it sets the alias and exits
         await msg.reply(f"Thanks, {msg.author.mention}! I've given <@&{game['role']}> an alias of `{alias}`.", files = await GetImages({game['name'] : game}))
@@ -772,11 +773,11 @@ async def AddAlias(bot: discord.Client, guild: discord.Guild, alias: str, member
 
 # Removes a specific alias from the aliases list
 def RemoveAlias(alias_name: str):
-    if alias_name in aliases:
-        del aliases[alias_name]
+    if alias_name in Files.aliases:
+        del Files.aliases[alias_name]
 
         # Toggles the updated flag for aliases
-        UpdateFlag(FlagType.Aliases, True, f"Removed the {alias_name} alias.")
+        Files.Update(FlagType.Aliases, True, f"Removed the {alias_name} alias.")
 
         return True 
     else:
@@ -785,11 +786,11 @@ def RemoveAlias(alias_name: str):
 # Handles tracking of gameplay when someone starts playing
 def StartPlayingGame(member: discord.Member, game_name: str):
     # Checks of game_name is an alias; if not and game_name is also not in games, return and log failure
-    if game_name in aliases:
-        game_name = aliases[game_name]
+    if game_name in Files.aliases:
+        game_name = Files.aliases[game_name]
     else:
         try:
-            game_name = [game for game in games if game.lower() == game_name.lower()][0]
+            game_name = [game for game in Files.games if game.lower() == game_name.lower()][0]
         except:
             Log(f"Could not find {game_name} in the game list or aliases when {member.name} started playing!", LogType.WARNING)
             return
@@ -798,67 +799,67 @@ def StartPlayingGame(member: discord.Member, game_name: str):
     date = datetime.now().strftime('%Y-%m-%d')
 
     # Constructs history dictionary for game if missing
-    if 'history' not in games[game_name]:
-        games[game_name]['history'] = {}
+    if 'history' not in Files.games[game_name]:
+        Files.games[game_name]['history'] = {}
     
     # Adds the current date to the game's history if missing
-    if date not in games[game_name]['history']:
-        games[game_name]['history'][date] = {}
+    if date not in Files.games[game_name]['history']:
+        Files.games[game_name]['history'][date] = {}
 
     # Adds the member to the current date if missing
-    if member.name not in games[game_name]['history'][date]:
-        games[game_name]['history'][date][member.name] = {}
+    if member.name not in Files.games[game_name]['history'][date]:
+        Files.games[game_name]['history'][date][member.name] = {}
     
     # Sets the member's last_played datetime for the current day and game
-    games[game_name]['history'][date][member.name]['last_played'] = GetDateTime()
+    Files.games[game_name]['history'][date][member.name]['last_played'] = GetDateTime()
 
     # Toggles the updated flag for games
-    UpdateFlag(FlagType.Games, True, f"{member.name} started playing {game_name}")
+    Files.Update(FlagType.Games, True, f"{member.name} started playing {game_name}")
 
 # Records number of hours played since member started playing game and tallies for the day
 def StopPlayingGame(member: discord.Member, game_name: str):
     # Checks if game_name is an alias; if not and game_name is also not in games, return and log failure
-    if game_name in aliases:
-        game_name = aliases[game_name]
+    if game_name in Files.aliases:
+        game_name = Files.aliases[game_name]
     else:
         try:
-            game_name = [game for game in games if game.lower() == game_name.lower()][0]
+            game_name = [game for game in Files.games if game.lower() == game_name.lower()][0]
         except:
             Log(f"Could not find {game_name} in the game list or aliases when {member.name} stopped playing!", LogType.WARNING)
             return
 
     # Checks if game has history, log error if missing
-    if 'history' not in games[game_name]:
+    if 'history' not in Files.games[game_name]:
         Log(f"Could not find history for {game_name} after {member.name} stopped playing!", LogType.WARNING)
         return
     
     def AddPlaytime(date, hours):
         # Adds playtime to the current date and member if missing
-        if 'playtime' not in games[game_name]['history'][date][member.name]:
-            games[game_name]['history'][date][member.name]['playtime'] = 0
+        if 'playtime' not in Files.games[game_name]['history'][date][member.name]:
+            Files.games[game_name]['history'][date][member.name]['playtime'] = 0
 
         # Add hours to playtime for the day
-        games[game_name]['history'][date][member.name]['playtime'] = round(games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
+        Files.games[game_name]['history'][date][member.name]['playtime'] = round(Files.games[game_name]['history'][date][member.name]['playtime'] + hours, 2)
 
         # Remove last_played when it's accounted for
-        if 'last_played' in games[game_name]['history'][date][member.name]:
-            del games[game_name]['history'][date][member.name]['last_played']
+        if 'last_played' in Files.games[game_name]['history'][date][member.name]:
+            del Files.games[game_name]['history'][date][member.name]['last_played']
 
         # Toggles the updated flag for games
-        UpdateFlag(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
+        Files.Update(FlagType.Games, True, f"{member.name} stopped playing {game_name}")
     
     # Grabs today and yesterday's YYYY-MM-DD from the current datetime
     today     = datetime.now().strftime('%Y-%m-%d')
     yesterday = (datetime.now() - timedelta(days = 1)).strftime('%Y-%m-%d')
 
-    if today in games[game_name]['history']:
+    if today in Files.games[game_name]['history']:
         # Verifies that member has history for today, logs error if not
-        if member.name not in games[game_name]['history'][today]:
+        if member.name not in Files.games[game_name]['history'][today]:
             Log(f"Could not find member in history for {game_name} after {member.name} stopped playing!", LogType.WARNING)
             return
         
         # Get the difference in time between last_played and now
-        last_played = games[game_name]['history'][today][member.name]['last_played']
+        last_played = Files.games[game_name]['history'][today][member.name]['last_played']
         delta_time = datetime.now() - datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f')
 
         # Convert delta_time to hours and round to 2 decimal places
@@ -868,11 +869,11 @@ def StopPlayingGame(member: discord.Member, game_name: str):
         AddPlaytime(today, hours)
     else:
         # Check if there's a last_played in yesterday's history
-        if yesterday in games[game_name]['history'] and member.name in games[game_name]['history'][yesterday] and 'last_played' in games[game_name]['history'][yesterday][member.name]:
+        if yesterday in Files.games[game_name]['history'] and member.name in Files.games[game_name]['history'][yesterday] and 'last_played' in Files.games[game_name]['history'][yesterday][member.name]:
             Log(f"{member.name} played {game_name} overnight, splitting time across two days!")
 
             # Get yesterday's last_played time and midnight
-            last_played  = games[game_name]['history'][yesterday][member.name]['last_played']
+            last_played  = Files.games[game_name]['history'][yesterday][member.name]['last_played']
             midnight = (datetime.strptime(last_played, '%Y-%m-%d %H:%M:%S.%f') + timedelta(days=1)).replace(hour=0, minute=0, microsecond=0, second=0)
             
             # Convert delta_time to hours and round to 2 decimal places
@@ -887,12 +888,12 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             hours = round(delta_time.total_seconds()/3600, 2)
 
             # Adds the current date to the game's history if missing
-            if today not in games[game_name]['history']:
-                games[game_name]['history'][today] = {}
+            if today not in Files.games[game_name]['history']:
+                Files.games[game_name]['history'][today] = {}
 
             # Adds the member to the current date if missing
-            if member.name not in games[game_name]['history'][today]:
-                games[game_name]['history'][today][member.name] = {}
+            if member.name not in Files.games[game_name]['history'][today]:
+                Files.games[game_name]['history'][today][member.name] = {}
 
             # Add playtime for today
             AddPlaytime(today, hours)
@@ -900,14 +901,14 @@ def StopPlayingGame(member: discord.Member, game_name: str):
             Log(f"Could not determine {member.name}'s play session for {game_name}! Maybe it spanned more than 2 days?", LogType.WARNING)
 
             # Loop through all of the dates in the game's history
-            for date in games[game_name]['history']: 
-                if member.name in games[game_name]['history'][date] and 'last_played' in games[game_name]['history'][date][member.name]:
+            for date in Files.games[game_name]['history']: 
+                if member.name in Files.games[game_name]['history'][date] and 'last_played' in Files.games[game_name]['history'][date][member.name]:
                     # Log the last_played and then delete the entry
-                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {games[game_name]['history'][date][member.name]['last_played']}")
-                    del games[game_name]['history'][date][member.name]['last_played']
+                    Log(f"Found {member.name}'s last_played datetime for {game_name}: {Files.games[game_name]['history'][date][member.name]['last_played']}")
+                    del Files.games[game_name]['history'][date][member.name]['last_played']
 
                     # Toggles the updated flag for games
-                    UpdateFlag(FlagType.Games, True, f"Removed {member.name}'s old play history from {game_name}.")
+                    Files.Update(FlagType.Games, True, f"Removed {member.name}'s old play history from {game_name}.")
 
 # Gets the total playtime over the last number of given days. Include optional member to filter
 def GetPlaytime(game_list: dict, days: int = None, count: int = None, member: discord.Member = None):
@@ -991,7 +992,7 @@ class DirectMessageView(discord.ui.View):
 
                 # Responds to the request
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `YES`*", view = None)
-                await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({config['Links']['GeneralChannel']}) to meet some new friends!")
+                await interaction.response.send_message(f"Awesome! I've added you to the `{self.game['name']}` role! Go ahead and mention the role in the [server]({Files.config['Links']['GeneralChannel']}) to meet some new friends!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, something went wrong! I was unable to assign the `{self.game['name']}` role to you. Please try again later and thank you for your understanding while we sort through these early beta bugs!")
                 Log(f"Unable to assign the `{self.game['name']}` role to {self.member.name}! Role Check: {str(self.role)}", LogType.ERROR)
@@ -1019,7 +1020,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member, update)
                 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `NO`*", view = None)
-                await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `!list_games` command in the [server]({config['Links']['GeneralChannel']})!")
+                await interaction.response.send_message(f"Understood! I won't ask about `{self.game['name']}` again! Feel free to manually add yourself anytime using the `/list games` command in the [server]({Files.config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
                 Log(error, LogType.ERROR)
@@ -1040,7 +1041,7 @@ class DirectMessageView(discord.ui.View):
                 UpdateMember(self.member, update)
 
                 await interaction.message.edit(content = f"{self.original_message}\n*You've selected `OPT OUT`*", view = None)
-                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({config['Links']['GeneralChannel']})!")
+                await interaction.response.send_message(f"Sorry to bother! I've opted you out of the automatic role assignment! If in the future you'd like to opt back in, simply use the `!opt_in` command anywhere in the [server]({Files.config['Links']['GeneralChannel']})!")
             except Exception as error:
                 await interaction.response.send_message(f"I'm sorry, I was unable to complete the requested command! Thank you for your understanding while we sort through these early Beta Bugs!")
                 Log(error, LogType.ERROR)
@@ -1048,7 +1049,7 @@ class DirectMessageView(discord.ui.View):
 
     async def on_timeout(self):
         # TODO: Make this edit dynamic based on what the user selected (or didn't)
-        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `!list_games` in the [server]({config['Links']['GeneralChannel']})!*", view = None)
+        await self.message.edit(content = f"{self.original_message}\n*This request has timed out! If you didn't get to this already, you can still add youself to the roll manually by using the command `/list games` in the [server]({Files.config['Links']['GeneralChannel']})!*", view = None)
 
 # Create a class called PageView that subclasses discord.ui.View
 class PageView(discord.ui.View):
@@ -1108,7 +1109,7 @@ class PageView(discord.ui.View):
             # Prevent other people from messing with your page buttons
             if self.member and self.member != interaction.user:
                 if self.list_type is ListType.Select_Game:
-                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `!list_pages` to interact!*", ephemeral = True, delete_after = 10)
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `/list pages` to interact!*", ephemeral = True, delete_after = 10)
                 else:
                     await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
                 return
@@ -1122,7 +1123,7 @@ class PageView(discord.ui.View):
                 elif self.sort == SortType.RecentlyAdded:
                     self.sort = SortType.Alphabetical
 
-                self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
+                self.list_sets = GetListSets(Files.games, 20, self.list_filter, self.sort)
                 self.page_count = len(self.list_sets)
 
             # Repopulate message based on the last interaction
@@ -1151,7 +1152,7 @@ class PageView(discord.ui.View):
             # Check if member has the role and set button color accordingly
             if self.member:
                 # Get a list of member's game
-                member_games = members[self.member.name]['games']
+                member_games = Files.members[self.member.name]['games']
 
                 if self.name in member_games and member_games[self.name]['tracked']:
                     button_style = discord.ButtonStyle.success
@@ -1165,7 +1166,7 @@ class PageView(discord.ui.View):
         async def callback(self, interaction):
             if self.member and self.member != interaction.user:
                 if self.list_type is ListType.Select_Game:
-                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `!list_games` to interact!*", ephemeral = True, delete_after = 10)
+                    await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?\n*Please use `/list games` to interact!*", ephemeral = True, delete_after = 10)
                 else:
                     await interaction.response.send_message(f"You're not {self.member.mention}! Who are you?", ephemeral = True, delete_after = 10)
                 return
@@ -1174,7 +1175,7 @@ class PageView(discord.ui.View):
             member = interaction.user
 
             # Get a list of member's game
-            member_games = members[member.name]['games']
+            member_games = Files.members[member.name]['games']
             
             if self.list_type is ListType.Select_Game:
                 if self.name in member_games and member_games[self.name]['tracked']:
@@ -1220,7 +1221,7 @@ class PageView(discord.ui.View):
             elif self.list_type is ListType.Remove_Game:
                 # Tries to remove the game, returns false if it fails
                 if await RemoveGame(self.name, self.guild):
-                    self.list_sets = GetListSets(games, 20, self.list_filter, self.sort)
+                    self.list_sets = GetListSets(Files.games, 20, self.list_filter, self.sort)
                     self.page_count = len(self.list_sets)
 
                     # Check if deleted last item on the page, if so, set page to last page
@@ -1237,7 +1238,7 @@ class PageView(discord.ui.View):
             elif self.list_type is ListType.Remove_Alias:
                 # Tries to remove the alias, returns false if it fails
                 if RemoveAlias(self.name):
-                    self.list_sets = GetListSets(aliases, 20, self.list_filter, self.sort)
+                    self.list_sets = GetListSets(Files.aliases, 20, self.list_filter, self.sort)
                     self.page_count = len(self.list_sets)
 
                     # Check if deleted last item on the page, if so, set page to last page
@@ -1283,9 +1284,9 @@ class PlaytimeView(discord.ui.View):
                 # Initialize the playtime message and game refernces for the games played
                 playtime_message = ""
                 game_refs = {}
-                for game_name, time in GetPlaytime(games, 30, 5).items():
+                for game_name, time in GetPlaytime(Files.games, 30, 5).items():
                     # Store a reference of the game data in game_refs
-                    game_refs[game_name] = games[game_name]
+                    game_refs[game_name] = Files.games[game_name]
 
                     # Calculate hours and minutes from time and add to playtime_message
                     hours, minutes = divmod(time*60, 60)
@@ -1305,7 +1306,7 @@ class PlaytimeView(discord.ui.View):
         async def callback(self, interaction):
             try:            
                 # Get the list of the top # of games
-                playtime_list = GetPlaytime(games, 30, 5, interaction.user)
+                playtime_list = GetPlaytime(Files.games, 30, 5, interaction.user)
                 if playtime_list:
                     # Initialize the playtime message and game refernces for the games played
                     playtime_message = ""
@@ -1314,7 +1315,7 @@ class PlaytimeView(discord.ui.View):
                         # Only list games with more than 0 time
                         if time > 0:
                             # Store a reference of the game data in game_refs
-                            game_refs[game_name] = games[game_name]
+                            game_refs[game_name] = Files.games[game_name]
                             
                             # Calculate hours and minutes from time and add to playtime_message
                             hours, minutes = divmod(time*60, 60)
@@ -1344,58 +1345,16 @@ class AutoRolerPro(commands.Cog):
     async def cog_unload(self):
         self.BackupRoutine.cancel()
 
-    @tasks.loop(minutes = config['BackupFrequency'])
+    @tasks.loop(minutes = Files.config['BackupFrequency'])
     async def BackupRoutine(self):
         # Initializes the log message
         log_message = ""
 
-        # Returns true if games flag is updated
-        game_flag = update_flags[FlagType.Games]
-        if game_flag['status']:
-            with open(games_file, "w") as fp:
-                json.dump(games, fp, indent = 2, default = str, ensure_ascii = False) 
-
-            # Adds games file update to log message
-            log_message += f"\n  Successfully saved to {games_file} {game_flag['comment']}"
-
-            # Resets flag
-            UpdateFlag(FlagType.Games)
-
-        # Returns true if members flag is updated
-        game_flag = update_flags[FlagType.Members]
-        if game_flag['status']:
-            with open(members_file, "w") as fp:
-                json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
-            
-            # Adds members file update to log message
-            log_message += f"\n  Successfully saved to {members_file}! {game_flag['comment']}"
-
-            # Resets flag
-            UpdateFlag(FlagType.Members)
-
-        # Returns true if aliases flag is updated
-        game_flag = update_flags[FlagType.Aliases]
-        if game_flag['status']:
-            with open(aliases_file, "w") as fp:
-                json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
-            
-            # Adds aliases file update to log message
-            log_message += f"\n  Successfully saved to {aliases_file}! {game_flag['comment']}"
-
-            # Resets flag
-            UpdateFlag(FlagType.Aliases)
-
-        # Returns true if aliases flag is updated
-        game_flag = update_flags[FlagType.Config]
-        if game_flag['status']:
-            with open(config_file, "w") as fp:
-                json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
-            
-            # Adds aliases file update to log message
-            log_message += f"\n  Successfully saved to {config_file}! {game_flag['comment']}"
-
-            # Resets flag
-            UpdateFlag(FlagType.Config)
+        # Update affected files with new data
+        Files.CheckForUpdate(FlagType.Games,   Files.games_file)
+        Files.CheckForUpdate(FlagType.Members, Files.members_file)
+        Files.CheckForUpdate(FlagType.Aliases, Files.aliases_file)
+        Files.CheckForUpdate(FlagType.Config,  Files.config_file)
 
         # Print log if not empty
         if log_message:
@@ -1414,7 +1373,7 @@ class AutoRolerPro(commands.Cog):
         guild: discord.Guild = member.guild
 
         # Grab the new-member role from the config
-        role = guild.get_role(config['Roles']['NewMember'])
+        role = guild.get_role(Files.config['Roles']['NewMember'])
 
         # If the role exists, add it to the member
         if role:
@@ -1424,19 +1383,19 @@ class AutoRolerPro(commands.Cog):
     @commands.Cog.listener(name='on_presence_update')
     async def on_presence_update(self, previous: discord.Member, current: discord.Member):
         # Get important information about the context of the event
-        announcements_channel = current.guild.get_channel(config['ChannelIDs']['Announcements'])
-        test_channel = current.guild.get_channel(config['ChannelIDs']['Test'])
+        announcements_channel = current.guild.get_channel(Files.config['ChannelIDs']['Announcements'])
+        test_channel = current.guild.get_channel(Files.config['ChannelIDs']['Test'])
 
         # Exits if the WhitelistEnabled is true and member isn't whitelisted
-        if config['WhitelistEnabled'] and current.name not in config['WhitelistMembers']:
+        if Files.config['WhitelistEnabled'] and current.name not in Files.config['WhitelistMembers']:
             return
 
         # Adds member to members dictionary for potential tracking (will ask if they want to opt-out)
-        if current.name not in members:
+        if current.name not in Files.members:
             AddMember(current)
 
         # Assigns member with current.name
-        member = members[current.name]
+        member = Files.members[current.name]
         
         # Collect the activity names
         previous_names = [activity.name for activity in previous.activities]
@@ -1449,7 +1408,7 @@ class AutoRolerPro(commands.Cog):
                 filtered_name = FilterName(activity.name)
 
                 # Exit if game is blacklisted
-                if filtered_name in config['ActivityBlacklist']:
+                if filtered_name in Files.config['ActivityBlacklist']:
                     return
                 
                 await test_channel.send(f"`{member['display_name']}` stopped playing `{filtered_name}`", silent = True)
@@ -1462,14 +1421,14 @@ class AutoRolerPro(commands.Cog):
                 filtered_name = FilterName(activity.name)
 
                 # Exit if game is blacklisted
-                if filtered_name in config['ActivityBlacklist']:
+                if filtered_name in Files.config['ActivityBlacklist']:
                     return
                 
                 # Checks of the activity is an alias first to avoid a potentially unnecessary API call
-                if filtered_name in aliases:
-                    game_name = aliases[filtered_name]
-                    if game_name in games:
-                        game = games[game_name]
+                if filtered_name in Files.aliases:
+                    game_name = Files.aliases[filtered_name]
+                    if game_name in Files.games:
+                        game = Files.games[game_name]
                     else:
                         await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}`, and I found an alias with that name, but the game associated with it isn't in the list! Not sure how that happened!", silent = True)
                         return
@@ -1516,7 +1475,7 @@ class AutoRolerPro(commands.Cog):
                             dm_channel = await current.create_dm()
 
                             # Setup original message
-                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({config['Links']['GeneralChannel']}) and I noticed you were playing `{filtered_name}` and don't have the role assigned!"
+                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({Files.config['Links']['GeneralChannel']}) and I noticed you were playing `{filtered_name}` and don't have the role assigned!"
                             
                             # Populate view and send direct message
                             view = DirectMessageView(original_message, role, current, game)
@@ -1562,9 +1521,9 @@ class AutoRolerPro(commands.Cog):
         # TODO: Add Role on selecting game
 
         # List the games if there are more than zero. Otherwise reply with a passive agressive comment
-        if len(games) > 0:
+        if len(Files.games) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 20, list_filter, SortType.Alphabetical)
+            list_sets = GetListSets(Files.games, 20, list_filter, SortType.Alphabetical)
             if not list_sets:
                 await interaction.response.send_message(f"Could not find any games similar to `{list_filter}`")
             else:
@@ -1633,19 +1592,19 @@ class AutoRolerPro(commands.Cog):
         guild = interaction.guild
 
         # Exits if the member is not an admin
-        role: discord.Role = guild.get_role(config['Roles']['Admin'])
+        role: discord.Role = guild.get_role(Files.config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{Files.config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{Files.config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
         # Lists the games to remove if there's more than zero. Otherwise reply with a passive agressive comment
-        if len(games) > 0:
+        if len(Files.games) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(games, 20, list_filter, SortType.Alphabetical)
+            list_sets = GetListSets(Files.games, 20, list_filter, SortType.Alphabetical)
             
             if not list_sets:
                 await interaction.response.send_message(f"Could not find any games similar to `{list_filter}`")
@@ -1659,8 +1618,8 @@ class AutoRolerPro(commands.Cog):
     @list_group.command(name="aliases", description="Returns a list of aliases from the server")
     async def list_aliases(self, interaction: discord.Interaction):
         """Returns a list of aliases from the server."""
-        if len(aliases) > 0:
-            sorted_aliases = {k: v for k, v in sorted(aliases.items(), key=lambda item: item[1])}
+        if len(Files.aliases) > 0:
+            sorted_aliases = {k: v for k, v in sorted(Files.aliases.items(), key=lambda item: item[1])}
 
             # Get's the longest alias for formatting
             longest_alias = max(list(sorted_aliases.keys()), key=len)
@@ -1716,24 +1675,24 @@ class AutoRolerPro(commands.Cog):
         guild = interaction.guild
 
         # Exits if the member is not an admin
-        admin_role = guild.get_role(config['Roles']['Admin'])
+        admin_role = guild.get_role(Files.config['Roles']['Admin'])
         if admin_role:
             if admin_role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!")
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{Files.config['Roles']['Admin']}> role to add aliases!")
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{Files.config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!")
             return
 
-        if role.name in games:
+        if role.name in Files.games:
             # Assign game to the new alias
-            aliases[alias] = role.name
+            Files.aliases[alias] = role.name
 
             # Toggles the updated flag for aliases
-            UpdateFlag(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {role.name} game!")
+            Files.Update(FlagType.Aliases, True, f"Assigned a new alias, {alias}, to the {role.name} game!")
 
             # Once a game is found, it sets the alias and exits
-            await interaction.response.send_message(f"Thanks, {interaction.user.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({games[role.name]['name'] : games[role.name]}))
+            await interaction.response.send_message(f"Thanks, {interaction.user.mention}! I've given {role.mention} an alias of `{alias}`.", files = await GetImages({Files.games[role.name]['name'] : Files.games[role.name]}))
         else:
             await interaction.response.send_message(f"Sorry, I could not find {role.name} in the list of games!")
 
@@ -1746,18 +1705,18 @@ class AutoRolerPro(commands.Cog):
         guild = interaction.guild
 
         # Exits if the member is not an admin
-        role = guild.get_role(config['Roles']['Admin'])
+        role = guild.get_role(Files.config['Roles']['Admin'])
         if role:
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{Files.config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{Files.config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
-        if len(aliases) > 0:
+        if len(Files.aliases) > 0:
             # Convert a long list of games into sets of 25 or less
-            list_sets = GetListSets(aliases, 20, list_filter, SortType.Alphabetical)
+            list_sets = GetListSets(Files.aliases, 20, list_filter, SortType.Alphabetical)
             
             if not list_sets:
                 await interaction.response.send_message(f"Could not find any aliases similar to `{list_filter}`")
@@ -1791,21 +1750,21 @@ class AutoRolerPro(commands.Cog):
         guild = interaction.guild
 
         # Exits if the member is not an admin
-        role: discord.Role = guild.get_role(config['Roles']['Admin'])
+        role: discord.Role = guild.get_role(Files.config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{Files.config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{Files.config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
 
         # channel_id = arg.replace('#', '').replace('<', '').replace('>', '')
         # new_channel = guild.get_channel(int(channel_id))
 
         # if new_channel:
-        config['ChannelIDs'][channel_type.value] = channel.id
-        UpdateFlag(FlagType.Config, True, f"Updated {channel_type.value} channel ID to {channel.id}")
+        Files.config['ChannelIDs'][channel_type.value] = channel.id
+        Files.Update(FlagType.Config, True, f"Updated {channel_type.value} channel ID to {channel.id}")
 
         await interaction.response.send_message(f"I've set the {channel_type.value} channel to {channel.mention}", ephemeral=True) #<#{new_channel.id}>!")
         # else:
@@ -1828,13 +1787,13 @@ class AutoRolerPro(commands.Cog):
         Log(f"Initializing Database Cleanup!")
 
         # Exits if the member is not an admin
-        role: discord.Role = guild.get_role(config['Roles']['Admin'])
+        role: discord.Role = guild.get_role(Files.config['Roles']['Admin'])
         if role and role.name != "deleted-role":
             if role not in member.roles:
-                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
+                await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. You need to be part of the <@&{Files.config['Roles']['Admin']}> role to add aliases!", ephemeral=True)
                 return
         else:
-            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
+            await interaction.response.send_message(f"Sorry, {member.mention}, I was unable to complete your request. I was unable to find the role `ID:{Files.config['Roles']['Admin']}` - I'm, therefore, unable to verify your admin rights!", ephemeral=True)
             return
         
         added_games = 0
@@ -1844,38 +1803,38 @@ class AutoRolerPro(commands.Cog):
 
         # Verifies every game has an added_datetime and role entry
         # If missing, add the missing entry
-        for game, details in games.items():
+        for game, details in Files.games.items():
             if "added_datetime" not in details:
-                games[game]["added_datetime"] = GetDateTime()
-                UpdateFlag(FlagType.Games, True, f"Added 'added_datetime' to {game}!")
+                Files.games[game]["added_datetime"] = GetDateTime()
+                Files.Update(FlagType.Games, True, f"Added 'added_datetime' to {game}!")
                 added_datetimes += 1
 
             if "role" not in details:
-                games[game]["role"] = None
-                UpdateFlag(FlagType.Games, True, f"Added empty role entry to {game}!")
+                Files.games[game]["role"] = None
+                Files.Update(FlagType.Games, True, f"Added empty role entry to {game}!")
                 cleanups += 1
             
-            if games[game]["role"]:
-                guild_role: discord.Role = guild.get_role(games[game]["role"])
+            if Files.games[game]["role"]:
+                guild_role: discord.Role = guild.get_role(Files.games[game]["role"])
                 if not guild_role:
-                    games[game]["role"] = None
-                    UpdateFlag(FlagType.Games, True, f"Removed obsolete role ID from {game}!")
+                    Files.games[game]["role"] = None
+                    Files.Update(FlagType.Games, True, f"Removed obsolete role ID from {game}!")
                     cleanups += 1
 
         # Loops through each member in the guild
-        for member in guild.members:
+        for member in guild.Files.members:
             if member.bot:
                 continue
 
             # Adds the member to the database if missing
-            if member.name not in members:
+            if member.name not in Files.members:
                 AddMember(member)
 
-            member_db = members[member.name]
+            member_db = Files.members[member.name]
 
             # Updates member database with tracked game
             for role in member.roles:
-                if role.name in games:
+                if role.name in Files.games:
                     if role.name not in member_db["games"]:
                         update = {'games' : {role.name : {'tracked' : True}}}
                         UpdateMember(member, update)
@@ -1886,12 +1845,12 @@ class AutoRolerPro(commands.Cog):
             for game, details in member_db['games'].items():
                 if "name" in details:
                     del member_db['games'][game]["name"]
-                    UpdateFlag(FlagType.Members, True, f"Cleaned up game data from {game}!")
+                    Files.Update(FlagType.Members, True, f"Cleaned up game data from {game}!")
                     cleanups += 1
 
                 if "last_played" in details:
                     del member_db['games'][game]["last_played"]
-                    UpdateFlag(FlagType.Members, True, f"Cleaned up game data from {game}!")
+                    Files.Update(FlagType.Members, True, f"Cleaned up game data from {game}!")
                     cleanups +=1
 
         # Collects a list of duplicate roles from the server and deletes them
