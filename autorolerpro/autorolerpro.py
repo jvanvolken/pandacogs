@@ -34,13 +34,6 @@ class SortType(Enum):
     Popularity    = "Popularity"
     RecentlyAdded = "Recently Added"
 
-# # Flag types
-# class FlagType(Enum):
-#     Games    = 1
-#     Members  = 2
-#     Aliases  = 3
-#     Config   = 4
-
 # Navigation types
 class NavigationType(Enum):
     First    = "First"
@@ -49,108 +42,9 @@ class NavigationType(Enum):
     Next     = "Next"
     Last     = "Last"
 
-# Cog Directory in Appdata
-# docker_cog_path  = "/data/cogs/AutoRolerPro"
-# games_file       = f"{docker_cog_path}/games.json"
-# members_file     = f"{docker_cog_path}/members.json"
-# aliases_file     = f"{docker_cog_path}/aliases.json"
-# config_file      = f"{docker_cog_path}/config.json"
-# log_file         = f"{docker_cog_path}/log.txt"
-
+# Create the log and Files objects
 Files = FileManager("/data/cogs/AutoRolerPro")
-
-# # Dictionary of updated file flags
-# update_flags = {
-#     FlagType.Games:   {'status': False, 'comment': ""}, 
-#     FlagType.Files.members: {'status': False, 'comment': ""}, 
-#     FlagType.Files.aliases: {'status': False, 'comment': ""}, 
-#     FlagType.Config:  {'status': False, 'comment': ""}
-# }
-
-# # Create the docker_cog_path if it doesn't already exist
-# os.makedirs(docker_cog_path, exist_ok = True)
-
-# default_config = {
-#     # Instantiates IGDB wrapper: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
-#     # curl -X POST "https://id.twitch.tv/oauth2/token?client_id=CLIENT_ID&client_secret=CLIENT_SECRET&grant_type=client_credentials"
-#     'IGDBCredentials': {
-#         'Client-ID': 'CHANGE-ME',
-#         'Authorization': 'CHANGE-ME'
-#     },
-#     'Links': {
-#         'GeneralChannel': "https://discord.com/channels/633799810700410880/633799810700410882"
-#     },
-#     'ChannelIDs': {
-#         'General': 000000000000000000,
-#         'Announcements': 000000000000000000,
-#         'Admin': 000000000000000000,
-#         'Test': 000000000000000000
-#     },
-#     'Roles': {
-#         'Admin': 000000000000000000,
-#         'NewMember': None
-#     },
-#     'WhitelistEnabled': False,
-#     'WhitelistMembers': [],
-#     'ActivityBlacklist': ["Spotify"],
-#     'DebugMode': True,
-#     'AliasMaxAttempts': 5,
-#     'BackupFrequency': 1,
-#     'AllowEroticTitles': False,
-#     'MaxRoleCount': 200,
-#     'DefaultGameCover': "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png"
-# }
-
-# # Initializes config 
-# if os.path.isfile(config_file):
-#     with open(config_file, "r") as fp:
-#         config = json.load(fp)
-
-#     # Add missing default config entries
-#     for entry, value in default_config.items():
-#         if entry not in config:
-#             config[entry] = value
-#             update_flags[FlagType.Config] = {'status': True, 'comment': ""}
-
-#     # Saves the updated config file if necessary
-#     if update_flags[FlagType.Config]['status']:
-#         with open(config_file, "w") as fp:
-#             json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
-# else:
-#     config = default_config
-#     with open(config_file, "w") as fp:
-#         json.dump(config, fp, indent = 2, default = str, ensure_ascii = False)
-
-# # Initializes the games list
-# if os.path.isfile(games_file):
-#     with open(games_file, "r") as fp:
-#         games = json.load(fp)
-# else:
-#     games = {}
-#     with open(games_file, "w") as fp:
-#         json.dump(games, fp, indent = 2, default = str, ensure_ascii = False)
-
-# # Initializes the members list
-# if os.path.isfile(members_file):
-#     with open(members_file, "r") as fp:
-#         members = json.load(fp)
-# else:
-#     members = {}
-#     with open(members_file, "w") as fp:
-#         json.dump(members, fp, indent = 2, default = str, ensure_ascii = False)
-
-# # Initializes the aliases list
-# if os.path.isfile(aliases_file):
-#     with open(aliases_file, "r") as fp:
-#         aliases = json.load(fp)
-# else:
-#     aliases = {}
-#     with open(aliases_file, "w") as fp:
-#         json.dump(aliases, fp, indent = 2, default = str, ensure_ascii = False)
-
-
-# Create the log object 
-Log = LogManager(Files.log_file, Files.config['DebugMode'])
+Log   = LogManager(Files.log_file, Files.config['DebugMode'])
 
 # Returns a string formatted datetime of now
 def GetDateTime():
@@ -159,13 +53,6 @@ def GetDateTime():
 # Normalizes and strips accents from string
 def StripAccents(s):
    return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
-
-# # Updates the specified flag to queue for the backup routine
-# def Files.Update(flag: FlagType, status: bool = False, comment: str = ""):
-#     if not status:
-#         update_flags[flag] = {'status': False, 'comment': ""}
-#     else:
-#         update_flags[flag] = {'status': status, 'comment': f"{update_flags[flag]['comment']}\n  --{comment}"}
 
 # Returns a string list of game names
 def GetNames(game_list: list):
