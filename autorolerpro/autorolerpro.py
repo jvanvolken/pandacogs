@@ -1352,25 +1352,26 @@ class AutoRolerPro(commands.Cog):
                     if game['name'] in member['games'] and member['games'][game['name']]['tracked'] == False:
                         # Informs the admin channel that the member is playing a game without it's role assigned
                         await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}`. They do not have or want the role assigned to them.", silent = True)
-                    else:
-                        # Informs the admin channel that the member is playing a game without it's role assigned
-                        await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
-                        Log(f"Sent {member['display_name']} a direct message!")
+                    # TODO: Fix or remove direct message notification
+                    # else:
+                    #     # Informs the admin channel that the member is playing a game without it's role assigned
+                    #     await test_channel.send(f"`{member['display_name']}` started playing `{filtered_name}` and does not have the role - I've sent them a DM asking if they want to be added to it!", silent = True)
+                    #     Log(f"Sent {member['display_name']} a direct message!")
                 
-                        try:
-                            # Get the direct message channel from the member
-                            dm_channel = await current.create_dm()
+                        # try:
+                        #     # Get the direct message channel from the member
+                        #     dm_channel = await current.create_dm()
 
-                            # Setup original message
-                            original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({Files.config['Links']['GeneralChannel']}) and I noticed you were playing `{filtered_name}` and don't have the role assigned!"
+                        #     # Setup original message
+                        #     original_message = f"Hey, {member['display_name']}! I'm from the [Pavilion Horde Server]({Files.config['Links']['GeneralChannel']}) and I noticed you were playing `{filtered_name}` and don't have the role assigned!"
                             
-                            # Populate view and send direct message
-                            view = DirectMessageView(original_message, role, current, game)
-                            view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
+                        #     # Populate view and send direct message
+                        #     view = DirectMessageView(original_message, role, current, game)
+                        #     view.message = await dm_channel.send(f"{original_message} Would you like me to add you to it so you'll be notified when someone is looking for a friend?", view = view, files = await GetImages({game['name'] : game}))
                             
-                        except discord.errors.Forbidden:
-                            await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
-                            Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!")
+                        # except discord.errors.Forbidden:
+                        #     await test_channel.send(f"I was unable to send `{member['display_name']}` a direct message, they do not allow messages from non-friends!", silent = True)
+                        #     Log(f"Unable to send {member['display_name']} a direct message, they do not allow messages from non-friends!")
         
     list_group = app_commands.Group(name="list", description="Request a list of something")
     add_group = app_commands.Group(name="add", description="Add something")
